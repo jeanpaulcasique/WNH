@@ -92,20 +92,35 @@ struct WorkoutView: View {
     // MARK: - Human Figure
     private func humanFigureView(geometry: GeometryProxy) -> some View {
         ZStack {
-            // Real human anatomy image
-            Image(viewModel.isShowingBack ? "human_back" : "human_front")
+            // Front image
+            Image("human_front")
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: geometry.size.width * 1.21, height: geometry.size.height * 1.15)
                 .clipped()
-                .offset(x: -25, y: -45  ) // Ajusta este valor para mover la imagen
-
+                .offset(x: -25, y: -45)
+                .opacity(viewModel.isShowingBack ? 0 : 1)
+                .rotation3DEffect(
+                    .degrees(viewModel.isShowingBack ? 90 : 0),
+                    axis: (x: 0, y: 1, z: 0)
+                )
+            
+            // Back image
+            Image("human_back")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: geometry.size.width * 1.21, height: geometry.size.height * 1.15)
+                .clipped()
+                .offset(x: -25, y: -45)
+                .opacity(viewModel.isShowingBack ? 1 : 0)
+                .rotation3DEffect(
+                    .degrees(viewModel.isShowingBack ? 0 : -90),
+                    axis: (x: 0, y: 1, z: 0)
+                )
         }
-        .rotation3DEffect(
-            .degrees(viewModel.isShowingBack ? 180 : 0),
-            axis: (x: 0, y: 1, z: 0)
-        )
+        .animation(.easeInOut(duration: 0.6), value: viewModel.isShowingBack)
     }
+    
     // MARK: - Muscle Group Buttons
     private func muscleGroupButtons(geometry: GeometryProxy) -> some View {
         let muscleGroups = viewModel.isShowingBack ? viewModel.backMuscleGroups : viewModel.muscleGroups
