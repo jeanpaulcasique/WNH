@@ -11,7 +11,13 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.black.ignoresSafeArea()
+                // Fondo negro con gradiente
+                LinearGradient(
+                    colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
 
                 GeometryReader { geometry in
                     AnimatedImage(name: "loginBackground.gif")

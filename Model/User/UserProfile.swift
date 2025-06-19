@@ -23,6 +23,13 @@ struct UserProfile {
         case notSet = "Not Set"
     }
 
+    enum SubscriptionPlan: String {
+        case free = "Free"
+        case monthly = "Monthly Pro"
+        case threeMonths = "Three Months Pro"
+        case yearly = "Yearly Pro"
+    }
+
     // Basic Profile Data
     let gender: String
     let heightCm: Int?
@@ -41,7 +48,7 @@ struct UserProfile {
     let levelActivity: String
     let workoutLevel: String
     
-    // Workout Preferences - NUEVOS VALORES AÑADIDOS
+    // Workout Preferences
     let workoutLocation: String
     let selectedEquipmentType: String
     
@@ -51,6 +58,11 @@ struct UserProfile {
     
     // Legacy/Additional Equipment Reference
     let equipmentPreference: String
+    
+    // Subscription Data
+    let subscriptionPlan: String
+    let subscriptionExpirationDate: Date?
+    let isSubscriptionActive: Bool
 
     // Computed enums for safer handling
     var genderEnum: Gender {
@@ -96,7 +108,7 @@ struct UserProfile {
         levelActivity = defaults.string(forKey: "selectedLevelActivity") ?? "Not Set"
         workoutLevel = defaults.string(forKey: "selectedWorkoutLevel") ?? "Not Set"
         
-        // Workout Preferences - VALORES AÑADIDOS
+        // Workout Preferences
         workoutLocation = defaults.string(forKey: "selectedWorkoutLocation") ?? "Not Set"
         selectedEquipmentType = defaults.string(forKey: "selectedEquipmentType") ?? "Not Set"
         
@@ -106,6 +118,11 @@ struct UserProfile {
         
         // Legacy/Additional Equipment Reference
         equipmentPreference = defaults.string(forKey: "equipmentPreference") ?? "Not Set"
+        
+        // Subscription Data
+        subscriptionPlan = defaults.string(forKey: "subscription_plan") ?? "Free"
+        subscriptionExpirationDate = defaults.object(forKey: "subscription_expiration_date") as? Date
+        isSubscriptionActive = defaults.bool(forKey: "is_subscription_active")
     }
 
     var totalHeightInCm: Int? {
@@ -262,5 +279,29 @@ struct UserProfile {
         print("BMI: \(bmi ?? 0.0)")
         print("Workout Environment: \(workoutEnvironment)")
         print("==================")
+    }
+
+    // MARK: - Subscription Methods
+    func isSubscriptionValid() -> Bool {
+        guard let expirationDate = subscriptionExpirationDate else { return false }
+        return isSubscriptionActive && expirationDate > Date()
+    }
+    
+    func getSubscriptionStatus() -> String {
+        if !isSubscriptionActive {
+            return "Free Plan"
+        }
+        
+        guard let expirationDate = subscriptionExpirationDate else {
+            return "Free Plan"
+        }
+        
+        if expirationDate > Date() {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            return "\(subscriptionPlan) - Active until \(formatter.string(from: expirationDate))"
+        } else {
+            return "Free Plan"
+        }
     }
 }

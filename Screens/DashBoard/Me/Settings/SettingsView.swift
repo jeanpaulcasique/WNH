@@ -335,14 +335,6 @@ struct PlaceholderViewSettings: View {
 
     var body: some View {
         ZStack {
-            // Gradient background matching app style
-            LinearGradient(
-                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
             VStack(spacing: 20) {
                 // Icon
                 ZStack {
@@ -379,8 +371,8 @@ struct PlaceholderViewSettings: View {
                 }
             }
         }
+        .blackGradientBackground()
         .navigationTitle(title)
-        .navigationBarTitleDisplayMode(.inline)
     }
     
     private func getIcon(for title: String) -> String {

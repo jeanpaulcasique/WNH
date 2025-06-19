@@ -12,14 +12,6 @@ struct GoalView: View {
     
     var body: some View {
         ZStack {
-            // Gradient background matching TellAF style
-            LinearGradient(
-                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
             ScrollView {
                 VStack(spacing: 30) {
                     progressSection
@@ -42,7 +34,7 @@ struct GoalView: View {
                 }
             }
         }
-       
+        .blackGradientBackground()
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton)

@@ -1,8 +1,11 @@
+// MARK: - SubscriptionView.swift - Solo correcciones necesarias
 import SwiftUI
 
 struct SubscriptionView: View {
     @StateObject private var viewModel = SubscriptionViewModel()
     @Environment(\.presentationMode) var presentationMode
+    @State private var showDowngradeAlert = false
+    @State private var selectedPlanForDowngrade: SubscriptionPlan?
     
     var body: some View {
         ZStack {
@@ -30,8 +33,15 @@ struct SubscriptionView: View {
         } message: {
             Text(viewModel.alertMessage)
         }
+        .alert("Confirm Downgrade", isPresented: $showDowngradeAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Downgrade", role: .destructive) {
+                handleDowngrade()
+            }
+        } message: {
+            Text("Are you sure you want to downgrade to the free plan? You will lose access to premium features when your current subscription expires.")
+        }
         .overlay(
-            // Loading overlay
             Group {
                 if viewModel.isLoading {
                     Color.black.opacity(0.5)
@@ -43,6 +53,13 @@ struct SubscriptionView: View {
                 }
             }
         )
+    }
+    
+    private func handleDowngrade() {
+        guard let plan = selectedPlanForDowngrade else { return }
+        viewModel.selectedPlan = plan
+        viewModel.updateSubscriptionToFree()
+        viewModel.loadSubscriptionData()
     }
 }
 
@@ -79,12 +96,12 @@ private extension SubscriptionView {
             
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(viewModel.currentPlan.name)
+                    Text(viewModel.subscriptionManager.currentStatus.tier.rawValue.capitalized)
                         .font(.system(size: 18, weight: .medium))
                         .foregroundColor(.appWhite)
                     
-                    if viewModel.currentPlan.isActive {
-                        Text("Active until \(viewModel.currentPlan.expirationDate, style: .date)")
+                    if viewModel.subscriptionManager.currentStatus.isActive {
+                        Text("Active until \(viewModel.subscriptionManager.currentStatus.expirationDate, style: .date)")
                             .font(.system(size: 14))
                             .foregroundColor(.green)
                     } else {
@@ -97,7 +114,7 @@ private extension SubscriptionView {
                 Spacer()
                 
                 Circle()
-                    .fill(viewModel.currentPlan.isActive ? .green : .gray)
+                    .fill(viewModel.subscriptionManager.currentStatus.isActive ? .green : .gray)
                     .frame(width: 12, height: 12)
             }
             .padding()
@@ -119,13 +136,15 @@ private extension SubscriptionView {
                 SubscriptionPlanCard(
                     plan: plan,
                     isSelected: viewModel.selectedPlan?.id == plan.id,
-                    isCurrentPlan: viewModel.currentPlan.id == plan.id
+                    isCurrentPlan: viewModel.subscriptionManager.currentStatus.tier.rawValue == plan.id
                 ) {
-                    viewModel.selectPlan(plan)
+                    handlePlanSelection(plan)
                 }
             }
             
-            if let selectedPlan = viewModel.selectedPlan, selectedPlan.id != viewModel.currentPlan.id {
+            if let selectedPlan = viewModel.selectedPlan,
+               selectedPlan.id != viewModel.subscriptionManager.currentStatus.tier.rawValue,
+               selectedPlan.id != "free" {
                 Button(action: {
                     viewModel.purchaseSelectedPlan()
                 }) {
@@ -160,122 +179,22 @@ private extension SubscriptionView {
             }
             
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
-                ForEach(viewModel.premiumFeatures, id: \.title) { feature in
+                ForEach(viewModel.premiumFeatures) { feature in
                     FeatureCard(feature: feature)
                 }
             }
         }
     }
-}
-
-// MARK: - SubscriptionPlanCard
-struct SubscriptionPlanCard: View {
-    let plan: SubscriptionPlan
-    let isSelected: Bool
-    let isCurrentPlan: Bool
-    let onTap: () -> Void
     
-    var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: 12) {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(plan.name)
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(.appWhite)
-                            
-                            if plan.isPopular {
-                                Text("POPULAR")
-                                    .font(.system(size: 10, weight: .bold))
-                                    .foregroundColor(.black)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 2)
-                                    .background(Color.appYellow)
-                                    .cornerRadius(4)
-                            }
-                            
-                            Spacer()
-                        }
-                        
-                        Text(plan.description)
-                            .font(.system(size: 14))
-                            .foregroundColor(.appWhite.opacity(0.8))
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .trailing) {
-                        if isCurrentPlan {
-                            Text("CURRENT")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(.green)
-                        } else {
-                            Text(plan.priceText)
-                                .font(.system(size: 18, weight: .bold))
-                                .foregroundColor(.appYellow)
-                            
-                            if !plan.periodText.isEmpty {
-                                Text(plan.periodText)
-                                    .font(.system(size: 12))
-                                    .foregroundColor(.appWhite.opacity(0.6))
-                            }
-                        }
-                    }
-                }
-                
-                if plan.savings > 0 {
-                    HStack {
-                        Text("Save \(plan.savings)%")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.green)
-                        Spacer()
-                    }
-                }
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(
-                                isSelected ? Color.appYellow :
-                                isCurrentPlan ? Color.green : Color.clear,
-                                lineWidth: 2
-                            )
-                    )
-            )
+    private func handlePlanSelection(_ plan: SubscriptionPlan) {
+        if viewModel.subscriptionManager.currentStatus.tier == .free {
+            viewModel.selectedPlan = plan
+        } else if plan.id == "free" {
+            selectedPlanForDowngrade = plan
+            showDowngradeAlert = true
+        } else {
+            viewModel.selectedPlan = plan
         }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-// MARK: - FeatureCard
-struct FeatureCard: View {
-    let feature: PremiumFeature
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: feature.icon)
-                .font(.system(size: 32))
-                .foregroundColor(.appYellow)
-            
-            Text(feature.title)
-                .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(.appWhite)
-                .multilineTextAlignment(.center)
-            
-            Text(feature.description)
-                .font(.system(size: 12))
-                .foregroundColor(.appWhite.opacity(0.7))
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .frame(height: 140)
-        .padding()
-        .background(Color.gray.opacity(0.1))
-        .cornerRadius(12)
     }
 }
 

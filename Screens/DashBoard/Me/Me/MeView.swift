@@ -11,14 +11,6 @@ struct MeView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Gradient background matching app style
-                LinearGradient(
-                    colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 30) {
                         profileHeaderSection
@@ -34,6 +26,7 @@ struct MeView: View {
                     .padding(.bottom, 100)
                 }
             }
+            .blackGradientBackground()
             .navigationBarHidden(true)
         }
         .accentColor(.appYellow)

@@ -564,7 +564,13 @@ struct EditFieldView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                Color.appBlack.ignoresSafeArea()
+                // Fondo negro con gradiente
+                LinearGradient(
+                    colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
                 
                 VStack(spacing: 24) {
                     // Field info

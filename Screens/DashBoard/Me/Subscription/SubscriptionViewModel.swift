@@ -1,84 +1,24 @@
+// MARK: - SubscriptionViewModel.swift - Agregar estas mejoras
 import SwiftUI
 import Foundation
 import Combine
 
-// MARK: - Models
-struct SubscriptionPlan: Identifiable, Codable {
-    let id: String
-    let name: String
-    let description: String
-    let price: Double
-    let currency: String
-    let period: SubscriptionPeriod
-    let isPopular: Bool
-    let savings: Int // Percentage saved compared to monthly
-    let features: [String]
-    
-    var priceText: String {
-        if price == 0 {
-            return "Free"
-        }
-        return String(format: "$%.2f", price)
-    }
-    
-    var periodText: String {
-        switch period {
-        case .free:
-            return ""
-        case .monthly:
-            return "per month"
-        case .yearly:
-            return "per year"
-        case .lifetime:
-            return "one time"
-        }
-    }
-}
-
-enum SubscriptionPeriod: String, Codable, CaseIterable {
-    case free = "free"
-    case monthly = "monthly"
-    case yearly = "yearly"
-    case lifetime = "lifetime"
-}
-
-struct CurrentSubscription: Codable {
-    let id: String
-    let name: String
-    let isActive: Bool
-    let expirationDate: Date
-    let autoRenewal: Bool
-}
-
-struct PremiumFeature {
-    let title: String
-    let description: String
-    let icon: String
-}
-
-// MARK: - SubscriptionViewModel
 final class SubscriptionViewModel: ObservableObject {
     
     // MARK: - Published Properties
     @Published var availablePlans: [SubscriptionPlan] = []
-    @Published var currentPlan: CurrentSubscription = CurrentSubscription(
-        id: "free",
-        name: "Free Plan",
-        isActive: false,
-        expirationDate: Date(),
-        autoRenewal: false
-    )
     @Published var selectedPlan: SubscriptionPlan?
     @Published var isLoading = false
     @Published var showAlert = false
     @Published var alertMessage = ""
+    // ✅ NUEVOS: Estados específicos de loading
+    @Published var isPurchasing = false
+    @Published var isRestoring = false
     
     // MARK: - Private Properties
-    private let userDefaults = UserDefaults.standard
-    private let subscriptionKey = "user_subscription"
-    private var cancellables = Set<AnyCancellable>()
+    let subscriptionManager = SubscriptionManager.shared
     
-    // MARK: - Constants
+    // MARK: - Constants - Mantén tus features existentes
     let premiumFeatures: [PremiumFeature] = [
         PremiumFeature(
             title: "Unlimited Workouts",
@@ -115,7 +55,6 @@ final class SubscriptionViewModel: ObservableObject {
     // MARK: - Initialization
     init() {
         setupAvailablePlans()
-        loadCurrentSubscription()
     }
     
     // MARK: - Public Methods
@@ -124,7 +63,6 @@ final class SubscriptionViewModel: ObservableObject {
         
         // Simulate API call
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.loadCurrentSubscription()
             self.isLoading = false
         }
     }
@@ -134,30 +72,65 @@ final class SubscriptionViewModel: ObservableObject {
         generateHapticFeedback()
     }
     
+    // ✅ MEJORADO: Manejo de compra con estados específicos
     func purchaseSelectedPlan() {
         guard let plan = selectedPlan else { return }
         
-        isLoading = true
+        isPurchasing = true
+        
+        // Convert plan to subscription tier
+        let tier: SubscriptionTier
+        switch plan.period {
+        case .free:
+            tier = .free
+        case .monthly:
+            tier = .monthly
+        case .threeMonths:
+            tier = .threeMonths
+        case .yearly:
+            tier = .yearly
+        }
         
         // Simulate purchase process
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.processPurchase(plan: plan)
+            if self.subscriptionManager.upgradeTo(tier: tier) {
+                self.showAlert(message: "Successfully subscribed to \(plan.name)!")
+                self.selectedPlan = nil
+            } else {
+                self.showAlert(message: "Unable to process subscription. Please try again.")
+            }
+            
+            self.isPurchasing = false
         }
     }
     
+    // ✅ NUEVO: Restaurar compras
     func restorePurchases() {
-        isLoading = true
+        isRestoring = true
         
         // Simulate restore process
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             self.showAlert(message: "No previous purchases found to restore.")
-            self.isLoading = false
+            self.isRestoring = false
         }
     }
     
     func cancelSubscription() {
-        // This would typically involve calling your backend API
-        showAlert(message: "Please contact support to cancel your subscription.")
+        subscriptionManager.cancelSubscription()
+        showAlert(message: "Your subscription will not renew. You'll still have access until the end of your billing period.")
+    }
+    
+    // ✅ NUEVO: Manejo de downgrade
+    func handleDowngrade(to plan: SubscriptionPlan) {
+        if plan.id == "free" {
+            subscriptionManager.cancelSubscription()
+            selectedPlan = plan
+            showAlert(message: "You'll keep premium access until your subscription expires.")
+        }
+    }
+    
+    func updateSubscriptionToFree() {
+        subscriptionManager.downgradeToFree()
     }
     
     // MARK: - Private Methods
@@ -166,29 +139,31 @@ final class SubscriptionViewModel: ObservableObject {
             SubscriptionPlan(
                 id: "free",
                 name: "Free",
-                description: "Basic features to get started",
+                description: "7 days access to personalized diets and workouts",
                 price: 0.0,
                 currency: "USD",
                 period: .free,
                 isPopular: false,
                 savings: 0,
                 features: [
-                    "3 workout plans",
-                    "Basic tracking",
-                    "Community access"
+                    "7 days of personalized diets",
+                    "7 days of personalized workouts",
+                    "Basic community access",
+                    "Basic progress tracking"
                 ]
             ),
             SubscriptionPlan(
                 id: "monthly",
                 name: "Monthly Pro",
                 description: "Full access to all premium features",
-                price: 9.99,
+                price: 10.0,
                 currency: "USD",
                 period: .monthly,
                 isPopular: false,
                 savings: 0,
                 features: [
-                    "Unlimited workouts",
+                    "Unlimited personalized diets",
+                    "Unlimited personalized workouts",
                     "Personal coaching",
                     "Advanced analytics",
                     "Meal planning",
@@ -196,89 +171,45 @@ final class SubscriptionViewModel: ObservableObject {
                 ]
             ),
             SubscriptionPlan(
-                id: "yearly",
-                name: "Yearly Pro",
-                description: "Best value - Save 58% with annual billing",
-                price: 49.99,
+                id: "three_months",
+                name: "Three Months Pro",
+                description: "Best value - Save 17% with quarterly billing",
+                price: 25.0,
                 currency: "USD",
-                period: .yearly,
+                period: .threeMonths,
                 isPopular: true,
-                savings: 58,
+                savings: 17,
                 features: [
                     "Everything in Monthly Pro",
                     "Priority support",
                     "Exclusive content",
-                    "Early access to features"
+                    "Early access to new features",
+                    "Advanced nutrition guides",
+                    "Premium recipes"
                 ]
             ),
             SubscriptionPlan(
-                id: "lifetime",
-                name: "Lifetime Pro",
-                description: "One-time payment for lifetime access",
-                price: 199.99,
+                id: "yearly",
+                name: "Yearly Pro",
+                description: "Best value - Save 17% with annual billing",
+                price: 100.0,
                 currency: "USD",
-                period: .lifetime,
+                period: .yearly,
                 isPopular: false,
-                savings: 0,
+                savings: 17,
                 features: [
-                    "Everything in Yearly Pro",
+                    "Everything in Three Months Pro",
                     "Lifetime updates",
                     "VIP support",
-                    "Exclusive community"
+                    "Exclusive community",
+                    "Monthly personalized consultations",
+                    "Access to exclusive events"
                 ]
             )
         ]
         
         // Set initial selection to the popular plan
         selectedPlan = availablePlans.first { $0.isPopular }
-    }
-    
-    private func loadCurrentSubscription() {
-        if let data = userDefaults.data(forKey: subscriptionKey),
-           let subscription = try? JSONDecoder().decode(CurrentSubscription.self, from: data) {
-            currentPlan = subscription
-        }
-    }
-    
-    private func saveCurrentSubscription(_ subscription: CurrentSubscription) {
-        if let data = try? JSONEncoder().encode(subscription) {
-            userDefaults.set(data, forKey: subscriptionKey)
-        }
-    }
-    
-    private func processPurchase(plan: SubscriptionPlan) {
-        // Simulate successful purchase
-        let expirationDate: Date
-        
-        switch plan.period {
-        case .free:
-            expirationDate = Date()
-        case .monthly:
-            expirationDate = Calendar.current.date(byAdding: .month, value: 1, to: Date()) ?? Date()
-        case .yearly:
-            expirationDate = Calendar.current.date(byAdding: .year, value: 1, to: Date()) ?? Date()
-        case .lifetime:
-            expirationDate = Calendar.current.date(byAdding: .year, value: 100, to: Date()) ?? Date()
-        }
-        
-        let newSubscription = CurrentSubscription(
-            id: plan.id,
-            name: plan.name,
-            isActive: plan.period != .free,
-            expirationDate: expirationDate,
-            autoRenewal: plan.period == .monthly || plan.period == .yearly
-        )
-        
-        currentPlan = newSubscription
-        saveCurrentSubscription(newSubscription)
-        
-        isLoading = false
-        showAlert(message: "Successfully subscribed to \(plan.name)!")
-        
-        // Reset selection
-        selectedPlan = nil
-        
-        generateHapticFeedback(style: .medium)
     }
     
     private func showAlert(message: String) {
@@ -293,14 +224,15 @@ final class SubscriptionViewModel: ObservableObject {
     
     // MARK: - Computed Properties
     var hasActiveSubscription: Bool {
-        return currentPlan.isActive && currentPlan.expirationDate > Date()
+        return subscriptionManager.currentStatus.isActive && !subscriptionManager.currentStatus.isExpired
     }
     
     var subscriptionStatusText: String {
-        if hasActiveSubscription {
+        let status = subscriptionManager.currentStatus
+        if status.isActive && !status.isExpired {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
-            return "Active until \(formatter.string(from: currentPlan.expirationDate))"
+            return "Active until \(formatter.string(from: status.expirationDate))"
         } else {
             return "No active subscription"
         }
@@ -311,12 +243,12 @@ final class SubscriptionViewModel: ObservableObject {
 extension SubscriptionViewModel {
     
     // Helper methods for external use
-    func isFeatureUnlocked(_ feature: String) -> Bool {
-        return hasActiveSubscription
+    func isFeatureUnlocked(_ feature: SubscriptionFeature) -> Bool {
+        return subscriptionManager.isFeatureAvailable(feature)
     }
     
-    func requiresPremium(for feature: String, completion: @escaping (Bool) -> Void) {
-        if hasActiveSubscription {
+    func requiresPremium(for feature: SubscriptionFeature, completion: @escaping (Bool) -> Void) {
+        if subscriptionManager.isFeatureAvailable(feature) {
             completion(true)
         } else {
             completion(false)

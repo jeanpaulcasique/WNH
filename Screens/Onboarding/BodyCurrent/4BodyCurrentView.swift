@@ -13,14 +13,6 @@ struct BodyCurrentView: View {
     
     var body: some View {
         ZStack {
-            // Gradient background matching other screens
-            LinearGradient(
-                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
             ScrollView {
                 VStack(spacing: 30) {
                     progressSection
@@ -44,7 +36,7 @@ struct BodyCurrentView: View {
                 }
             }
         }
-   
+        .blackGradientBackground()
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton)

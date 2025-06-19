@@ -13,8 +13,6 @@ struct TargetWeightView: View {
 
     var body: some View {
         ZStack {
-            backgroundGradient
-            
             ScrollView {
                 VStack(spacing: 28) {
                     progressSection
@@ -33,7 +31,7 @@ struct TargetWeightView: View {
             
             nextButtonOverlay
         }
-       
+        .blackGradientBackground()
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton)

@@ -1,7 +1,7 @@
 import SwiftUI
 
-// MARK: - WorkoutLocation Model
-struct WorkoutLocation {
+// MARK: - WorkoutLocationModel
+struct WorkoutLocationModel {
     let id: Int
     let title: String
     let subtitle: String
@@ -38,7 +38,7 @@ class NewScreenViewModel: ObservableObject {
      */
     
     let workoutLocations = [
-        WorkoutLocation(
+        WorkoutLocationModel(
             id: 0,
             title: "At Home",
             subtitle: "Comfort & Convenience",
@@ -49,7 +49,7 @@ class NewScreenViewModel: ObservableObject {
             equipment: "Bodyweight & basic tools",
             convenience: "Maximum"
         ),
-        WorkoutLocation(
+        WorkoutLocationModel(
             id: 1,
             title: "At the Gym",
             subtitle: "Professional Environment",
@@ -60,7 +60,7 @@ class NewScreenViewModel: ObservableObject {
             equipment: "Full gym access",
             convenience: "Medium"
         ),
-        WorkoutLocation(
+        WorkoutLocationModel(
             id: 2,
             title: "Outdoors",
             subtitle: "Fresh Air & Nature",
@@ -73,7 +73,7 @@ class NewScreenViewModel: ObservableObject {
         )
     ]
     
-    var selectedLocation: WorkoutLocation? {
+    var selectedLocation: WorkoutLocationModel? {
         guard let index = selectedIndex else { return nil }
         return workoutLocations[index]
     }

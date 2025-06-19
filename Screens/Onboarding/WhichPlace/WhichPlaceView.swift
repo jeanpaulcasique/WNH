@@ -211,7 +211,7 @@ private extension NewScreenView {
 
 // MARK: - Epic Location Card
 struct EpicLocationCard: View {
-    let location: WorkoutLocation
+    let location: WorkoutLocationModel
     let isSelected: Bool
     let action: () -> Void
     
@@ -250,96 +250,90 @@ struct EpicLocationCard: View {
                                 
                                 Text(location.subtitle)
                                     .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(location.color)
+                                    .foregroundColor(.white.opacity(0.7))
                             }
                             
                             Spacer()
                             
-                            // Selection indicator with animation
+                            // Selection indicator
                             if isSelected {
                                 Image(systemName: "checkmark.circle.fill")
                                     .font(.system(size: 24))
-                                    .foregroundColor(.green)
-                                    .scaleEffect(1.2)
-                                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
-                            } else {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.white.opacity(0.3))
+                                    .foregroundColor(.yellow)
+                                    .transition(.scale.combined(with: .opacity))
                             }
-                        }
-                        
-                        // Quick stats row - solo equipamiento
-                        HStack {
-                            QuickStat(icon: "wrench.and.screwdriver", text: location.equipment, color: location.color)
-                            Spacer()
                         }
                         
                         Text(location.description)
-                            .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.7))
-                            .lineLimit(isSelected ? nil : 2)
+                            .font(.system(size: 14))
+                            .foregroundColor(.white.opacity(0.6))
+                            .lineLimit(2)
                     }
                 }
-                .padding(20)
+                .padding(16)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color.black.opacity(0.3))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(
+                                    isSelected ? Color.yellow : Color.clear,
+                                    lineWidth: 2
+                                )
+                        )
+                )
                 
-                // Expandable advantages section (only when selected)
+                // Expanded info (only when selected)
                 if isSelected {
-                    VStack(spacing: 12) {
-                        Divider()
-                            .background(location.color.opacity(0.4))
-                        
-                        VStack(spacing: 8) {
-                            HStack {
-                                Text("Why choose \(location.title == "Outdoors" ? "Al Aire Libre" : location.title.lowercased())?")
-                                    .font(.system(size: 14, weight: .semibold))
-                                    .foregroundColor(location.color)
-                                Spacer()
-                            }
+                    VStack(alignment: .leading, spacing: 16) {
+                        // Advantages section
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text("Advantages")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.yellow)
                             
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 2), spacing: 8) {
-                                ForEach(location.advantages, id: \.self) { advantage in
-                                    HStack(spacing: 6) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 10))
-                                            .foregroundColor(location.color)
-                                        
-                                        Text(advantage)
-                                            .font(.system(size: 12))
-                                            .foregroundColor(.white.opacity(0.8))
-                                        
-                                        Spacer()
-                                    }
+                            ForEach(location.advantages, id: \.self) { advantage in
+                                HStack(spacing: 8) {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .foregroundColor(.green)
+                                    Text(advantage)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.white.opacity(0.8))
                                 }
                             }
                         }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 16)
+                        
+                        // Equipment section
+                        HStack {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Equipment")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.7))
+                                Text(location.equipment)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .trailing, spacing: 4) {
+                                Text("Convenience")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.7))
+                                Text(location.convenience)
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.white.opacity(0.6))
+                            }
+                        }
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .padding(16)
+                    .background(Color.black.opacity(0.2))
+                    .cornerRadius(16)
                 }
             }
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.gray.opacity(isSelected ? 0.15 : 0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(
-                                isSelected ? location.color.opacity(0.6) : Color.gray.opacity(0.3),
-                                lineWidth: isSelected ? 2 : 1
-                            )
-                    )
-            )
-            .scaleEffect(isSelected ? 1.02 : 1.0)
-            .shadow(
-                color: isSelected ? location.color.opacity(0.3) : Color.clear,
-                radius: isSelected ? 12 : 0,
-                x: 0,
-                y: 6
-            )
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
     }
 }
 
