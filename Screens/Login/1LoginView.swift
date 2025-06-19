@@ -1,5 +1,4 @@
 import SwiftUI
-import SDWebImageSwiftUI
 import AuthenticationServices
 
 struct LoginView: View {
@@ -11,38 +10,29 @@ struct LoginView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Fondo negro con gradiente
+                // Fondo animado sutil sin gif
                 LinearGradient(
                     colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
+                .animation(.easeInOut(duration: 2), value: UUID()) // efecto suave
 
-                GeometryReader { geometry in
-                    AnimatedImage(name: "loginBackground.gif")
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
-                        .clipped()
-                        .edgesIgnoringSafeArea(.all)
-                }
-                
                 VStack {
                     Spacer()
-                    
+
                     Text("FitnessRoutine")
                         .font(.largeTitle)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
                         .padding(.bottom, 50)
-                    
-                    // Navegación a Fase1 (Onboarding)
+
+                    // START - nuevo usuario
                     NavigationLink(destination: Fase1View(
                         genderSelectionViewModel: genderSelectionViewModel,
                         progressViewModel: progressViewModel
                     )) {
-                        // Botón START (para nuevo usuario)
                         HStack {
                             Text("START")
                                 .fontWeight(.bold)
@@ -55,10 +45,9 @@ struct LoginView: View {
                         .padding(.horizontal, 20)
                     }
                     .padding(.bottom, 20)
-                    
-                    // Navegación a Dashboard
+
+                    // LOG IN - usuario existente
                     NavigationLink(destination: DashboardView()) {
-                        // Botón LOG IN (para usuario existente)
                         HStack {
                             Text("LOG IN")
                                 .fontWeight(.bold)
@@ -85,7 +74,7 @@ struct LoginView: View {
             }
         }
     }
-    
+
     // MARK: - Debug Controls (solo para development)
     #if DEBUG
     var debugControls: some View {
@@ -98,7 +87,7 @@ struct LoginView: View {
                 .background(Color.red.opacity(0.7))
                 .foregroundColor(.white)
                 .cornerRadius(8)
-                
+
                 Button("Complete Onboarding") {
                     viewModel.simulateExistingUser(sessionManager: sessionManager)
                 }
@@ -108,7 +97,7 @@ struct LoginView: View {
                 .cornerRadius(8)
             }
             .padding(.bottom, 10)
-            
+
             Text("Debug: \(sessionManager.shouldShowOnboarding ? "→ Onboarding" : "→ Dashboard")")
                 .font(.caption)
                 .foregroundColor(.yellow)

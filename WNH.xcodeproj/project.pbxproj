@@ -282,9 +282,6 @@
 		693476C62E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */; };
 		693476C72E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */; };
 		693476C82E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */; };
-		693476CE2E042E0C00916824 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 693476CD2E042E0C00916824 /* loginBackground.gif */; };
-		693476CF2E042E0C00916824 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 693476CD2E042E0C00916824 /* loginBackground.gif */; };
-		693476D02E042E0C00916824 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 693476CD2E042E0C00916824 /* loginBackground.gif */; };
 		693476D22E04312C00916824 /* Fase1View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476D12E04312C00916824 /* Fase1View.swift */; };
 		699A64B42E01DC49008D6BDA /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B32E01DC49008D6BDA /* FirebaseAI */; };
 		699A64B62E01DC49008D6BDA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B52E01DC49008D6BDA /* FirebaseAnalytics */; };
@@ -438,7 +435,6 @@
 		693476BC2E02EED000916824 /* MockWorkoutRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWorkoutRepository.swift; sourceTree = "<group>"; };
 		693476C02E03136900916824 /* SearchBarWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarWorkoutView.swift; sourceTree = "<group>"; };
 		693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarWorkoutViewModel.swift; sourceTree = "<group>"; };
-		693476CD2E042E0C00916824 /* loginBackground.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loginBackground.gif; sourceTree = "<group>"; };
 		693476D12E04312C00916824 /* Fase1View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fase1View.swift; sourceTree = "<group>"; };
 		699A64D62E01EEAF008D6BDA /* MuscleGroupButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupButton.swift; sourceTree = "<group>"; };
 		699A64DC2E01EEAF008D6BDA /* VideoMuscleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleView.swift; sourceTree = "<group>"; };
@@ -928,7 +924,6 @@
 			isa = PBXGroup;
 			children = (
 				691996932DFC8EB7007FAB40 /* fase1.gif */,
-				693476CD2E042E0C00916824 /* loginBackground.gif */,
 			);
 			path = Gif;
 			sourceTree = "<group>";
@@ -1211,7 +1206,6 @@
 				6930C3E32DFF5818009FB959 /* .gitignore in Resources */,
 				6930C4FC2DFF589A009FB959 /* Preview Assets.xcassets in Resources */,
 				6930C4FD2DFF589A009FB959 /* Assets.xcassets in Resources */,
-				693476CE2E042E0C00916824 /* loginBackground.gif in Resources */,
 				691996962DFC8EB7007FAB40 /* fase1.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1220,7 +1214,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				693476CF2E042E0C00916824 /* loginBackground.gif in Resources */,
 				691996942DFC8EB7007FAB40 /* fase1.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1229,7 +1222,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				693476D02E042E0C00916824 /* loginBackground.gif in Resources */,
 				691996952DFC8EB7007FAB40 /* fase1.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
