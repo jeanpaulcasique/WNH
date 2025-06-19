@@ -7,9 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		6901B4832E00738D00173562 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 6901B4822E00738D00173562 /* loginBackground.gif */; };
-		6901B4842E00738D00173562 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 6901B4822E00738D00173562 /* loginBackground.gif */; };
-		6901B4852E00738D00173562 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 6901B4822E00738D00173562 /* loginBackground.gif */; };
 		6901B4892E0079E800173562 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6901B4872E0079E800173562 /* ViewModifiers.swift */; };
 		6901B48A2E0079E800173562 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6901B4872E0079E800173562 /* ViewModifiers.swift */; };
 		6901B48B2E0079E800173562 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6901B4872E0079E800173562 /* ViewModifiers.swift */; };
@@ -200,9 +197,6 @@
 		691996942DFC8EB7007FAB40 /* fase1.gif in Resources */ = {isa = PBXBuildFile; fileRef = 691996932DFC8EB7007FAB40 /* fase1.gif */; };
 		691996952DFC8EB7007FAB40 /* fase1.gif in Resources */ = {isa = PBXBuildFile; fileRef = 691996932DFC8EB7007FAB40 /* fase1.gif */; };
 		691996962DFC8EB7007FAB40 /* fase1.gif in Resources */ = {isa = PBXBuildFile; fileRef = 691996932DFC8EB7007FAB40 /* fase1.gif */; };
-		691996982DFC8EBC007FAB40 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 691996972DFC8EBC007FAB40 /* loginBackground.gif */; };
-		691996992DFC8EBC007FAB40 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 691996972DFC8EBC007FAB40 /* loginBackground.gif */; };
-		6919969A2DFC8EBC007FAB40 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 691996972DFC8EBC007FAB40 /* loginBackground.gif */; };
 		6919969C2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */; };
 		6919969D2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */; };
 		6919969E2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */; };
@@ -254,9 +248,6 @@
 		691996F02DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996EF2DFC90E0007FAB40 /* DietTypeViewModel.swift */; };
 		691996F12DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996EF2DFC90E0007FAB40 /* DietTypeViewModel.swift */; };
 		691996F22DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996EF2DFC90E0007FAB40 /* DietTypeViewModel.swift */; };
-		691996F82DFC916F007FAB40 /* Fase1View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996F72DFC916F007FAB40 /* Fase1View.swift */; };
-		691996F92DFC916F007FAB40 /* Fase1View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996F72DFC916F007FAB40 /* Fase1View.swift */; };
-		691996FA2DFC916F007FAB40 /* Fase1View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996F72DFC916F007FAB40 /* Fase1View.swift */; };
 		691996FD2DFC91AF007FAB40 /* FAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996FC2DFC91AF007FAB40 /* FAQView.swift */; };
 		691996FE2DFC91AF007FAB40 /* FAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996FC2DFC91AF007FAB40 /* FAQView.swift */; };
 		691996FF2DFC91AF007FAB40 /* FAQView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996FC2DFC91AF007FAB40 /* FAQView.swift */; };
@@ -291,6 +282,10 @@
 		693476C62E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */; };
 		693476C72E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */; };
 		693476C82E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */; };
+		693476CE2E042E0C00916824 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 693476CD2E042E0C00916824 /* loginBackground.gif */; };
+		693476CF2E042E0C00916824 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 693476CD2E042E0C00916824 /* loginBackground.gif */; };
+		693476D02E042E0C00916824 /* loginBackground.gif in Resources */ = {isa = PBXBuildFile; fileRef = 693476CD2E042E0C00916824 /* loginBackground.gif */; };
+		693476D22E04312C00916824 /* Fase1View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476D12E04312C00916824 /* Fase1View.swift */; };
 		699A64B42E01DC49008D6BDA /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B32E01DC49008D6BDA /* FirebaseAI */; };
 		699A64B62E01DC49008D6BDA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B52E01DC49008D6BDA /* FirebaseAnalytics */; };
 		699A64B82E01DC49008D6BDA /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B72E01DC49008D6BDA /* FirebaseAnalyticsCore */; };
@@ -346,7 +341,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		6901B4822E00738D00173562 /* loginBackground.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loginBackground.gif; sourceTree = "<group>"; };
 		6901B4872E0079E800173562 /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModifiers.swift; sourceTree = "<group>"; };
 		6901B48C2E00823700173562 /* SubscriptionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriptionManager.swift; sourceTree = "<group>"; };
 		6901B4902E0089C100173562 /* CurrentSubscriptionCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CurrentSubscriptionCard.swift; sourceTree = "<group>"; };
@@ -413,7 +407,6 @@
 		691996892DFC8E7C007FAB40 /* ProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
 		6919968D2DFC8E91007FAB40 /* NutritionDetailsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionDetailsView.swift; sourceTree = "<group>"; };
 		691996932DFC8EB7007FAB40 /* fase1.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = fase1.gif; sourceTree = "<group>"; };
-		691996972DFC8EBC007FAB40 /* loginBackground.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loginBackground.gif; sourceTree = "<group>"; };
 		6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantView.swift; sourceTree = "<group>"; };
 		6919969F2DFC8EF6007FAB40 /* DashBoardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashBoardViewModel.swift; sourceTree = "<group>"; };
 		691996A32DFC8F04007FAB40 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -431,7 +424,6 @@
 		691996D62DFC8FCD007FAB40 /* NotificationWater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationWater.swift; sourceTree = "<group>"; };
 		691996DA2DFC9027007FAB40 /* UserProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserProfile.swift; sourceTree = "<group>"; };
 		691996EF2DFC90E0007FAB40 /* DietTypeViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietTypeViewModel.swift; sourceTree = "<group>"; };
-		691996F72DFC916F007FAB40 /* Fase1View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fase1View.swift; sourceTree = "<group>"; };
 		691996FC2DFC91AF007FAB40 /* FAQView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAQView.swift; sourceTree = "<group>"; };
 		691997002DFC91C4007FAB40 /* FAQViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FAQViewModel.swift; sourceTree = "<group>"; };
 		6919970C2DFCB400007FAB40 /* DaySelectorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaySelectorView.swift; sourceTree = "<group>"; };
@@ -446,6 +438,8 @@
 		693476BC2E02EED000916824 /* MockWorkoutRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWorkoutRepository.swift; sourceTree = "<group>"; };
 		693476C02E03136900916824 /* SearchBarWorkoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarWorkoutView.swift; sourceTree = "<group>"; };
 		693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarWorkoutViewModel.swift; sourceTree = "<group>"; };
+		693476CD2E042E0C00916824 /* loginBackground.gif */ = {isa = PBXFileReference; lastKnownFileType = image.gif; path = loginBackground.gif; sourceTree = "<group>"; };
+		693476D12E04312C00916824 /* Fase1View.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fase1View.swift; sourceTree = "<group>"; };
 		699A64D62E01EEAF008D6BDA /* MuscleGroupButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupButton.swift; sourceTree = "<group>"; };
 		699A64DC2E01EEAF008D6BDA /* VideoMuscleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleView.swift; sourceTree = "<group>"; };
 		699A64DD2E01EEAF008D6BDA /* VideoMuscleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleViewModel.swift; sourceTree = "<group>"; };
@@ -934,8 +928,7 @@
 			isa = PBXGroup;
 			children = (
 				691996932DFC8EB7007FAB40 /* fase1.gif */,
-				6901B4822E00738D00173562 /* loginBackground.gif */,
-				691996972DFC8EBC007FAB40 /* loginBackground.gif */,
+				693476CD2E042E0C00916824 /* loginBackground.gif */,
 			);
 			path = Gif;
 			sourceTree = "<group>";
@@ -952,7 +945,7 @@
 		691996912DFC8E9C007FAB40 /* Transitions */ = {
 			isa = PBXGroup;
 			children = (
-				691996F72DFC916F007FAB40 /* Fase1View.swift */,
+				693476D12E04312C00916824 /* Fase1View.swift */,
 			);
 			path = Transitions;
 			sourceTree = "<group>";
@@ -1215,11 +1208,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6901B4852E00738D00173562 /* loginBackground.gif in Resources */,
-				691996982DFC8EBC007FAB40 /* loginBackground.gif in Resources */,
 				6930C3E32DFF5818009FB959 /* .gitignore in Resources */,
 				6930C4FC2DFF589A009FB959 /* Preview Assets.xcassets in Resources */,
 				6930C4FD2DFF589A009FB959 /* Assets.xcassets in Resources */,
+				693476CE2E042E0C00916824 /* loginBackground.gif in Resources */,
 				691996962DFC8EB7007FAB40 /* fase1.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1228,8 +1220,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6901B4842E00738D00173562 /* loginBackground.gif in Resources */,
-				6919969A2DFC8EBC007FAB40 /* loginBackground.gif in Resources */,
+				693476CF2E042E0C00916824 /* loginBackground.gif in Resources */,
 				691996942DFC8EB7007FAB40 /* fase1.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1238,8 +1229,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				6901B4832E00738D00173562 /* loginBackground.gif in Resources */,
-				691996992DFC8EBC007FAB40 /* loginBackground.gif in Resources */,
+				693476D02E042E0C00916824 /* loginBackground.gif in Resources */,
 				691996952DFC8EB7007FAB40 /* fase1.gif in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1272,6 +1262,7 @@
 				6919963E2DFC8D60007FAB40 /* RateAppViewModel.swift in Sources */,
 				691996B72DFC8F5E007FAB40 /* NextButton.swift in Sources */,
 				6919962A2DFC8D1A007FAB40 /* SubscriptionViewModel.swift in Sources */,
+				693476D22E04312C00916824 /* Fase1View.swift in Sources */,
 				6919968C2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
 				6901B4972E0089C100173562 /* CurrentSubscriptionCard.swift in Sources */,
 				6901B4982E0089C100173562 /* SubscriptionPlanCard.swift in Sources */,
@@ -1279,7 +1270,6 @@
 				6901B49A2E0089C100173562 /* SubscriptionPlansSection.swift in Sources */,
 				6901B49B2E0089C100173562 /* FeaturesSection.swift in Sources */,
 				6901B49C2E0089C100173562 /* SubscriptionHeader.swift in Sources */,
-				691996F82DFC916F007FAB40 /* Fase1View.swift in Sources */,
 				691995BA2DFC884E007FAB40 /* LoginViewModel.swift in Sources */,
 				691996572DFC8DA0007FAB40 /* SettingsView.swift in Sources */,
 				691995E62DFC8BFD007FAB40 /* WeightViewModel.swift in Sources */,
@@ -1379,7 +1369,6 @@
 				691996B52DFC8F5E007FAB40 /* NextButton.swift in Sources */,
 				691996232DFC8CFC007FAB40 /* GymEquipmentViewModel.swift in Sources */,
 				6919960B2DFC8C8C007FAB40 /* WorkoutLevelView.swift in Sources */,
-				691996F92DFC916F007FAB40 /* Fase1View.swift in Sources */,
 				6901B49D2E0089C100173562 /* CurrentSubscriptionCard.swift in Sources */,
 				6901B49E2E0089C100173562 /* SubscriptionPlanCard.swift in Sources */,
 				6901B49F2E0089C100173562 /* FeatureCard.swift in Sources */,
@@ -1487,7 +1476,6 @@
 				6919968B2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
 				691995BB2DFC884E007FAB40 /* LoginViewModel.swift in Sources */,
 				691996552DFC8DA0007FAB40 /* SettingsView.swift in Sources */,
-				691996FA2DFC916F007FAB40 /* Fase1View.swift in Sources */,
 				691996C02DFC8F6F007FAB40 /* RecipesKetos.swift in Sources */,
 				691995E52DFC8BFD007FAB40 /* WeightViewModel.swift in Sources */,
 				691996652DFC8DC2007FAB40 /* AnalyticsView.swift in Sources */,
