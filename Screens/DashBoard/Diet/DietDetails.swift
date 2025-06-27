@@ -1,4 +1,5 @@
-import SwiftUI
+/* import SwiftUI
+import UIKit
 
 // MARK: - DietDetails Model
 struct DietDetails: Identifiable {
@@ -15,6 +16,8 @@ struct DietDetails: Identifiable {
     let difficulty: String
     let timeToResults: String
     let macroSplit: String
+    let badge: String?
+    let badgeColor: Color?
 }
 
 // MARK: - Epic Diet Card
@@ -24,133 +27,131 @@ struct EpicDietCard: View {
     let shortDescription: String
     let detailedDescription: String
     let isSelected: Bool
+    let isExpanded: Bool
     let dietDetails: DietDetails
     let onTap: () -> Void
     let onLearnMore: () -> Void
+    let onSelect: () -> Void
+    
+    @State private var animateGlow = false
+    @State private var animateIcon = false
     
     var body: some View {
         ZStack {
-            cardBackground
-            cardContent
+            // Fondo con gradiente animado y glassmorphism
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: isExpanded ? dietDetails.gradientColors : [Color.appSurface.opacity(0.7), Color.appSurface.opacity(0.4)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .background(
+                    isExpanded ? AnyView(BlurView(style: .systemUltraThinMaterial)) : AnyView(EmptyView())
+                )
+                .overlay(
+                    // Borde luminoso animado
+                    RoundedRectangle(cornerRadius: 28, style: .continuous)
+                        .stroke(
+                            LinearGradient(
+                                colors: [dietDetails.color.opacity(animateGlow ? 0.8 : 0.3), dietDetails.color.opacity(0.2), .clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ),
+                            lineWidth: isExpanded ? 4 : (isSelected ? 2 : 1)
+                        )
+                        .shadow(color: dietDetails.color.opacity(animateGlow ? 0.5 : 0.15), radius: isExpanded ? 18 : 8, x: 0, y: 6)
+                        .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: animateGlow)
+                )
+                .shadow(color: dietDetails.color.opacity(0.18), radius: isExpanded ? 24 : 10, x: 0, y: isExpanded ? 12 : 6)
+            
+            VStack(spacing: 18) {
+                // Icono grande animado
+                ZStack {
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [dietDetails.color.opacity(0.5), dietDetails.color.opacity(0.15)],
+                                center: .center,
+                                startRadius: 18,
+                                endRadius: 48
+                            )
+                        )
+                        .frame(width: isExpanded ? 100 : 80, height: isExpanded ? 100 : 80)
+                        .scaleEffect(animateIcon ? 1.08 : 1.0)
+                        .animation(.spring(response: 0.7, dampingFraction: 0.6).repeatForever(autoreverses: true), value: animateIcon)
+                    Image(systemName: imageName)
+                        .font(.system(size: isExpanded ? 48 : 36, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(color: dietDetails.color.opacity(0.5), radius: 8, x: 0, y: 4)
+                }
+                .padding(.top, isExpanded ? 24 : 12)
+                .onAppear { animateIcon = true }
+                
+                // Título y dificultad
+                VStack(spacing: 4) {
+                    Text(title)
+                        .font(.system(size: isExpanded ? 26 : 22, weight: .bold))
+                        .foregroundColor(.appWhite)
+                        .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
+                    Text(dietDetails.difficulty)
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(dietDetails.color)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 3)
+                        .background(dietDetails.color.opacity(0.18))
+                        .clipShape(Capsule())
+                }
+                
+                // Descripción breve
+                Text(shortDescription)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.appWhite.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                
+                // Detalles y beneficios con iconografía
+                if isExpanded {
+                    VStack(spacing: 10) {
+                        Text(detailedDescription)
+                            .font(.system(size: 15))
+                            .foregroundColor(.appWhite.opacity(0.92))
+                            .multilineTextAlignment(.center)
+                            .lineSpacing(3)
+                        HStack(spacing: 16) {
+                            Label(dietDetails.timeToResults, systemImage: "clock.fill")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.appWhite.opacity(0.8))
+                            Label(dietDetails.macroSplit, systemImage: "chart.pie.fill")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.appWhite.opacity(0.8))
+                        }
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .bottom)))
+                }
+                Spacer()
+                if isExpanded {
+                    expandedFooterSection
+                } else if isSelected {
+                    footerSection
+                }
+                Spacer(minLength: 16)
+            }
+            .padding(isExpanded ? 28 : 0)
         }
-        .scaleEffect(isSelected ? 1.05 : 0.95)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelected)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .scaleEffect(isExpanded ? 1.10 : (isSelected ? 1.04 : 0.97))
+        .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isExpanded)
         .onTapGesture {
-            onTap()
+            if !isExpanded { onTap() }
         }
+        .onAppear { animateGlow = true }
     }
 }
 
 // MARK: - Epic Diet Card Components
 private extension EpicDietCard {
-    var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 24)
-            .fill(
-                LinearGradient(
-                    colors: isSelected ?
-                        [dietDetails.color.opacity(0.6), dietDetails.color.opacity(0.3)] :
-                        [Color.gray.opacity(0.2), Color.gray.opacity(0.1)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 24)
-                    .stroke(
-                        LinearGradient(
-                            colors: isSelected ?
-                                [dietDetails.color, dietDetails.color.opacity(0.5)] :
-                                [Color.gray.opacity(0.3), Color.gray.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: isSelected ? 3 : 1
-                    )
-            )
-            .shadow(
-                color: isSelected ? dietDetails.color.opacity(0.4) : Color.black.opacity(0.2),
-                radius: isSelected ? 20 : 8,
-                x: 0,
-                y: isSelected ? 8 : 4
-            )
-    }
-    
-    var cardContent: some View {
-        VStack(spacing: 16) {
-            headerSection
-            descriptionSection
-            Spacer()
-            if isSelected {
-                footerSection
-            }
-            Spacer(minLength: 16)
-        }
-    }
-    
-    var headerSection: some View {
-        VStack(spacing: 12) {
-            iconCircle
-            titleSection
-        }
-        .padding(.top, 20)
-    }
-    
-    var iconCircle: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [
-                            dietDetails.color.opacity(isSelected ? 0.8 : 0.4),
-                            dietDetails.color.opacity(isSelected ? 0.4 : 0.2)
-                        ],
-                        center: .center,
-                        startRadius: 20,
-                        endRadius: 50
-                    )
-                )
-                .frame(width: 80, height: 80)
-            
-            Image(systemName: imageName)
-                .font(.system(size: 36, weight: .medium))
-                .foregroundColor(isSelected ? .appWhite : dietDetails.color)
-        }
-    }
-    
-    var titleSection: some View {
-        VStack(spacing: 4) {
-            Text(title)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(.appWhite)
-            
-            Text(dietDetails.difficulty)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(dietDetails.color)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 2)
-                .background(dietDetails.color.opacity(0.2))
-                .cornerRadius(8)
-        }
-    }
-    
-    var descriptionSection: some View {
-        VStack(spacing: 8) {
-            Text(shortDescription)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundColor(.appWhite.opacity(0.9))
-                .multilineTextAlignment(.center)
-            
-            if isSelected {
-                Text(detailedDescription)
-                    .font(.system(size: 13))
-                    .foregroundColor(.appWhite.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
-            }
-        }
-        .padding(.horizontal, 16)
-    }
-    
     var footerSection: some View {
         VStack(spacing: 8) {
             HStack {
@@ -181,6 +182,41 @@ private extension EpicDietCard {
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 16)
+    }
+    
+    var expandedFooterSection: some View {
+        VStack(spacing: 18) {
+            Text(detailedDescription)
+                .font(.system(size: 15))
+                .foregroundColor(.appWhite.opacity(0.9))
+                .multilineTextAlignment(.center)
+                .lineSpacing(3)
+                .padding(.bottom, 8)
+            Button(action: {
+                let impact = UIImpactFeedbackGenerator(style: .medium)
+                impact.impactOccurred()
+                onSelect()
+            }) {
+                HStack {
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.system(size: 20, weight: .bold))
+                    Text("Seleccionar")
+                        .font(.system(size: 18, weight: .bold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 14)
+                .background(
+                    LinearGradient(colors: dietDetails.gradientColors, startPoint: .topLeading, endPoint: .bottomTrailing)
+                )
+                .clipShape(Capsule())
+                .shadow(color: dietDetails.color.opacity(0.3), radius: 12, x: 0, y: 6)
+            }
+            .scaleEffect(isExpanded ? 1.08 : 1.0)
+            .animation(.spring(response: 0.5, dampingFraction: 0.7), value: isExpanded)
+        }
+        .padding(.horizontal, 8)
+        .padding(.bottom, 18)
     }
 }
 
@@ -214,7 +250,7 @@ private struct ComparisonRow: View {
     @ObservedObject var viewModel: DietTypeViewModel
     
     private var details: DietDetails {
-        viewModel.getDietDetails(for: index)
+        viewModel.getDietDetailsd(for: index)
     }
     
     private var isSelected: Bool {
@@ -553,3 +589,13 @@ private func sectionBackground(_ color: Color) -> some View {
                 .stroke(color.opacity(0.3), lineWidth: 1)
         )
 }
+
+// BlurView para glassmorphism
+struct BlurView: UIViewRepresentable {
+    var style: UIBlurEffect.Style = .systemMaterial
+    func makeUIView(context: Context) -> UIVisualEffectView {
+        UIVisualEffectView(effect: UIBlurEffect(style: style))
+    }
+    func updateUIView(_ uiView: UIVisualEffectView, context: Context) {}
+}
+ */

@@ -1,3 +1,4 @@
+// MARK: - DietTypeView.swift - ARCHIVO COMPLETO
 import SwiftUI
 import Combine
 
@@ -7,45 +8,55 @@ struct DietTypeView: View {
     @ObservedObject var progressViewModel: ProgressViewModel
     @State private var navigateToNextView = false
     @Environment(\.presentationMode) var presentationMode
-    @State private var selectedDietForInfo: DietDetails? = nil
-    @State private var showCardsAnimation = false
-    @State private var showHeaderAnimation = false
-
+    
     var body: some View {
         ZStack {
-            backgroundGradient
+            backgroundWithParticles
             mainContent
-            nextButtonOverlay
+            // ✅ CAMBIO: Botón next solo aparece cuando hay selección válida
+            if viewModel.hasValidSelection {
+                nextButtonOverlay
+            }
         }
-       
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton)
-        .onAppear { setupAnimations() }
-        .sheet(item: $selectedDietForInfo) { dietDetails in
-            EpicDietInfoView(dietDetails: dietDetails)
+        .onAppear {
+            viewModel.startStaggeredAnimations()
+        }
+    }
+}
+
+// MARK: - Background & Particles
+private extension DietTypeView {
+    var backgroundWithParticles: some View {
+        ZStack {
+            // Black background
+            Color.black
+                .ignoresSafeArea()
+            
+            // Gradient overlay
+            LinearGradient(
+                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            
+            // Floating particles
+            FloatingParticles()
         }
     }
 }
 
 // MARK: - Main Content
 private extension DietTypeView {
-    var backgroundGradient: some View {
-        LinearGradient(
-            colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
-    }
-    
     var mainContent: some View {
         ScrollView {
             VStack(spacing: 28) {
                 progressSection
                 headerSection
                 dietCardsSection
-                quickComparisonSection
                 Spacer(minLength: 80)
             }
             .padding(.horizontal, 20)
@@ -58,36 +69,84 @@ private extension DietTypeView {
             ProgressBarWithIcons(progressViewModel: progressViewModel)
         }
         .padding(.top, 10)
+        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.header.rawValue ? 1 : 0)
+        .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.header.rawValue ? 0 : -20)
+        .animation(.spring(response: 0.7, dampingFraction: 0.8), value: viewModel.animationPhase)
     }
     
     var headerSection: some View {
         VStack(spacing: 16) {
-            if showHeaderAnimation {
-                dietIcon
-                headerText
-            }
+            enhancedIcon
+            headerText
         }
         .padding(.top, 15)
     }
     
-    var dietIcon: some View {
+    var enhancedIcon: some View {
         ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color.appYellow.opacity(0.4), Color.appYellow.opacity(0.1)],
-                        center: .center,
-                        startRadius: 30,
-                        endRadius: 70
-                    )
-                )
-                .frame(width: 120, height: 120)
+            // Animated rings
+            if viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue {
+                Circle()
+                    .stroke(Color.appYellow.opacity(0.2), lineWidth: 1)
+                    .frame(width: 120, height: 120)
+                    .scaleEffect(1.2)
+                    .opacity(0.6)
+                    .animation(.easeInOut(duration: 2).repeatForever(), value: UUID())
+                
+                Circle()
+                    .stroke(Color.appYellow.opacity(0.1), lineWidth: 1)
+                    .frame(width: 140, height: 140)
+                    .scaleEffect(1.4)
+                    .opacity(0.4)
+                    .animation(.easeInOut(duration: 3).repeatForever().delay(1), value: UUID())
+            }
             
-            Image(systemName: "fork.knife.circle.fill")
-                .font(.system(size: 50))
-                .foregroundColor(.appYellow)
+            // Main icon container
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.appYellow.opacity(0.4), Color.appYellow.opacity(0.05)],
+                            center: .center,
+                            startRadius: 30,
+                            endRadius: 70
+                        )
+                    )
+                    .frame(width: 96, height: 96)
+                    .overlay(
+                        Circle()
+                            .stroke(Color.appYellow.opacity(0.2), lineWidth: 1)
+                    )
+                
+                // Rotating gradient
+                if viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue {
+                    Circle()
+                        .stroke(
+                            AngularGradient(
+                                colors: [Color.clear, Color.appYellow.opacity(0.3), Color.clear],
+                                center: .center
+                            ),
+                            lineWidth: 2
+                        )
+                        .frame(width: 88, height: 88)
+                        .rotationEffect(.degrees(Date().timeIntervalSince1970 * 60))
+                        .animation(.linear(duration: 6).repeatForever(autoreverses: false), value: UUID())
+                }
+                
+                HStack(spacing: 2) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 20))
+                        .foregroundColor(.appYellow)
+                    
+                    Image(systemName: "flame.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.appYellow)
+                }
+            }
         }
-        .transition(.scale.combined(with: .opacity))
+        .scaleEffect(viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue ? 1 : 0.5)
+        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue ? 1 : 0)
+        .animation(.spring(response: 1.0, dampingFraction: 0.6), value: viewModel.animationPhase)
     }
     
     var headerText: some View {
@@ -97,77 +156,390 @@ private extension DietTypeView {
                 .foregroundColor(.appYellow)
                 .multilineTextAlignment(.center)
             
-        
+            HStack(spacing: 6) {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                
+                Text("Choose your transformation path")
+                    .font(.system(size: 16))
+                    .foregroundColor(.gray)
+            }
         }
-        .transition(.move(edge: .top).combined(with: .opacity))
+        .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.title.rawValue ? 0 : 20)
+        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.title.rawValue ? 1 : 0)
+        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.1), value: viewModel.animationPhase)
     }
     
     var dietCardsSection: some View {
         VStack(spacing: 20) {
-            if showCardsAnimation {
-                sectionHeader
-                dietCardsScrollView
+            ForEach(0..<viewModel.imageCount, id: \.self) { index in
+                DietCard(
+                    diet: viewModel.getDietDetails(for: index),
+                    index: index,
+                    isSelected: index == viewModel.currentIndex,
+                    isRecommended: index == viewModel.getRecommendedDietIndex(),
+                    animationPhase: viewModel.animationPhase,
+                    onTap: {
+                        viewModel.selectDiet(index)
+                    }
+                )
+                .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 0 : 40)
+                .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 1 : 0)
+                .animation(
+                    .spring(response: 0.7, dampingFraction: 0.8)
+                        .delay(Double(index) * 0.15),
+                    value: viewModel.animationPhase
+                )
+            }
+        }
+        // ✅ Padding horizontal de las cards
+        .padding(.horizontal, 20)
+    }
+}
+
+// MARK: - Diet Card Component
+struct DietCard: View {
+    let diet: DietTypeDetails
+    let index: Int
+    let isSelected: Bool
+    let isRecommended: Bool
+    let animationPhase: AnimationPhase
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 0) {
+                ZStack(alignment: .topTrailing) {
+                    cardContent
+                    if isRecommended {
+                        Text("RECOMMENDED")
+                            .font(.system(size: 9, weight: .bold))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(
+                                Capsule()
+                                    .fill(Color.appYellow)
+                                    .shadow(color: Color.black.opacity(0.4), radius: 6, x: 0, y: 3)
+                            )
+                            .foregroundColor(.black)
+                            .offset(x: -2, y: 6)
+                            .scaleEffect(0.95)
+                            .animation(
+                                Animation.easeInOut(duration: 1.5)
+                                    .repeatForever(autoreverses: true)
+                                    .speed(0.7),
+                                value: UUID()
+                            )
+                    }
+                }
+                .padding(.top, 16)
+                .padding(.trailing, 12)
+                if isSelected {
+                    expandedContent
+                        .transition(.asymmetric(
+                            insertion: .opacity.combined(with: .move(edge: .top)),
+                            removal: .opacity
+                        ))
+                }
+            }
+            .background(cardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(
+                        isSelected ? Color.appYellow : Color.gray.opacity(0.3),
+                        lineWidth: isSelected ? 2 : 1
+                    )
+            )
+            .shadow(
+                color: isSelected ? Color.appYellow.opacity(0.15) : Color.clear,
+                radius: isSelected ? 20 : 0,
+                x: 0,
+                y: isSelected ? 8 : 0
+            )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSelected)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private var cardBackground: some View {
+        LinearGradient(
+            colors: isSelected
+                ? [Color.appSurface.opacity(0.8), Color.appSurface.opacity(0.6)]
+                : [Color.appSurface.opacity(0.4), Color.appSurface.opacity(0.6)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+    
+    private var cardContent: some View {
+        HStack(spacing: 20) {
+            iconSection
+            
+            VStack(alignment: .leading, spacing: 8) {
+                titleSection
+                highlightsPills
+            }
+            
+            Spacer()
+        }
+        .padding(24)
+    }
+    
+    private var iconSection: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 16)
+                .fill(isSelected ? Color.appYellow : Color.appSurface.opacity(0.6))
+                .frame(width: 60, height: 60)
+                .shadow(
+                    color: isSelected ? Color.appYellow.opacity(0.3) : Color.clear,
+                    radius: isSelected ? 8 : 0
+                )
+            
+            if isSelected {
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.white.opacity(0.2), Color.clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 60, height: 60)
+            }
+            
+            Image(systemName: diet.icon)
+                .font(.system(size: 28, weight: .medium))
+                .foregroundColor(isSelected ? .black : .appYellow)
+        }
+    }
+    
+    private var titleSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // ✅ Título ahora tiene todo el espacio horizontal
+            Text(diet.title)
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(isSelected ? .appYellow : .appWhite)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            
+            Text(diet.subtitle)
+                .font(.system(size: 14))
+                .foregroundColor(isSelected ? .appWhite.opacity(0.8) : .appWhite.opacity(0.7))
+        }
+    }
+    
+    private var highlightsPills: some View {
+        HStack(spacing: 6) {
+            ForEach(Array(diet.highlights.prefix(2).enumerated()), id: \.offset) { index, highlight in
+                Text(highlight)
+                    .font(.system(size: 10, weight: .medium))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        Capsule()
+                            .fill(
+                                isSelected
+                                    ? Color.appYellow.opacity(0.2)
+                                    : Color.appSurface.opacity(0.5)
+                            )
+                            .overlay(
+                                Capsule()
+                                    .stroke(
+                                        isSelected
+                                            ? Color.appYellow.opacity(0.3)
+                                            : Color.appWhite.opacity(0.2),
+                                        lineWidth: 1
+                                    )
+                            )
+                    )
+                    .foregroundColor(isSelected ? .appYellow : .appWhite.opacity(0.8))
+                    .scaleEffect(isSelected ? 1.0 : 0.95)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.8).delay(Double(index) * 0.05), value: isSelected)
             }
         }
     }
     
-    var sectionHeader: some View {
+    private var expandedContent: some View {
+        VStack(spacing: 20) {
+            Divider()
+                .background(Color.appWhite.opacity(0.2))
+                .padding(.horizontal, 24)
+            
+            VStack(spacing: 16) {
+                descriptionSection
+                successRateSection
+                macroVisualization
+                statsGrid
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 20)
+        }
+    }
+    
+    private var descriptionSection: some View {
+        Text(diet.description)
+            .font(.system(size: 14))
+            .foregroundColor(.appWhite.opacity(0.8))
+            .lineLimit(nil)
+            .multilineTextAlignment(.leading)
+    }
+    
+    private var successRateSection: some View {
         HStack {
-            Text("Select Your Diet")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundColor(.appYellow)
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(Color.green)
+                    .frame(width: 12, height: 12)
+                    .scaleEffect(1.2)
+                    .animation(.easeInOut(duration: 1).repeatForever(), value: UUID())
+                
+                Text("Success Rate")
+                    .font(.system(size: 14))
+                    .foregroundColor(.appWhite.opacity(0.8))
+            }
             
             Spacer()
             
-            Text("Tap for details")
-                .font(.system(size: 13, weight: .medium))
+            Text(diet.successRate)
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.green)
+        }
+    }
+    
+    private var macroVisualization: some View {
+        VStack(spacing: 12) {
+            HStack {
+                Text("Macro Breakdown")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.appYellow)
+                Spacer()
+            }
+            
+            HStack(spacing: 24) {
+                MacroCircle(percentage: diet.macroBreakdown.fat, color: .orange, label: "Fat")
+                MacroCircle(percentage: diet.macroBreakdown.protein, color: .green, label: "Protein")
+                MacroCircle(percentage: diet.macroBreakdown.carbs, color: .blue, label: "Carbs")
+            }
+        }
+    }
+    
+    private var statsGrid: some View {
+        HStack(spacing: 12) {
+            StatCardDietType(title: diet.difficulty, subtitle: "Difficulty")
+            StatCardDietType(title: diet.timeToResults, subtitle: "Results")
+        }
+    }
+}
+
+// MARK: - Macro Circle Component
+struct MacroCircle: View {
+    let percentage: Double
+    let color: Color
+    let label: String
+    @State private var animatedPercentage: Double = 0
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            ZStack {
+                Circle()
+                    .stroke(Color.appWhite.opacity(0.2), lineWidth: 4)
+                    .frame(width: 50, height: 50)
+                
+                Circle()
+                    .trim(from: 0, to: animatedPercentage / 100)
+                    .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .frame(width: 50, height: 50)
+                    .rotationEffect(.degrees(-90))
+                
+                Text("\(Int(percentage))%")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.appWhite)
+            }
+            
+            Text(label)
+                .font(.system(size: 10))
                 .foregroundColor(.appWhite.opacity(0.7))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
-                .background(Color.gray.opacity(0.2))
-                .cornerRadius(8)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 1).delay(0.2)) {
+                animatedPercentage = percentage
+            }
         }
     }
+}
+
+// MARK: - Stat Card Component
+struct StatCardDietType: View {
+    let title: String
+    let subtitle: String
     
-    var dietCardsScrollView: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 20) {
-                ForEach(0..<viewModel.imageCount, id: \.self) { index in
-                    EpicDietCard(
-                        imageName: viewModel.imageNames[index],
-                        title: viewModel.titles[index],
-                        shortDescription: viewModel.shortDescriptions[index],
-                        detailedDescription: viewModel.detailedDescriptions[index],
-                        isSelected: index == viewModel.currentIndex,
-                        dietDetails: viewModel.getDietDetails(for: index),
-                        onTap: { handleDietSelection(index) },
-                        onLearnMore: {
-                            selectedDietForInfo = viewModel.getDietDetails(for: index)
-                        }
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.appWhite)
+            
+            Text(subtitle.uppercased())
+                .font(.system(size: 10, weight: .medium))
+                .foregroundColor(.appWhite.opacity(0.6))
+                .tracking(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.appSurface.opacity(0.3))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.appWhite.opacity(0.1), lineWidth: 1)
+                )
+        )
+    }
+}
+
+// MARK: - Floating Particles Component
+struct FloatingParticles: View {
+    @State private var particles: [ParticleData] = []
+    
+    struct ParticleData: Identifiable {
+        let id = UUID()
+        let x: CGFloat
+        let y: CGFloat
+        let size: CGFloat
+        let duration: Double
+    }
+    
+    var body: some View {
+        ZStack {
+            ForEach(particles) { particle in
+                Circle()
+                    .fill(Color.appYellow.opacity(0.3))
+                    .frame(width: particle.size, height: particle.size)
+                    .position(x: particle.x, y: particle.y)
+                    .opacity(0.6)
+                    .animation(
+                        .easeInOut(duration: particle.duration)
+                            .repeatForever(autoreverses: true),
+                        value: UUID()
                     )
-                    .frame(width: 260, height: 340)
-                }
             }
-            .padding(.horizontal, 20)
         }
-        .transition(.move(edge: .leading).combined(with: .opacity))
+        .onAppear {
+            generateParticles()
+        }
     }
     
-    var quickComparisonSection: some View {
-        VStack(spacing: 16) {
-            if showCardsAnimation {
-                VStack(spacing: 12) {
-                    HStack {
-                        Text("Quick Comparison")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.appYellow)
-                        Spacer()
-                    }
-                    
-                    QuickComparisonCard(viewModel: viewModel)
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
+    private func generateParticles() {
+        particles = (0..<8).map { _ in
+            ParticleData(
+                x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
+                y: CGFloat.random(in: 0...UIScreen.main.bounds.height),
+                size: CGFloat.random(in: 2...4),
+                duration: Double.random(in: 2...4)
+            )
         }
     }
 }
@@ -207,29 +579,15 @@ private extension DietTypeView {
             .padding(.horizontal, 0)
             .padding(.bottom, 0)
         }
-    }
-}
-
-// MARK: - Helper Functions
-private extension DietTypeView {
-    func setupAnimations() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                showHeaderAnimation = true
-            }
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
-                showCardsAnimation = true
-            }
-        }
-    }
-    
-    func handleDietSelection(_ index: Int) {
-        print("🔥 Tocaste la dieta índice: \(index)")
-        // Solo actualizar selección, no abrir sheet
-        viewModel.selectDiet(index)
+        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 1 : 0)
+        .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 0 : 30)
+        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.6), value: viewModel.animationPhase)
+        // ✅ Animación suave cuando aparece el botón
+        .transition(.asymmetric(
+            insertion: .opacity.combined(with: .move(edge: .bottom)),
+            removal: .opacity
+        ))
+        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: viewModel.hasValidSelection)
     }
     
     func proceedToNext() {

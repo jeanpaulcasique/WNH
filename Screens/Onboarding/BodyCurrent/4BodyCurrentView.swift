@@ -10,15 +10,28 @@ struct BodyCurrentView: View {
     @State private var isLoading = false
     @State private var showSelectionAnimation = false
     @State private var userGender: Gender = .male
+    @State private var animateIn = false
     
     var body: some View {
         ZStack {
             ScrollView {
                 VStack(spacing: 30) {
                     progressSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
                     headerSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
                     bodyShapeSelectionSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
                     motivationalSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
                     
                     Spacer(minLength: 100)
                 }
@@ -31,6 +44,9 @@ struct BodyCurrentView: View {
                 VStack {
                     Spacer()
                     nextButtonSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.45), value: animateIn)
                         .padding(.horizontal, 0)
                         .padding(.bottom, 0)
                 }
@@ -42,6 +58,9 @@ struct BodyCurrentView: View {
         .navigationBarItems(leading: backButton)
         .onAppear {
             loadUserGender()
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
+                animateIn = true
+            }
         }
         .overlay(
             // Success animation overlay

@@ -33,8 +33,14 @@ struct DietView: View {
                     VStack(spacing: 30) {
                         headerSection
                         nutritionOverviewSection
+                        
                         DaySelectorView(viewModel: daySelectorVM)
+                            .opacity(vm.showSelectors ? 1 : 0)
+                            .offset(y: vm.showSelectors ? 0 : 20)
+
                         TodaysMealsView(viewModel: todaysMealsVM)
+                            .opacity(vm.showSelectors ? 1 : 0)
+                            .offset(y: vm.showSelectors ? 0 : 20)
                         
                         Spacer(minLength: 50)
                     }
@@ -64,7 +70,9 @@ struct DietView: View {
             Text("Your daily target is \(Int(vm.getDailyCaloriesTarget())) calories")
         }
         .onAppear {
+            vm.loadRecipesForSelectedDiet()
             setupViewModels()
+            animateViewIn()
         }
     }
     
@@ -82,6 +90,21 @@ struct DietView: View {
                 todaysMealsVM?.updateWeeklyRecipes(recipes)
             }
             .store(in: &vm.cancellables)
+    }
+}
+
+// MARK: - Animated States
+extension DietView {
+    private func animateViewIn() {
+        // Staggered animation for cards
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0).delay(0.2)) {
+            vm.showNutritionCards = true
+        }
+        
+        // Staggered animation for selectors
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0).delay(0.3)) {
+            vm.showSelectors = true
+        }
     }
 }
 
@@ -180,6 +203,8 @@ private extension DietView {
                     action: nil
                 )
             }
+            .opacity(vm.showNutritionCards ? 1 : 0)
+            .offset(y: vm.showNutritionCards ? 0 : 20)
         }
     }
     
@@ -247,68 +272,63 @@ private extension DietView {
         .buttonStyle(PlainButtonStyle())
     }
     
-    // MARK: - Helper Views
-    
-    private func nutritionCard(
-        icon: String,
-        title: String,
-        value: String,
-        subtitle: String,
-        color: Color,
-        action: (() -> Void)?
-    ) -> some View {
-        Button(action: {
-            action?()
+    // MARK: - Reusable Components
+    @ViewBuilder
+    private func nutritionCard(icon: String, title: String, value: String, subtitle: String, color: Color, action: (() -> Void)?) -> some View {
+        let cardContent = HStack(spacing: 15) {
+            Image(systemName: icon)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundColor(color)
+                .frame(width: 45, height: 45)
+                .background(color.opacity(0.15))
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.appWhite)
+                
+                (Text(value)
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(color) +
+                 Text(" \(subtitle)")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.appWhite.opacity(0.7)))
+            }
+            
+            Spacer()
+            
             if action != nil {
-                let generator = UIImpactFeedbackGenerator(style: .light)
-                generator.impactOccurred()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.appWhite.opacity(0.5))
             }
-        }) {
-            HStack(spacing: 16) {
-                ZStack {
-                    Circle()
-                        .fill(color.opacity(0.2))
-                        .frame(width: 44, height: 44)
-                    
-                    Image(systemName: icon)
-                        .font(.system(size: 18))
-                        .foregroundColor(color)
-                }
-                
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(.appWhite)
-                    
-                    HStack(spacing: 4) {
-                        Text(value)
-                            .font(.system(size: 18, weight: .bold))
-                            .foregroundColor(.appYellow)
-                        
-                        Text(subtitle)
-                            .font(.system(size: 12))
-                            .foregroundColor(.appWhite.opacity(0.6))
-                    }
-                }
-                
-                Spacer()
-                
-                if action != nil {
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.appWhite.opacity(0.4))
-                }
-            }
-            .padding(16)
-            .background(Color.gray.opacity(0.1))
-            .cornerRadius(16)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
-            )
         }
-        .buttonStyle(PlainButtonStyle())
-        .disabled(action == nil)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [color.opacity(0.6), color.opacity(0.2), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: color.opacity(0.15), radius: 8, x: 0, y: 4)
+        
+        if let action = action {
+            Button(action: action) {
+                cardContent
+            }
+            .buttonStyle(PressableButtonStyle())
+        } else {
+            cardContent
+        }
     }
 }
 

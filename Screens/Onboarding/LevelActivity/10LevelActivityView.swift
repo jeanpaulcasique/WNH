@@ -7,6 +7,7 @@ struct LevelActivityView: View {
     @ObservedObject var progressViewModel: ProgressViewModel
     @State private var navigateToNextView = false
     @Environment(\.presentationMode) var presentationMode
+    @State private var animateIn = false
 
     var body: some View {
         ZStack {
@@ -18,37 +19,48 @@ struct LevelActivityView: View {
             )
             .ignoresSafeArea()
             
-        VStack {
-            progressBar
-            
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 30) {
-                    titleSection
-                    activityCardsSection
-                    selectedInfoSection
+            VStack {
+                progressBar
+                    .opacity(animateIn ? 1 : 0)
+                    .offset(y: animateIn ? 0 : 40)
+                    .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 30) {
+                        titleSection
+                            .opacity(animateIn ? 1 : 0)
+                            .offset(y: animateIn ? 0 : 40)
+                            .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
+                        activityCardsSection
+                            .opacity(animateIn ? 1 : 0)
+                            .offset(y: animateIn ? 0 : 40)
+                            .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 100)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 100)
+                Spacer()
+                NextButton(
+                    title: "Next",
+                    action: proceedToNext,
+                    isLoading: $viewModel.isLoading,
+                    isDisabled: $viewModel.isNextButtonDisabled
+                )
+                .opacity(animateIn ? 1 : 0)
+                .offset(y: animateIn ? 0 : 40)
+                .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
+                .padding(.bottom, 0)
+                navigationLink
             }
-            
-            Spacer()
-            
-            // NextButton como en las pantallas ejemplo
-            NextButton(
-                title: "Next",
-                action: proceedToNext,
-                isLoading: $viewModel.isLoading,
-                isDisabled: $viewModel.isNextButtonDisabled
-            )
-            .padding(.bottom, 0)
-
-            navigationLink
-        }
         }
         .navigationTitle("")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar { backButton }
+        .onAppear {
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
+                animateIn = true
+            }
+        }
     }
 }
 
@@ -83,48 +95,6 @@ private extension LevelActivityView {
                     level: level,
                     isSelected: viewModel.selectedLevel == level.id,
                     action: { viewModel.selectLevel(level.id) }
-                )
-            }
-        }
-    }
-    
-    var selectedInfoSection: some View {
-        VStack(spacing: 20) {
-            // Selected level highlight
-            VStack(spacing: 12) {
-                Text("Selected Level")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.yellow)
-                
-                HStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(viewModel.currentActivityLevel.color.opacity(0.2))
-                            .frame(width: 60, height: 60)
-                        
-                        Image(systemName: viewModel.currentActivityLevel.icon)
-                            .font(.system(size: 24, weight: .semibold))
-                            .foregroundColor(viewModel.currentActivityLevel.color)
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(viewModel.currentActivityLevel.title)
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundColor(.white)
-                        
-                        Text("Calorie Factor: \(viewModel.currentActivityLevel.calorieMultiplier)")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(viewModel.currentActivityLevel.color)
-                    }
-                    
-                    Spacer()
-                }
-                .padding(20)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(16)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(viewModel.currentActivityLevel.color.opacity(0.3), lineWidth: 2)
                 )
             }
         }
@@ -255,10 +225,10 @@ struct ActivityCard: View {
             .cornerRadius(16)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .stroke(isSelected ? .yellow : level.color.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                    .stroke(isSelected ? level.color.opacity(0.7) : level.color.opacity(0.3), lineWidth: isSelected ? 2 : 1)
             )
             .scaleEffect(isSelected ? 1.02 : 1.0)
-            .shadow(color: isSelected ? Color.yellow.opacity(0.3) : Color.clear, radius: 8, x: 0, y: 4)
+            .shadow(color: isSelected ? level.color.opacity(0.3) : Color.clear, radius: 8, x: 0, y: 4)
         }
         .buttonStyle(PlainButtonStyle())
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)

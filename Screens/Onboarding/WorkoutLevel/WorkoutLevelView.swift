@@ -135,7 +135,7 @@ private extension WorkoutLevelView {
             )
             
             NavigationLink(
-                destination: NewScreenView(progressViewModel: progressViewModel),
+                destination: WhichPlaceView(progressViewModel: progressViewModel),
                 isActive: $navigateToNextScreen
             ) {
                 EmptyView()

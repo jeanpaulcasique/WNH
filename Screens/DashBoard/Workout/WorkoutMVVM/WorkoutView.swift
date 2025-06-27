@@ -1,6 +1,16 @@
 import SwiftUI
 import Combine
 
+// MARK: - Animated greeting and workout tips (ENGLISH)
+private let workoutTips: [String] = [
+    "Start your session with a proper warm-up!",
+    "Begin with chest and triceps: they work together in most exercises.",
+    "Focus on compound movements first (bench press, dips, push-ups).",
+    "Keep your rest between sets to 60-90 seconds for muscle growth.",
+    "Stay hydrated and listen to your body.",
+    "Finish with isolation exercises for a great pump!"
+]
+
 struct WorkoutView: View {
     @StateObject private var viewModel = WorkoutViewModel()
     @StateObject private var searchBarVM = SearchBarWorkoutViewModel()
@@ -11,6 +21,9 @@ struct WorkoutView: View {
     @State private var locationButtonFrame: CGRect = .zero
     @State private var selectedLocationOption: WorkoutLocation? = nil
     @State private var animatingSelection: Bool = false
+    @State private var currentTipIndex = 0
+    @State private var animateTip = false
+    @State private var userName: String? = nil
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -23,6 +36,32 @@ struct WorkoutView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    // Saludo y tips animados
+                    VStack(spacing: 10) {
+                        Text(userName != nil ? "Hi, \(userName!)!" : "Ready to train?")
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundColor(.yellow)
+                            .multilineTextAlignment(.center)
+                        ZStack {
+                            ForEach(0..<workoutTips.count, id: \.self) { i in
+                                if i == currentTipIndex {
+                                    Text(workoutTips[i])
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(.white.opacity(0.85))
+                                        .multilineTextAlignment(.center)
+                                        .padding(.horizontal, 16)
+                                        .lineLimit(2)
+                                        .minimumScaleFactor(0.85)
+                                        .id(i)
+                                        .opacity(animateTip ? 1 : 0)
+                                        .offset(y: animateTip ? 0 : 30)
+                                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: animateTip)
+                                }
+                            }
+                        }
+                        .frame(height: 48)
+                    }
+                    .padding(.top, 10)
                     headerView
                     SearchBarWorkoutView(
                         viewModel: searchBarVM,
@@ -71,6 +110,36 @@ struct WorkoutView: View {
         .onAppear {
             // Sincronizar datos con el search bar VM
             searchBarVM.configure(exercises: viewModel.allExercises, muscleGroups: viewModel.muscleGroups)
+            userName = UserDefaults.standard.string(forKey: "userName")
+            animateTip = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                animateTip = true
+            }
+            var tipTimer: Timer?
+            func startTipTimer() {
+                tipTimer?.invalidate()
+                tipTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
+                    withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {
+                        animateTip = false
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        let isLast = currentTipIndex == workoutTips.count - 1
+                        if isLast {
+                            // Espera 1 minuto antes de reiniciar
+                            tipTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { _ in
+                                currentTipIndex = 0
+                                animateTip = true
+                                startTipTimer()
+                            }
+                        } else {
+                            currentTipIndex = (currentTipIndex + 1)
+                            animateTip = true
+                            startTipTimer()
+                        }
+                    }
+                }
+            }
+            startTipTimer()
         }
         .onChange(of: viewModel.selectedMuscle) { _, newMuscle in
             if let muscle = newMuscle {
@@ -89,12 +158,6 @@ struct WorkoutView: View {
     
     private var headerView: some View {
         HStack {
-            VStack(alignment: .leading) {
-                Text("Exercises")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-            }
             Spacer()
         }
     }
@@ -172,24 +235,27 @@ struct WorkoutView: View {
     }
     
     private var bottomControlsView: some View {
-        VStack(spacing: 20) {
-            HStack {
+        VStack(spacing: 16) {
+            HStack(spacing: 6) {
                 Image(systemName: "arrow.left.and.right")
                     .foregroundColor(.yellow)
+                    .font(.title3)
                 Text("Swipe")
                     .foregroundColor(.white)
+                    .font(.system(size: 15, weight: .medium))
                 Text("180°")
                     .foregroundColor(.yellow)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.system(size: 17, weight: .bold))
             }
-            .padding()
-            .background(Color.white.opacity(0.1))
-            .cornerRadius(12)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 16)
+            .background(Color.white.opacity(0.12))
+            .cornerRadius(10)
             .onTapGesture {
                 viewModel.toggleView()
             }
-        }.padding(.bottom, -30)
+        }
+        .padding(.bottom, 16)
     }
     
     private var locationMenuOverlay: some View {

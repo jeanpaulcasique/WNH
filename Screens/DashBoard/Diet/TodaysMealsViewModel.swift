@@ -1,4 +1,3 @@
-
 import SwiftUI
 import Combine
 
@@ -15,10 +14,7 @@ class TodaysMealsViewModel: ObservableObject {
     
     init(userProfile: UserProfile = UserProfile.loadFromUserDefaults()) {
         self.userProfile = userProfile
-        self.nutritionCalculator = NutritionCalculator(
-            userProfile: userProfile,
-            distribution: .custom(breakfast: 35, lunch: 40, dinner: 25)
-        )
+        self.nutritionCalculator = NutritionCalculator(userProfile: userProfile)
     }
     
     func recipes(for meal: MealType) -> [Recipe] {

@@ -8,30 +8,20 @@ class NutritionCalculator {
     private struct Config {
         static let calorieDeficit: Double = 500
         static let calorieSurplus: Double = 300
-        static let proteinPerKg: Double = 1.6  // Gramos por kg
+        static let proteinPerKg: Double = 1.8  // Más alto, estándar deportivo
         static let fatRatio: Double = 0.25     // 25% de calorías de grasa
         static let minCalories: Double = 1200  // Mínimo seguro
+        static let breakfastPct: Double = 0.35
+        static let lunchPct: Double = 0.40
+        static let dinnerPct: Double = 0.25
     }
     
     // MARK: - Distribución de comidas
     enum MealDistribution {
-        case balanced        // 30% - 40% - 30%
-        case frontLoaded    // 40% - 35% - 25%
-        case backLoaded     // 25% - 35% - 40%
-        case custom(breakfast: Double, lunch: Double, dinner: Double)
-        
+        case custom
         var percentages: (breakfast: Double, lunch: Double, dinner: Double) {
-            switch self {
-            case .balanced:
-                return (0.30, 0.40, 0.30)
-            case .frontLoaded:
-                return (0.40, 0.35, 0.25)
-            case .backLoaded:
-                return (0.25, 0.35, 0.40)
-            case .custom(let b, let l, let d):
-                let total = b + l + d
-                return (b/total, l/total, d/total)
-            }
+            // 35% desayuno, 40% almuerzo, 25% cena
+            return (Config.breakfastPct, Config.lunchPct, Config.dinnerPct)
         }
     }
     
@@ -40,10 +30,9 @@ class NutritionCalculator {
     private let distribution: MealDistribution
     
     // MARK: - Inicialización
-    init(userProfile: UserProfile = UserProfile.loadFromUserDefaults(),
-         distribution: MealDistribution = .balanced) {
+    init(userProfile: UserProfile = UserProfile.loadFromUserDefaults()) {
         self.userProfile = userProfile
-        self.distribution = distribution
+        self.distribution = .custom
     }
     
     // MARK: - API Pública Principal
@@ -53,12 +42,8 @@ class NutritionCalculator {
         let bmr = calculateBMR()
         let tdee = calculateTDEE(bmr: bmr)
         let adjustedCalories = adjustForGoal(tdee: tdee)
-        
-        print("🔥 Cálculo calórico:")
-        print("   • BMR: \(Int(bmr)) cal")
-        print("   • TDEE: \(Int(tdee)) cal")
-        print("   • Objetivo: \(Int(adjustedCalories)) cal")
-        
+        // Print solo para depuración clave
+        print("[NutriCalc] BMR: \(Int(bmr)), TDEE: \(Int(tdee)), Objetivo: \(Int(adjustedCalories))")
         return max(adjustedCalories, Config.minCalories)
     }
     
@@ -66,7 +51,6 @@ class NutritionCalculator {
     func calculateMealDistribution() -> [MealType: Double] {
         let dailyCalories = calculateDailyCalories()
         let percentages = distribution.percentages
-        
         return [
             .Breakfast: dailyCalories * percentages.breakfast,
             .Lunch: dailyCalories * percentages.lunch,
@@ -132,12 +116,9 @@ class NutritionCalculator {
         let weight = userProfile.weightKg
         let height = Double(userProfile.resolvedHeightCm)
         let age = calculateAge()
-        
-        // Fórmula de Mifflin-St Jeor (más precisa que Harris-Benedict)
-        let isMale = ["male", "m", "hombre", "masculino"]
-            .contains(userProfile.gender.lowercased().trimmingCharacters(in: .whitespacesAndNewlines))
-        
-        if isMale {
+        let gender = userProfile.gender.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        // Fórmula Mifflin-St Jeor, recomendada por nutricionistas
+        if gender == "male" || gender == "hombre" || gender == "masculino" {
             return (10 * weight) + (6.25 * height) - (5 * Double(age)) + 5
         } else {
             return (10 * weight) + (6.25 * height) - (5 * Double(age)) - 161
@@ -147,34 +128,30 @@ class NutritionCalculator {
     private func calculateTDEE(bmr: Double) -> Double {
         let activityFactors: [String: Double] = [
             "sedentary": 1.2,
-            "low": 1.2,
             "lightly active": 1.375,
             "moderate": 1.55,
-            "moderately active": 1.55,
-            "very active": 1.725,
-            "high": 1.725,
             "active": 1.725,
-            "extremely active": 1.9
+            "very active": 1.9
         ]
-        
-        let normalizedActivity = userProfile.levelActivity
-            .lowercased()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        let factor = activityFactors[normalizedActivity] ?? 1.55 // Default moderado
-        
+        let normalizedActivity = userProfile.levelActivity.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        // Ajuste para intensidad personalizada
+        let factor: Double
+        if normalizedActivity.contains("sedent") { factor = 1.2 }
+        else if normalizedActivity.contains("light") { factor = 1.375 }
+        else if normalizedActivity.contains("moderat") { factor = 1.55 }
+        else if normalizedActivity.contains("active") && normalizedActivity.contains("very") { factor = 1.9 }
+        else if normalizedActivity.contains("active") { factor = 1.725 }
+        else { factor = 1.55 }
         return bmr * factor
     }
     
     private func adjustForGoal(tdee: Double) -> Double {
         let goalLower = userProfile.goal.lowercased()
-        
-        switch goalLower {
-        case let goal where goal.contains("lose") || goal.contains("cut") || goal.contains("deficit"):
+        if goalLower.contains("adelgazar") || goalLower.contains("perder") || goalLower.contains("deficit") {
             return tdee - Config.calorieDeficit
-        case let goal where goal.contains("gain") || goal.contains("bulk") || goal.contains("muscle"):
+        } else if goalLower.contains("ganar") || goalLower.contains("musculo") || goalLower.contains("subir") {
             return tdee + Config.calorieSurplus
-        default: // maintain
+        } else {
             return tdee
         }
     }

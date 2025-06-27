@@ -18,6 +18,10 @@ class DietViewModel: ObservableObject {
     @Published var isLoadingNutrition = false
     @Published var ringRotation: Double = 0.0
 
+    // Animation states
+    @Published var showNutritionCards: Bool = false
+    @Published var showSelectors: Bool = false
+
     private let calendar = Calendar(identifier: .gregorian)
     private static let selectedDietKey = "selectedDietType"
 
@@ -34,21 +38,16 @@ class DietViewModel: ObservableObject {
         let stored = UserDefaults.standard.string(forKey: Self.selectedDietKey) ?? "Keto"
         selectedDiet = stored
 
-        // Inicializar calculadora nutricional con distribución personalizada
-        nutritionCalculator = NutritionCalculator(
-            userProfile: userProfile,
-            distribution: .custom(breakfast: 35, lunch: 40, dinner: 25)
-        )
+        // Inicializar calculadora nutricional sin distribution
+        nutritionCalculator = NutritionCalculator(userProfile: userProfile)
 
         setupDays()
-        loadNutritionData()
-        loadRecipesWithCorrectCalories()
-        updateGroceryList()
+        // Carga pesada movida fuera del init
+        // loadNutritionData()
+        // loadRecipesWithCorrectCalories()
+        // updateGroceryList()
         
-        // Suscribirse a cambios en el GroceryListViewModel
         setupGroceryListSubscription()
-        
-        // Iniciar animación del anillo
         startRingAnimation()
     }
     
@@ -85,11 +84,8 @@ class DietViewModel: ObservableObject {
         userProfile = newProfile
         UserDefaults.standard.set(newProfile.dietType, forKey: Self.selectedDietKey)
 
-        // Actualizar calculadora con distribución personalizada
-        nutritionCalculator = NutritionCalculator(
-            userProfile: newProfile,
-            distribution: .custom(breakfast: 35, lunch: 40, dinner: 25)
-        )
+        // Actualizar calculadora sin distribution
+        nutritionCalculator = NutritionCalculator(userProfile: newProfile)
 
         selectedDiet = newProfile.dietType
         loadNutritionData()
@@ -257,34 +253,8 @@ class DietViewModel: ObservableObject {
         }
     }
 
-    private func loadRecipesForSelectedDiet() {
-        let normalizedDiet = selectedDiet.lowercased().filter { $0.isLetter }
-        print("🔄 Cargando dieta: \(normalizedDiet)")
-
-        let baseRecipes: [Recipe]
-        switch normalizedDiet {
-        case "keto":
-            baseRecipes = RecipesKeto.getWeeklyRecipes()
-        case "lowcarb":
-            baseRecipes = RecipesLowCarb.getWeeklyRecipes()
-        case "caloriedeficit", "deficit":
-            baseRecipes = RecipesDeficit.getWeeklyRecipes()
-        default:
-            baseRecipes = RecipesDeficit.getWeeklyRecipes()
-        }
-
-        // Ajustar recetas usando el NutritionCalculator, ya incluye ajuste de cantidades
-        let adjustedRecipes = nutritionCalculator.adjustRecipes(baseRecipes)
-
-        // Organizar por días
-        weeklyRecipes.removeAll()
-        let organizedRecipes = organizeRecipesByDay(adjustedRecipes)
-
-        for (index, day) in days.enumerated() where index < organizedRecipes.count {
-            weeklyRecipes[day] = organizedRecipes[index]
-        }
-
-        updateGroceryList()
+     func loadRecipesForSelectedDiet() {
+        loadRecipesWithCorrectCalories()
     }
 
     func organizeRecipesByDay(_ recipes: [Recipe]) -> [[Recipe]] {
@@ -308,6 +278,15 @@ class DietViewModel: ObservableObject {
 
     private func updateGroceryList() {
         groceryListViewModel.updateGroceryList(from: weeklyRecipes)
+    }
+
+    /// Carga pesada diferida: recetas, nutrición, grocery
+    func loadHeavyDataIfNeeded() {
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            self?.loadNutritionData()
+            self?.loadRecipesWithCorrectCalories()
+            self?.updateGroceryList()
+        }
     }
 }
 

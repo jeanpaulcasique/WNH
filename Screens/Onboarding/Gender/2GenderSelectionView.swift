@@ -8,6 +8,8 @@ struct GenderSelectionView: View {
     @State private var isLoading = false
     @State private var isButtonDisabled = false
     @State private var showCopiedAnimation = false
+    @State private var pulse = false
+    @State private var animateIn = false
     
     var body: some View {
         ZStack {
@@ -18,13 +20,27 @@ struct GenderSelectionView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+            .opacity(animateIn ? 1 : 0)
+            .animation(.easeOut(duration: 0.5), value: animateIn)
             
             ScrollView {
                 VStack(spacing: 30) {
                     progressSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
                     headerSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
                     genderSelectionSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
                     infoSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
                     
                     Spacer(minLength: 100)
                 }
@@ -37,6 +53,9 @@ struct GenderSelectionView: View {
                 VStack {
                     Spacer()
                     nextButtonSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.45), value: animateIn)
                         .padding(.horizontal, 0)
                         .padding(.bottom, 0)
                 }
@@ -45,15 +64,7 @@ struct GenderSelectionView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton)
-        .overlay(
-            // Info overlay
-            Group {
-                if viewModel.showInfo {
-                    InfoOverlayView(showInfo: $viewModel.showInfo)
-                        .transition(.scale.combined(with: .opacity))
-                }
-            }
-        )
+        // Removed Info overlay
         .overlay(
             // Success animation overlay
             Group {
@@ -63,6 +74,11 @@ struct GenderSelectionView: View {
                 }
             }
         )
+        .onAppear {
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
+                animateIn = true
+            }
+        }
     }
 }
 
@@ -88,31 +104,40 @@ private extension GenderSelectionView {
     }
     var headerSection: some View {
         VStack(spacing: 20) {
-            // Animated gender icon
+            // Animated gender icon with pulse
             ZStack {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
+                            colors: [Color.appYellow.opacity(0.15), Color.appYellow.opacity(0.05)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 120, height: 120)
-                
+                    .frame(width: 90, height: 90)
+                    .scaleEffect(pulse ? 1.05 : 0.95)
+                    .animation(
+                        Animation.easeInOut(duration: 1.5)
+                            .repeatForever(autoreverses: true),
+                        value: pulse
+                    )
+
                 Image(systemName: "person.2.fill")
-                    .font(.system(size: 50))
-                    .foregroundColor(.appYellow)
-                    .scaleEffect(viewModel.selectedGender != nil ? 1.1 : 1.0)
-                    .animation(nil, value: viewModel.selectedGender)
+                    .font(.system(size: 38))
+                    .foregroundColor(Color.appYellow.opacity(0.7))
+                    .scaleEffect(viewModel.selectedGender != nil ? 1.05 : 1.0)
+                    .animation(.spring(response: 0.5, dampingFraction: 0.7), value: viewModel.selectedGender)
             }
-            
+            .onAppear {
+                pulse = true
+            }
+
             VStack(spacing: 1) {
                 Text("What's your gender?")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.appYellow)
                     .multilineTextAlignment(.center)
-                
+
                 Text("")
                     .font(.system(size: 16))
                     .foregroundColor(.appWhite.opacity(0.8))
@@ -129,18 +154,8 @@ private extension GenderSelectionView {
                 Text("Choose Your Gender")
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
-                
                 Spacer()
-                
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        viewModel.showInfo.toggle()
-                    }
-                }) {
-                    Image(systemName: "info.circle")
-                        .foregroundColor(.appYellow.opacity(0.7))
-                        .font(.system(size: 16))
-                }
+                // Info button removed
             }
             
             HStack(spacing: 20) {

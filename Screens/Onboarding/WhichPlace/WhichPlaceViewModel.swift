@@ -1,5 +1,11 @@
 import SwiftUI
 
+// MARK: - Benefit Model
+struct Benefit: Hashable {
+    let text: String
+    let icon: String
+}
+
 // MARK: - WorkoutLocationModel
 struct WorkoutLocationModel {
     let id: Int
@@ -8,13 +14,13 @@ struct WorkoutLocationModel {
     let description: String
     let icon: String
     let color: Color
-    let advantages: [String]
+    let features: [Benefit]
     let equipment: String
     let convenience: String
 }
 
-// MARK: - NewScreenViewModel
-class NewScreenViewModel: ObservableObject {
+// MARK: - WhichPlaceViewModel
+class WhichPlaceViewModel: ObservableObject {
     @Published var selectedIndex: Int? {
         didSet {
             // Guardar tanto el índice como el título de la ubicación para el dashboard
@@ -45,7 +51,12 @@ class NewScreenViewModel: ObservableObject {
             description: "Train in your own space with flexibility and privacy",
             icon: "house.fill",
             color: .blue,
-            advantages: ["Complete privacy", "No travel time", "Flexible schedule", "Weather independent"],
+            features: [
+                Benefit(text: "Complete privacy", icon: "lock.shield.fill"),
+                Benefit(text: "No travel time", icon: "clock.fill"),
+                Benefit(text: "Flexible schedule", icon: "calendar.badge.clock"),
+                Benefit(text: "Weather independent", icon: "cloud.sun.fill")
+            ],
             equipment: "Bodyweight & basic tools",
             convenience: "Maximum"
         ),
@@ -56,7 +67,12 @@ class NewScreenViewModel: ObservableObject {
             description: "Access to premium equipment and motivating atmosphere",
             icon: "dumbbell.fill",
             color: .red,
-            advantages: ["Professional equipment", "Social motivation", "Expert guidance", "Variety of tools"],
+            features: [
+                Benefit(text: "Professional equipment", icon: "flame.fill"),
+                Benefit(text: "Social motivation", icon: "person.2.fill"),
+                Benefit(text: "Expert guidance", icon: "person.fill.questionmark"),
+                Benefit(text: "Variety of tools", icon: "wrench.and.screwdriver.fill")
+            ],
             equipment: "Full gym access",
             convenience: "Medium"
         ),
@@ -67,7 +83,12 @@ class NewScreenViewModel: ObservableObject {
             description: "Enjoy outdoor workouts with natural scenery and fresh air",
             icon: "leaf.fill",
             color: .green,
-            advantages: ["Fresh air & vitamin D", "Natural scenery", "Free open space", "Connect with nature"],
+            features: [
+                Benefit(text: "Fresh air & vitamin D", icon: "sun.max.fill"),
+                Benefit(text: "Natural scenery", icon: "mountain.2.fill"),
+                Benefit(text: "Free open space", icon: "arrow.up.left.and.down.right.and.arrow.up.right.and.down.left"),
+                Benefit(text: "Connect with nature", icon: "tree.fill")
+            ],
             equipment: "Bodyweight & portable gear",
             convenience: "High"
         )
@@ -90,7 +111,7 @@ class NewScreenViewModel: ObservableObject {
         }
         
         // Enhanced haptic feedback
-        let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+        let impactFeedback = UIImpactFeedbackGenerator(style: .light)
         impactFeedback.impactOccurred()
     }
     

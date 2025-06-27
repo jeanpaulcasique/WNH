@@ -9,7 +9,7 @@ class GenderSelectionViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var navigateToGoal = false
     @Published var progressUpdating = false
-    @Published var showInfo = false
+ 
 
     private let userDefaultsKey = "gender"
 

@@ -78,6 +78,7 @@ struct WNHApp: App {
                             .environmentObject(dietViewModel)
                             .onAppear {
                                 dietViewModel.startWaterRemindersThreeTimes()
+                                dietViewModel.loadHeavyDataIfNeeded()
                             }
                     } else {
                         LoginView(viewModel: LoginViewModel())

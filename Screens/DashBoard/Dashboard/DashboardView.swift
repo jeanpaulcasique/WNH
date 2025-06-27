@@ -20,7 +20,7 @@ struct DashboardView: View {
                 }
 
             // Pestaña Trainer
-            Text("Trainer")
+            FitnessTrainerApp()
                 .tabItem {
                     Image(systemName: "person.2.fill")
                     Text("Trainer")

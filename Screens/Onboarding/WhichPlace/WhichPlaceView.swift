@@ -1,9 +1,9 @@
 import SwiftUI
 import UIKit
 
-// MARK: - NewScreenView
-struct NewScreenView: View {
-    @StateObject private var viewModel = NewScreenViewModel()
+// MARK: - WhichPlaceView
+struct WhichPlaceView: View {
+    @StateObject private var viewModel = WhichPlaceViewModel()
     @ObservedObject var progressViewModel: ProgressViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToNextView = false
@@ -47,7 +47,7 @@ struct NewScreenView: View {
 }
 
 // MARK: - Subviews
-private extension NewScreenView {
+private extension WhichPlaceView {
     var progressSection: some View {
         VStack(spacing: 5) {
             ProgressBarWithIcons(progressViewModel: progressViewModel)
@@ -209,6 +209,16 @@ private extension NewScreenView {
     }
 }
 
+// MARK: - Preview
+struct WhichPlaceView_Previews: PreviewProvider {
+    static var previews: some View {
+        NavigationView {
+            WhichPlaceView(progressViewModel: ProgressViewModel())
+        }
+        .preferredColorScheme(.dark)
+    }
+}
+
 // MARK: - Epic Location Card
 struct EpicLocationCard: View {
     let location: WorkoutLocationModel
@@ -256,12 +266,9 @@ struct EpicLocationCard: View {
                             Spacer()
                             
                             // Selection indicator
-                            if isSelected {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.yellow)
-                                    .transition(.scale.combined(with: .opacity))
-                            }
+                            Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                                .font(.system(size: 24))
+                                .foregroundColor(isSelected ? .yellow : .white.opacity(0.3))
                         }
                         
                         Text(location.description)
@@ -270,102 +277,73 @@ struct EpicLocationCard: View {
                             .lineLimit(2)
                     }
                 }
-                .padding(16)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.black.opacity(0.3))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16)
-                                .stroke(
-                                    isSelected ? Color.yellow : Color.clear,
-                                    lineWidth: 2
-                                )
-                        )
-                )
+                .padding(20)
                 
-                // Expanded info (only when selected)
+                // Expandable benefits section
                 if isSelected {
-                    VStack(alignment: .leading, spacing: 16) {
-                        // Advantages section
+                    VStack(spacing: 12) {
+                        Divider()
+                            .background(location.color.opacity(0.3))
+                            .padding(.horizontal, 20)
+                        
+                        // Advantages Section
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Advantages")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(.yellow)
+                            Text("What you'll get:")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(location.color)
                             
-                            ForEach(location.advantages, id: \.self) { advantage in
+                            ForEach(location.features, id: \.self) { feature in
                                 HStack(spacing: 8) {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundColor(.green)
-                                    Text(advantage)
-                                        .font(.system(size: 14))
+                                    Image(systemName: feature.icon)
+                                        .font(.system(size: 12))
+                                        .foregroundColor(location.color)
+                                    Text(feature.text)
+                                        .font(.system(size: 13))
                                         .foregroundColor(.white.opacity(0.8))
+                                    Spacer()
                                 }
                             }
                         }
+                        .padding(.horizontal, 20)
                         
-                        // Equipment section
+                        // Equipment & Convenience Section
                         HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Equipment")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.7))
-                                Text(location.equipment)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.white.opacity(0.6))
+                            VStack(alignment: .leading) {
+                                Text("Equipment").font(.caption).foregroundColor(.gray)
+                                Text(location.equipment).font(.footnote)
                             }
-                            
                             Spacer()
-                            
-                            VStack(alignment: .trailing, spacing: 4) {
-                                Text("Convenience")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.7))
-                                Text(location.convenience)
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.white.opacity(0.6))
+                            VStack(alignment: .trailing) {
+                                Text("Convenience").font(.caption).foregroundColor(.gray)
+                                Text(location.convenience).font(.footnote)
                             }
                         }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 16)
                     }
-                    .padding(16)
-                    .background(Color.black.opacity(0.2))
-                    .cornerRadius(16)
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.gray.opacity(isSelected ? 0.2 : 0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(
+                                isSelected ? location.color.opacity(0.7) : Color.gray.opacity(0.4),
+                                lineWidth: isSelected ? 2.5 : 1
+                            )
+                    )
+            )
+            .scaleEffect(isSelected ? 1.03 : 1.0)
+            .shadow(
+                color: isSelected ? location.color.opacity(0.4) : Color.clear,
+                radius: isSelected ? 15 : 0,
+                x: 0,
+                y: 8
+            )
+            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSelected)
         }
         .buttonStyle(PlainButtonStyle())
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
-    }
-}
-
-// MARK: - Support Components
-struct QuickStat: View {
-    let icon: String
-    let text: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 10))
-                .foregroundColor(color)
-            
-            Text(text)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.white.opacity(0.8))
-        }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(color.opacity(0.2))
-        .cornerRadius(8)
-    }
-}
-
-// MARK: - Preview
-struct NewScreenView_Previews: PreviewProvider {
-    static var previews: some View {
-        NavigationView {
-            NewScreenView(progressViewModel: ProgressViewModel())
-        }
-        .preferredColorScheme(.dark)
     }
 }

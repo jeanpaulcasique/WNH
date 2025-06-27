@@ -6,6 +6,7 @@ struct GroceryListSheetView: View {
     @ObservedObject var vm: DietViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var showOnlyUnchecked = false
+    @State private var expandedCategories: [GroceryListViewModel.GroceryCategory: Bool] = [:]
     
     // Filtrar ingredientes según el toggle
     private var filteredIngredients: [Ingredient] {
@@ -14,6 +15,11 @@ struct GroceryListSheetView: View {
         } else {
             return vm.groceryList
         }
+    }
+    
+    // Categorías presentes en la lista, para evitar cálculos en el body
+    private var presentCategories: [GroceryListViewModel.GroceryCategory] {
+        GroceryListViewModel.GroceryCategory.allCases.filter { vm.groceryListViewModel.groceryListByCategory[$0]?.isEmpty == false }
     }
     
     var body: some View {
@@ -37,21 +43,17 @@ struct GroceryListSheetView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     VStack(spacing: 0) {
-                        // Contador simple
                         counterSection
-                        
-                        // Controles superiores
                         controlsSection
-                        
-                        // Lista de ingredientes
+                        // Lista agrupada por categorías
                         List {
-                            ForEach(filteredIngredients) { ingredient in
-                                ingredientRow(ingredient: ingredient)
-                                    .id("\(ingredient.name)-\(ingredient.isChecked)")
+                            ForEach(presentCategories, id: \.self) { category in
+                                categorySection(for: category)
                             }
                         }
-                        .listStyle(PlainListStyle())
+                        .listStyle(InsetGroupedListStyle())
                         .scrollContentBackground(.hidden)
+                        .animation(.easeInOut(duration: 0.3), value: vm.groceryListViewModel.groceryListByCategory)
                     }
                 }
             }
@@ -60,12 +62,17 @@ struct GroceryListSheetView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cerrar") {
-                        dismiss()
+                    HStack {
+                        Button("Cerrar") {
+                            dismiss()
+                        }
+                        .foregroundColor(.yellow)
+                        Button("Reset") {
+                            vm.groceryListViewModel.clearAllChecked()
+                        }
+                        .foregroundColor(.yellow)
                     }
-                    .foregroundColor(.yellow)
                 }
-                
                 if !vm.groceryList.isEmpty {
                     ToolbarItem(placement: .navigationBarTrailing) {
                         ShareLink(item: vm.groceryListText) {
@@ -166,6 +173,60 @@ struct GroceryListSheetView: View {
         .listRowBackground(Color.clear)
         .opacity(ingredient.isChecked ? 0.7 : 1.0)
         .animation(.easeInOut(duration: 0.2), value: ingredient.isChecked)
+    }
+    
+    // Iconos para cada categoría
+    private func iconForCategory(_ category: GroceryListViewModel.GroceryCategory) -> String {
+        switch category {
+        case .vegetales: return "leaf"
+        case .frutas: return "applelogo"
+        case .proteinas: return "takeoutbag.and.cup.and.straw.fill"
+        case .lacteos: return "carton.fill"
+        case .granos: return "bag.fill"
+        case .legumbres: return "leaf.circle"
+        case .frutosSecos: return "circle.hexagongrid.fill"
+        case .aceites: return "drop.fill"
+        case .condimentos: return "pills.fill"
+        case .otros: return "questionmark.circle"
+        }
+    }
+    
+    // MARK: - Sección de categoría
+    private func categorySection(for category: GroceryListViewModel.GroceryCategory) -> some View {
+        guard let items = vm.groceryListViewModel.groceryListByCategory[category] else { return AnyView(EmptyView()) }
+        let isExpanded = expandedCategories[category] ?? true
+        return AnyView(
+            Section(header:
+                Button(action: {
+                    withAnimation(.easeInOut) {
+                        expandedCategories[category] = !(expandedCategories[category] ?? true)
+                    }
+                }) {
+                    HStack {
+                        Image(systemName: iconForCategory(category))
+                            .foregroundColor(category.color)
+                        Text(category.rawValue)
+                            .font(.headline)
+                            .foregroundColor(category.color)
+                        Spacer()
+                        Image(systemName: "chevron.down")
+                            .rotationEffect(.degrees(isExpanded ? 0 : -90))
+                            .foregroundColor(.white.opacity(0.7))
+                            .animation(.easeInOut, value: isExpanded)
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(PlainButtonStyle())
+                .padding(.vertical, 4)
+            ) {
+                if isExpanded {
+                    ForEach(items.filter { !showOnlyUnchecked || !$0.isChecked }.sorted { $0.name < $1.name }) { ingredient in
+                        ingredientRow(ingredient: ingredient)
+                            .id("\(ingredient.name)-\(ingredient.isChecked)")
+                    }
+                }
+            }
+        )
     }
 }
 

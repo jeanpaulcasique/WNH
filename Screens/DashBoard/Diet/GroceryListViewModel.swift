@@ -1,5 +1,5 @@
 // Base de datos de conversiones de ingredientes a unidades de compra reales
-private let ingredientConversions: [String: IngredientInfo] = [
+ let ingredientConversions: [String: IngredientInfo] = [
         // Verduras y Hortalizas
         "pepino": IngredientInfo(averageWeight: 200, unit: "pepino", pluralUnit: "pepinos", englishUnit: "cucumber", englishPluralUnit: "cucumbers"),
         "tomate": IngredientInfo(averageWeight: 150, unit: "tomate", pluralUnit: "tomates", englishUnit: "tomato", englishPluralUnit: "tomatoes"),
@@ -160,6 +160,37 @@ class GroceryListViewModel: ObservableObject {
     
     private static let checkedKey = "checkedIngredients"
     
+    // MARK: - Agrupación por categorías
+    enum GroceryCategory: String, CaseIterable {
+        case vegetales = "Vegetales"
+        case frutas = "Frutas"
+        case proteinas = "Proteínas"
+        case lacteos = "Lácteos"
+        case granos = "Granos y Cereales"
+        case legumbres = "Legumbres"
+        case frutosSecos = "Frutos Secos y Semillas"
+        case aceites = "Aceites y Líquidos"
+        case condimentos = "Condimentos y Especias"
+        case otros = "Otros"
+        
+        var color: Color {
+            switch self {
+            case .vegetales: return Color.green
+            case .frutas: return Color.pink
+            case .proteinas: return Color.orange
+            case .lacteos: return Color.cyan
+            case .granos: return Color.brown
+            case .legumbres: return Color.purple
+            case .frutosSecos: return Color.yellow
+            case .aceites: return Color.blue
+            case .condimentos: return Color.gray
+            case .otros: return Color.appSurface
+            }
+        }
+    }
+
+    @Published var groceryListByCategory: [GroceryCategory: [Ingredient]] = [:]
+    
     // MARK: - Public Methods
     
     func updateGroceryList(from weeklyRecipes: [Date: [Recipe]]) {
@@ -183,6 +214,9 @@ class GroceryListViewModel: ObservableObject {
             return Ingredient(name: name, quantity: shoppableQty, isChecked: isChecked)
         }
         groceryList = grouped.sorted { $0.name < $1.name }
+        
+        // Agrupar por categoría
+        groceryListByCategory = Dictionary(grouping: groceryList, by: { categorizeIngredient($0.name) })
         
         print("✅ Lista actualizada:")
         print("   📊 Total: \(totalCount) ingredientes")
@@ -217,6 +251,9 @@ class GroceryListViewModel: ObservableObject {
             updatedList[index].isChecked.toggle()
             groceryList = updatedList
             
+            // ACTUALIZAR agrupación por categoría tras toggle
+            groceryListByCategory = Dictionary(grouping: groceryList, by: { categorizeIngredient($0.name) })
+            
             let newState = groceryList[index].isChecked
             print("✅ Toggle exitoso: '\(ingredient.name)' cambiado a \(newState)")
             
@@ -229,7 +266,7 @@ class GroceryListViewModel: ObservableObject {
             print("❌ ERROR: No se encontró '\(ingredient.name)' en la lista")
             print("📋 Ingredientes disponibles:")
             for (i, item) in groceryList.enumerated() {
-                print("   \(i): '\(item.name)' [\(item.isChecked ? "✓" : "○")]")
+                print("   \(i): '\(item.name)' [\(item.isChecked ? "✓" : "○")]" )
             }
         }
     }
@@ -323,6 +360,53 @@ class GroceryListViewModel: ObservableObject {
     
     private func loadCheckedIngredientNames() -> [String] {
         UserDefaults.standard.stringArray(forKey: Self.checkedKey) ?? []
+    }
+    
+    private func categorizeIngredient(_ name: String) -> GroceryCategory {
+        let n = name.lowercased()
+        if ["pepino","tomate","cebolla","zanahoria","papa","pimiento","calabacín","calabaza","berenjena","lechuga","apio","brócoli","coliflor","espinaca","rúcula","acelga","espárragos","ejotes","champiñones","setas"].contains(where: n.contains) {
+            return .vegetales
+        }
+        if ["manzana","plátano","naranja","limón","lima","aguacate","pera","durazno","kiwi","frutos rojos","fresas","arándanos","piña"].contains(where: n.contains) {
+            return .frutas
+        }
+        if ["pollo","carne","bistec","chuleta","lomo","tocino","jamón","embutidos","pavo","salmón","atún","camarón","tilapia","bacalao","huevo","clara"].contains(where: n.contains) {
+            return .proteinas
+        }
+        if ["yogur","queso","leche","crema","mantequilla"].contains(where: n.contains) {
+            return .lacteos
+        }
+        if ["arroz","quinoa","avena","pasta","harina","pan","tortilla"].contains(where: n.contains) {
+            return .granos
+        }
+        if ["frijoles","lentejas","garbanzos"].contains(where: n.contains) {
+            return .legumbres
+        }
+        if ["almendras","nueces","avellanas","semillas"].contains(where: n.contains) {
+            return .frutosSecos
+        }
+        // Mejorar aceites y líquidos
+        if ["aceite de oliva","aceite de aguacate","aceite de coco","aceite de sésamo","aceite","vinagre","jugo","salsa","mayonesa","hummus"].contains(where: n.contains) {
+            return .aceites
+        }
+        if ["ajo","jengibre","perejil","cilantro","albahaca","cebollín","hierbas","canela","romero","tomillo","orégano","eneldo","condimento","pimienta","hojuelas"].contains(where: n.contains) {
+            return .condimentos
+        }
+        return .otros
+    }
+    
+    // Diagnóstico: Verifica qué ingredientes no tienen conversión práctica
+    func printMissingIngredientConversions() {
+        let allNames = Set(groceryList.map { $0.name })
+        for name in allNames {
+            let normalizedName = SmartShoppingConverter.normalizeIngredientName(name)
+            let hasExact = ingredientConversions[normalizedName] != nil
+            let hasPartial = ingredientConversions.keys.contains(where: { normalizedName.contains($0) })
+            let hasSynonym = SmartShoppingConverter.findBestMatch(for: normalizedName) != nil
+            if !hasExact && !hasPartial && !hasSynonym {
+                print("❌ Sin conversión práctica: '", name, "'")
+            }
+        }
     }
 }
 
@@ -423,8 +507,12 @@ class SmartShoppingConverter {
         // Normalizar el nombre para búsqueda más flexible
         let normalizedName = normalizeIngredientName(name)
         
-        // Buscar coincidencia en la base de datos con múltiples estrategias
-        if let info = findBestMatch(for: normalizedName) {
+        // Buscar coincidencia exacta primero
+        if let info = ingredientConversions[normalizedName] {
+            // Si debe mantenerse en gramos (especia), respeta eso
+            if info.keepInGrams {
+                return "\(Int(ceil(totalValue))) g"
+            }
             return convertIngredient(
                 name: name,
                 totalGrams: totalValue,
@@ -432,14 +520,41 @@ class SmartShoppingConverter {
                 info: info
             )
         }
-        
+        // Buscar coincidencia parcial (por ejemplo, 'cebolla morada' -> 'cebolla')
+        if let (key, info) = ingredientConversions.first(where: { normalizedName.contains($0.key) }) {
+            // Si debe mantenerse en gramos (especia), respeta eso
+            if info.keepInGrams {
+                return "\(Int(ceil(totalValue))) g"
+            }
+            // Si la unidad original es gramos o ml, forzar conversión a unidades prácticas
+            if unit.lowercased().contains("g") || unit.lowercased().contains("ml") || unit.isEmpty {
+                return convertIngredient(
+                    name: name,
+                    totalGrams: totalValue,
+                    unit: unit,
+                    info: info
+                )
+            }
+        }
+        // Buscar por sinónimos/variaciones
+        if let info = findBestMatch(for: normalizedName) {
+            if info.keepInGrams {
+                return "\(Int(ceil(totalValue))) g"
+            }
+            return convertIngredient(
+                name: name,
+                totalGrams: totalValue,
+                unit: unit,
+                info: info
+            )
+        }
         // Si no hay conversión específica, mantener cantidad original pero mejorada
         return enhanceGenericQuantity(combinedQuantity, originalName: name)
     }
     
     // MARK: - Private Methods
     
-    private static func normalizeIngredientName(_ name: String) -> String {
+     static func normalizeIngredientName(_ name: String) -> String {
         return name.lowercased()
             .trimmingCharacters(in: .whitespaces)
             .replacingOccurrences(of: "de ", with: "")
@@ -466,7 +581,7 @@ class SmartShoppingConverter {
             .trimmingCharacters(in: .whitespaces)
     }
     
-    private static func findBestMatch(for normalizedName: String) -> IngredientInfo? {
+     static func findBestMatch(for normalizedName: String) -> IngredientInfo? {
         // 1. Búsqueda exacta primero
         for (key, info) in ingredientConversions {
             if normalizedName == key {
@@ -582,7 +697,7 @@ class SmartShoppingConverter {
     
     private static func convertIngredient(name: String, totalGrams: Double, unit: String, info: IngredientInfo) -> String {
         let unitSystem = UnitSystem.current
-        
+        let lowerName = name.lowercased()
         // Si ya está en unidades específicas (no gramos ni mililitros), mantener
         if !unit.lowercased().contains("gr") && 
            !unit.lowercased().contains("g") && 
@@ -592,13 +707,11 @@ class SmartShoppingConverter {
             let roundedValue = ceil(totalGrams)
             return "\(Int(roundedValue)) \(info.getUnit(for: unitSystem, count: Int(roundedValue)))"
         }
-        
-        // Para líquidos
-        if isLiquid(name) {
+        // Para líquidos y aceites, siempre mostrar en botellas/litros
+        if isLiquid(name) || lowerName.contains("aceite") {
             let units = max(1, Int(ceil(totalGrams / info.averageWeight)))
             return "\(units) \(info.getUnit(for: unitSystem, count: units))"
         }
-        
         // Para todo lo demás, convertir a unidades prácticas
         let units = max(1, Int(ceil(totalGrams / info.averageWeight)))
         return "\(units) \(info.getUnit(for: unitSystem, count: units))"

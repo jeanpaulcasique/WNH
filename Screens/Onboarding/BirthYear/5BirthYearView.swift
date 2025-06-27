@@ -13,6 +13,7 @@ struct BirthYearView: View {
     @State private var selectedDecade: Int = 1990
     @State private var showDecadeSelector = false
     @State private var showCategorySheet = false
+    @State private var animateIn = false
     
     var body: some View {
         ZStack {
@@ -23,14 +24,31 @@ struct BirthYearView: View {
                 endPoint: .bottomTrailing
             )
             .ignoresSafeArea()
+            .opacity(animateIn ? 1 : 0)
+            .animation(.easeOut(duration: 0.5), value: animateIn)
             
             ScrollView {
                 VStack(spacing: 30) {
                     progressSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
                     headerSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
                     ageDisplaySection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
                     yearSelectionSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
                     motivationalSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.45), value: animateIn)
                     
                     Spacer(minLength: 100)
                 }
@@ -42,6 +60,9 @@ struct BirthYearView: View {
             VStack {
                 Spacer()
                 nextButtonSection
+                    .opacity(animateIn ? 1 : 0)
+                    .offset(y: animateIn ? 0 : 40)
+                    .animation(.easeOut(duration: 0.5).delay(0.55), value: animateIn)
                     .padding(.horizontal, 0)
                     .padding(.bottom, 0)
             }
@@ -53,6 +74,9 @@ struct BirthYearView: View {
         .onAppear {
             viewModel.selectedYear = UserDefaults.standard.integer(forKey: "selectedBirthYear")
             selectedDecade = (viewModel.selectedYear / 10) * 10
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
+                animateIn = true
+            }
         }
         .sheet(isPresented: $showCategorySheet) {
             CategoryExplanationSheet(

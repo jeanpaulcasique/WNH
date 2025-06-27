@@ -6,6 +6,7 @@ struct WeightView: View {
     @Environment(\.presentationMode) var presentationMode
     @State private var isNavigatingToTargetWeightView = false
     @State private var showBMISheet = false
+    @State private var animateIn = false
     
     var userHeight: Double
 
@@ -14,12 +15,33 @@ struct WeightView: View {
             ScrollView {
                 VStack(spacing: 20) {
                     progressSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
                     headerSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
                     weightDisplaySection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
                     digitalScaleSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
                     unitSelectorSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.45), value: animateIn)
                     bmiSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.55), value: animateIn)
                     benefitsSection
+                        .opacity(animateIn ? 1 : 0)
+                        .offset(y: animateIn ? 0 : 40)
+                        .animation(.easeOut(duration: 0.5).delay(0.65), value: animateIn)
                     
                     Spacer(minLength: 80)
                 }
@@ -36,6 +58,9 @@ struct WeightView: View {
         .onAppear {
             viewModel.updateWeight(newWeight: viewModel.selectedWeightKg)
             viewModel.setupAnimations()
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
+                animateIn = true
+            }
         }
         .sheet(isPresented: $showBMISheet) {
             BMIExplanationSheet(viewModel: viewModel, userHeight: userHeight)

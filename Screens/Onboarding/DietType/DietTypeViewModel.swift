@@ -2,15 +2,62 @@ import SwiftUI
 import Foundation
 import Combine
 
+// MARK: - Enhanced DietTypeDetails Model (Unified)
+struct DietTypeDetails: Identifiable {
+    let id = UUID()
+    let title: String
+    let subtitle: String
+    let description: String
+    let howItWorks: String
+    let benefits: [String]
+    let considerations: [String]
+    let color: Color
+    let gradientColors: [Color]
+    let icon: String
+    let difficulty: String
+    let timeToResults: String
+    let macroSplit: String
+    let badge: String?
+    let badgeColor: Color?
+    
+    // New properties for enhanced design
+    let macroBreakdown: MacroBreakdown
+    let highlights: [String]
+    let successRate: String
+}
+
+struct MacroBreakdown {
+    let fat: Double
+    let protein: Double
+    let carbs: Double
+}
+
+enum AnimationPhase: Int, CaseIterable {
+    case initial = 0
+    case header = 1
+    case icon = 2
+    case title = 3
+    case cards = 4
+}
+
 // MARK: - DietTypeViewModel
-class DietTypeViewModel: ObservableObject {
+@MainActor
+final class DietTypeViewModel: ObservableObject {
     @Published var currentIndex: Int {
         didSet {
-            UserDefaults.standard.set(currentIndex, forKey: "dietTypeIndex")
-            UserDefaults.standard.set(titles[currentIndex], forKey: "selectedDietType")
+            // ✅ Solo guardar en UserDefaults si hay una selección válida
+            if currentIndex >= 0 {
+                UserDefaults.standard.set(currentIndex, forKey: "dietTypeIndex")
+                UserDefaults.standard.set(titles[currentIndex], forKey: "selectedDietType")
+            }
         }
     }
-
+    
+    @Published var isLoading = false
+    @Published var isNextButtonDisabled = false
+    @Published var animationPhase: AnimationPhase = .initial
+    @Published var userGoal: String = ""
+    
     let imageNames = ["flame.fill", "leaf.fill", "scalemass.fill"]
     let titles = ["Keto", "Low‑Carb", "Calorie Deficit"]
     let shortDescriptions = [
@@ -25,15 +72,31 @@ class DietTypeViewModel: ObservableObject {
     ]
 
     var imageCount: Int { imageNames.count }
-
-    @Published var isLoading = false
-    @Published var isNextButtonDisabled = false
-    @Published var selectedDietDetails: DietDetails?
+    
+    // ✅ Computed property para saber si hay una selección válida
+    var hasValidSelection: Bool { currentIndex >= 0 }
 
     init() {
-        let saved = UserDefaults.standard.value(forKey: "dietTypeIndex") as? Int
-        self.currentIndex = saved ?? 0
-        UserDefaults.standard.set(titles[currentIndex], forKey: "selectedDietType")
+        // ✅ CAMBIO: Inicializar sin selección (-1 = no seleccionado)
+        self.currentIndex = -1
+        self.userGoal = UserDefaults.standard.string(forKey: "selectedGoal") ?? "Lose Weight"
+    }
+
+    func startStaggeredAnimations() {
+        let animations: [(TimeInterval, AnimationPhase)] = [
+            (0.2, .header),
+            (0.4, .icon),
+            (0.6, .title),
+            (0.8, .cards)
+        ]
+        
+        for (delay, phase) in animations {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                withAnimation(.spring(response: 0.7, dampingFraction: 0.8)) {
+                    self.animationPhase = phase
+                }
+            }
+        }
     }
 
     func disableNextButtonTemporarily() {
@@ -51,15 +114,29 @@ class DietTypeViewModel: ObservableObject {
             currentIndex = index
         }
         
-        // Haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
         impactFeedback.impactOccurred()
     }
     
-    func getDietDetails(for index: Int) -> DietDetails {
+    func getRecommendedDietIndex() -> Int {
+        // ✅ Recomendación basada en el goal del usuario
+        switch userGoal {
+        case "Lose Weight": return 0  // Keto
+        case "Keep Fit": return 1     // Low-Carb
+        case "Build Muscle": return 2 // Calorie Deficit
+        default: return 0
+        }
+    }
+    
+    func getDietDetails(for index: Int) -> DietTypeDetails {
+        // ✅ Protección para índices negativos
+        guard index >= 0 && index < imageCount else {
+            return getDietDetails(for: 0) // Fallback
+        }
+        
         switch index {
         case 0: // Keto
-            return DietDetails(
+            return DietTypeDetails(
                 title: "Ketogenic Diet",
                 subtitle: "Fat-Burning Powerhouse",
                 description: "Transform your metabolism by entering ketosis - a state where your body burns fat for fuel instead of carbohydrates.",
@@ -83,11 +160,16 @@ class DietTypeViewModel: ObservableObject {
                 icon: "flame.fill",
                 difficulty: "Advanced",
                 timeToResults: "1-2 weeks",
-                macroSplit: "75% Fat, 20% Protein, 5% Carbs"
+                macroSplit: "75% Fat, 20% Protein, 5% Carbs",
+                badge: nil,
+                badgeColor: nil,
+                macroBreakdown: MacroBreakdown(fat: 75, protein: 20, carbs: 5),
+                highlights: ["Rapid ketosis", "Mental clarity", "Appetite control"],
+                successRate: "97%"
             )
             
         case 1: // Low Carb
-            return DietDetails(
+            return DietTypeDetails(
                 title: "Low-Carb Diet",
                 subtitle: "Balanced & Sustainable",
                 description: "Enjoy steady weight loss with a moderate approach that maintains energy while promoting fat burning.",
@@ -111,11 +193,16 @@ class DietTypeViewModel: ObservableObject {
                 icon: "leaf.fill",
                 difficulty: "Moderate",
                 timeToResults: "2-4 weeks",
-                macroSplit: "40% Carbs, 30% Protein, 30% Fat"
+                macroSplit: "40% Carbs, 30% Protein, 30% Fat",
+                badge: nil,
+                badgeColor: nil,
+                macroBreakdown: MacroBreakdown(fat: 30, protein: 30, carbs: 40),
+                highlights: ["Sustainable", "Food variety", "Workout friendly"],
+                successRate: "94%"
             )
             
         case 2: // Calorie Deficit
-            return DietDetails(
+            return DietTypeDetails(
                 title: "Calorie Deficit",
                 subtitle: "Science-Based Freedom",
                 description: "The gold standard of weight loss - eat less than you burn while enjoying complete dietary freedom.",
@@ -139,7 +226,12 @@ class DietTypeViewModel: ObservableObject {
                 icon: "scalemass.fill",
                 difficulty: "Beginner",
                 timeToResults: "2-3 weeks",
-                macroSplit: "45% Carbs, 25% Protein, 30% Fat"
+                macroSplit: "45% Carbs, 25% Protein, 30% Fat",
+                badge: nil,
+                badgeColor: nil,
+                macroBreakdown: MacroBreakdown(fat: 30, protein: 25, carbs: 45),
+                highlights: ["Complete freedom", "Science-based", "Build habits"],
+                successRate: "96%"
             )
             
         default:
