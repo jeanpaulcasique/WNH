@@ -24,6 +24,12 @@ struct WorkoutView: View {
     @State private var currentTipIndex = 0
     @State private var animateTip = false
     @State private var userName: String? = nil
+    // Estados para animación 3D del personaje
+    @State private var rotationAngle: Double = 0
+    @State private var characterScale: CGFloat = 1.0
+    @State private var isRotating = false
+    // Estado global para el rebote de Cardio
+    @State private var cardioBounce = false
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -34,35 +40,9 @@ struct WorkoutView: View {
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
-                
+
                 VStack(spacing: 0) {
-                    // Saludo y tips animados
-                    VStack(spacing: 10) {
-                        Text(userName != nil ? "Hi, \(userName!)!" : "Ready to train?")
-                            .font(.system(size: 22, weight: .bold))
-                            .foregroundColor(.yellow)
-                            .multilineTextAlignment(.center)
-                        ZStack {
-                            ForEach(0..<workoutTips.count, id: \.self) { i in
-                                if i == currentTipIndex {
-                                    Text(workoutTips[i])
-                                        .font(.system(size: 16, weight: .medium))
-                                        .foregroundColor(.white.opacity(0.85))
-                                        .multilineTextAlignment(.center)
-                                        .padding(.horizontal, 16)
-                                        .lineLimit(2)
-                                        .minimumScaleFactor(0.85)
-                                        .id(i)
-                                        .opacity(animateTip ? 1 : 0)
-                                        .offset(y: animateTip ? 0 : 30)
-                                        .animation(.spring(response: 0.7, dampingFraction: 0.7), value: animateTip)
-                                }
-                            }
-                        }
-                        .frame(height: 48)
-                    }
-                    .padding(.top, 10)
-                    headerView
+                    headerSection
                     SearchBarWorkoutView(
                         viewModel: searchBarVM,
                         onExerciseSelected: { exercise in
@@ -72,196 +52,315 @@ struct WorkoutView: View {
                         onLocationTapped: { showLocationMenu = true },
                         showSearchResults: $showSearchResults
                     )
+                    .padding(.horizontal, 8)
+                    .padding(.top, 4)
+                    // Scroll horizontal de chips
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(viewModel.muscleGroups, id: \.name) { muscle in
+                                Button(action: { path = [muscle.name] }) {
+                                    Text(muscle.name.capitalized)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(.appYellow)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 8)
+                                        .background(.ultraThinMaterial)
+                                        .cornerRadius(8)
+                                        .shadow(color: Color.appYellow.opacity(0.08), radius: 4, x: 0, y: 2)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 2)
+                    }
+                    .padding(.top, 6)
+                    .padding(.bottom, 2)
                     if showSearchResults && !searchBarVM.filteredExercises.isEmpty {
-                        EmptyView() // Los resultados ya se muestran en el SearchBarWorkoutView
+                        EmptyView()
                     } else {
                         Spacer(minLength: 0)
                         GeometryReader { geometry in
                             ZStack {
-                                humanFigureView(geometry: geometry)
-                                muscleGroupButtons(geometry: geometry)
+                                character3DViewEpicProtagonist(geometry: geometry)
+                                muscleGroupButtonsEpic(geometry: geometry)
                             }
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
                         }
-                        .aspectRatio(0.6, contentMode: .fit)
+                        .frame(height: 340)
                         Spacer()
-                        bottomControlsView
+                        epicBottomControlsView
                     }
                 }
-                .padding()
+                .screenHorizontalPadding()
+                .frame(maxHeight: .infinity, alignment: .top)
+                .padding(.vertical, 0)
+                .zIndex(1)
+
+                if showLocationMenu {
+                    locationMenuOverlay
+                        .zIndex(2)
+                }
             }
             .navigationBarHidden(true)
-            // ✅ Navegación directa al VideosDashBoardView
             .navigationDestination(for: String.self) { muscleName in
                 VideosDashBoardView(
                     selectedMuscleGroup: muscleName,
-                    onBack: {
-                        path = []
-                    }
+                    onBack: { path = [] }
                 )
             }
-            // Menú de localización posicionado como extensión del botón
-            .overlay(
-                locationMenuOverlay
-                    .opacity(showLocationMenu ? 1 : 0)
-                    .scaleEffect(showLocationMenu ? 1 : 0.8)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.8), value: showLocationMenu)
-            )
-        }
-        .onAppear {
-            // Sincronizar datos con el search bar VM
-            searchBarVM.configure(exercises: viewModel.allExercises, muscleGroups: viewModel.muscleGroups)
-            userName = UserDefaults.standard.string(forKey: "userName")
-            animateTip = false
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                animateTip = true
+            .onAppear { setupView() }
+            .onChange(of: viewModel.selectedMuscle) { _, newMuscle in
+                if let muscle = newMuscle {
+                    path = [muscle.name]
+                    selectedMuscleForLabel = nil
+                }
             }
-            var tipTimer: Timer?
-            func startTipTimer() {
-                tipTimer?.invalidate()
-                tipTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
-                    withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {
-                        animateTip = false
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        let isLast = currentTipIndex == workoutTips.count - 1
-                        if isLast {
-                            // Espera 1 minuto antes de reiniciar
-                            tipTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { _ in
-                                currentTipIndex = 0
-                                animateTip = true
-                                startTipTimer()
-                            }
-                        } else {
-                            currentTipIndex = (currentTipIndex + 1)
-                            animateTip = true
-                            startTipTimer()
-                        }
+            .onChange(of: viewModel.isShowingBack) { _, _ in
+                selectedMuscleForLabel = nil
+            }
+            .onChange(of: viewModel.muscleGroups) { _, newGroups in
+                searchBarVM.configure(exercises: viewModel.allExercises, muscleGroups: newGroups)
+            }
+        }
+    }
+    
+    // Header compacto con saludo y tip
+    private var headerSection: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: "figure.strengthtraining.traditional")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.appYellow)
+                Text(userName != nil ? "Hi, \(userName!)!" : "Ready to train?")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.appYellow)
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 12)
+            .padding(.bottom, 2)
+            ZStack {
+                ForEach(0..<workoutTips.count, id: \.self) { i in
+                    if i == currentTipIndex {
+                        Text(workoutTips[i])
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.appWhite.opacity(0.85))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 12)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
+                            .id(i)
+                            .opacity(animateTip ? 1 : 0)
+                            .offset(y: animateTip ? 0 : 30)
+                            .animation(.spring(response: 0.7, dampingFraction: 0.7), value: animateTip)
                     }
                 }
             }
-            startTipTimer()
+            .frame(height: 36)
         }
-        .onChange(of: viewModel.selectedMuscle) { _, newMuscle in
-            if let muscle = newMuscle {
-                path = [muscle.name]
-                selectedMuscleForLabel = nil // Limpiar selección
+        .background(.ultraThinMaterial)
+        .cornerRadius(18)
+        .shadow(color: Color.appYellow.opacity(0.08), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+    }
+    
+    // Imagen protagonista épica centrada y un poco más arriba, con ligero ajuste horizontal
+    private func character3DViewEpicProtagonist(geometry: GeometryProxy) -> some View {
+        ZStack {
+            Ellipse()
+                .fill(Color.appYellow.opacity(0.13))
+                .frame(width: geometry.size.width * 1.20, height: 70)
+                .offset(x: -geometry.size.width * 0.08, y: -geometry.size.height * 0.10)
+                .blur(radius: 16)
+                .scaleEffect(characterScale * 1.0)
+                .allowsHitTesting(false)
+            Ellipse()
+                .fill(Color.black.opacity(0.18))
+                .frame(width: geometry.size.width * 1.10, height: 54)
+                .offset(x: -geometry.size.width * 0.08, y: -geometry.size.height * 0.09)
+                .blur(radius: 14)
+                .scaleEffect(characterScale * 1.0)
+                .allowsHitTesting(false)
+            ZStack {
+                Image("human_front")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: geometry.size.width * 1.65, height: geometry.size.height * 1.65)
+                    .clipped()
+                    .shadow(color: .appYellow.opacity(0.13), radius: 32, x: 0, y: 16)
+                    .allowsHitTesting(false)
+                    .offset(x: -geometry.size.width * 0.4, y: -geometry.size.height * 0.46)
+                    .opacity(viewModel.isShowingBack ? 0.0 : 1.0)
+                    .animation(.easeInOut(duration: 0.45), value: viewModel.isShowingBack)
+                Image("human_back")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: geometry.size.width * 1.85, height: geometry.size.height * 1.85)
+                    .clipped()
+                    .shadow(color: .appYellow.opacity(0.13), radius: 32, x: 0, y: 16)
+                    .allowsHitTesting(false)
+                    .offset(x: -geometry.size.width * 0.4, y: -geometry.size.height * 0.46)
+                    .opacity(viewModel.isShowingBack ? 1.0 : 0.0)
+                    .animation(.easeInOut(duration: 0.45), value: viewModel.isShowingBack)
+            }
+            .scaleEffect(characterScale)
+            .rotation3DEffect(
+                .degrees(rotationAngle),
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.3
+            )
+            .gesture(characterDragGesture)
+            .animation(.spring(response: 0.8, dampingFraction: 0.7), value: rotationAngle)
+            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: characterScale)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+    }
+    
+    private var characterDragGesture: some Gesture {
+        DragGesture()
+            .onChanged { value in
+                if !isRotating {
+                    rotationAngle = value.translation.width * 0.3
+                }
+            }
+            .onEnded { value in
+                if abs(value.translation.width) > 80 {
+                    withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+                        viewModel.toggleView()
+                        rotationAngle = 0
+                    }
+                } else {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        rotationAngle = 0
+                    }
+                }
+            }
+    }
+
+    private func performCharacterRotation() {
+        isRotating = true
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            characterScale = 1.1
+        }
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+            rotationAngle += 180
+            viewModel.toggleView()
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                characterScale = 1.0
             }
         }
-        .onChange(of: viewModel.isShowingBack) { _, _ in
-            selectedMuscleForLabel = nil // Limpiar al cambiar vista
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            rotationAngle = 0
+            isRotating = false
         }
-        .onChange(of: viewModel.muscleGroups) { _, newGroups in
-            // Actualizar los grupos musculares en el search bar VM cuando cambie la vista (frontal/trasera)
-            searchBarVM.configure(exercises: viewModel.allExercises, muscleGroups: newGroups)
-        }
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
     }
     
-    private var headerView: some View {
-        HStack {
-            Spacer()
-        }
-    }
-    
-    private func humanFigureView(geometry: GeometryProxy) -> some View {
-        ZStack {
-            // Vista frontal
-            Image("human_front")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: geometry.size.width * 1.21, height: geometry.size.height * 1.15)
-                .clipped()
-                .offset(x: -25, y: -45)
-                .opacity(viewModel.isShowingBack ? 0 : 1)
-                .rotation3DEffect(
-                    .degrees(viewModel.isShowingBack ? 90 : 0),
-                    axis: (x: 0, y: 1, z: 0)
-                )
-            
-            // Vista trasera
-            Image("human_back")
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(width: geometry.size.width * 1.21, height: geometry.size.height * 1.15)
-                .clipped()
-                .offset(x: -25, y: -45)
-                .opacity(viewModel.isShowingBack ? 1 : 0)
-                .rotation3DEffect(
-                    .degrees(viewModel.isShowingBack ? 0 : -90),
-                    axis: (x: 0, y: 1, z: 0)
-                )
-        }
-        .animation(.easeInOut(duration: 0.6), value: viewModel.isShowingBack)
-    }
-    
-    private func muscleGroupButtons(geometry: GeometryProxy) -> some View {
+    // MARK: - Epic Muscle Group Buttons
+    private func muscleGroupButtonsEpic(geometry: GeometryProxy) -> some View {
         ZStack {
             ForEach(searchBarVM.filteredMuscleGroups, id: \.id) { muscle in
                 let position = muscle.position
                 let isSelected = selectedMuscleForLabel?.id == muscle.id
-                
                 Button(action: {
                     if isSelected {
-                        // Segundo tap - navegar
                         viewModel.selectMuscle(muscle)
                     } else {
-                        // Primer tap - seleccionar y mostrar label
                         selectedMuscleForLabel = muscle
                     }
                 }) {
-                    VStack(spacing: 4) {
-                        Circle()
-                            .fill(isSelected ? Color.red : Color.yellow)
-                            .frame(width: 12, height: 12)
-                            .shadow(color: .black.opacity(0.3), radius: 2, x: 0, y: 1)
-                        
-                        if isSelected {
-                            Text(muscle.name)
-                                .font(.caption2)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.black.opacity(0.8))
-                                .cornerRadius(8)
-                                .shadow(color: .black.opacity(0.5), radius: 3, x: 0, y: 2)
+                    if muscle.name.lowercased() == "cardio" {
+                        VStack(spacing: 4) {
+                            Image(systemName: "figure.run")
+                                .font(.system(size: isSelected ? 32 : 24, weight: .bold))
+                                .foregroundColor(isSelected ? .appYellow : .appYellow.opacity(0.7))
+                                .scaleEffect(cardioBounce ? 1.18 : 0.92)
+                                .shadow(color: .appYellow.opacity(0.18), radius: isSelected ? 8 : 2, x: 0, y: 1)
+                                .onAppear {
+                                    withAnimation(.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
+                                        cardioBounce = true
+                                    }
+                                }
+                            if isSelected {
+                                Text(muscle.name)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.appYellow)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color.black.opacity(0.85))
+                                    .cornerRadius(10)
+                                    .shadow(color: .appYellow.opacity(0.18), radius: 6, x: 0, y: 2)
+                                    .transition(.scale.combined(with: .opacity))
+                            }
+                        }
+                    } else {
+                        VStack(spacing: 4) {
+                            Circle()
+                                .fill(isSelected ? Color.appYellow : Color.appYellow.opacity(0.7))
+                                .frame(width: isSelected ? 18 : 13, height: isSelected ? 18 : 13)
+                                .shadow(color: isSelected ? .appYellow : .black.opacity(0.3), radius: isSelected ? 8 : 2, x: 0, y: 1)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.white.opacity(isSelected ? 0.8 : 0.3), lineWidth: isSelected ? 2 : 1)
+                                        .blur(radius: isSelected ? 1 : 0)
+                                )
+                            if isSelected {
+                                Text(muscle.name)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.appYellow)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(Color.black.opacity(0.85))
+                                    .cornerRadius(10)
+                                    .shadow(color: .appYellow.opacity(0.18), radius: 6, x: 0, y: 2)
+                                    .transition(.scale.combined(with: .opacity))
+                            }
                         }
                     }
                 }
+                .buttonStyle(PlainButtonStyle())
                 .position(x: geometry.size.width * position.x, y: geometry.size.height * position.y)
-                .animation(.easeInOut(duration: 0.2), value: isSelected)
+                .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSelected)
+                .zIndex(10)
             }
         }
         .animation(.easeInOut(duration: 0.3), value: searchBarVM.filteredMuscleGroups)
     }
     
-    private var bottomControlsView: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 6) {
-                Image(systemName: "arrow.left.and.right")
-                    .foregroundColor(.yellow)
-                    .font(.title3)
-                Text("Swipe")
-                    .foregroundColor(.white)
-                    .font(.system(size: 15, weight: .medium))
-                Text("180°")
-                    .foregroundColor(.yellow)
-                    .font(.system(size: 17, weight: .bold))
+    // MARK: - Epic Bottom Controls
+    private var epicBottomControlsView: some View {
+        HStack {
+            Spacer()
+            VStack(spacing: 14) {
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.left.and.right")
+                        .foregroundColor(.appYellow)
+                        .font(.title3)
+                    Text("Swipe to rotate")
+                        .foregroundColor(.appWhite)
+                        .font(.system(size: 15, weight: .medium))
+                }
+                .padding(.vertical, 10)
+                .padding(.horizontal, 18)
+                .background(.ultraThinMaterial)
+                .cornerRadius(14)
+                .shadow(color: Color.appYellow.opacity(0.10), radius: 8, x: 0, y: 2)
+                .onTapGesture {
+                    viewModel.toggleView()
+                }
             }
-            .padding(.vertical, 8)
-            .padding(.horizontal, 16)
-            .background(Color.white.opacity(0.12))
-            .cornerRadius(10)
-            .onTapGesture {
-                viewModel.toggleView()
-            }
+            Spacer()
         }
-        .padding(.bottom, 16)
+        .padding(.bottom, 18)
     }
     
     private var locationMenuOverlay: some View {
         GeometryReader { geometry in
             ZStack {
-                // Fondo semi-transparente
                 Color.black.opacity(0.3)
                     .ignoresSafeArea()
                     .onTapGesture {
@@ -270,7 +369,6 @@ struct WorkoutView: View {
                         }
                     }
                 
-                // Menú de localización posicionado como extensión del botón
                 VStack(spacing: 0) {
                     VStack(spacing: 0) {
                         locationOptionButton(
@@ -309,8 +407,8 @@ struct WorkoutView: View {
                 }
                 .frame(maxWidth: 200)
                 .position(
-                    x: geometry.size.width - 60, // Posición X: derecha, cerca del botón de localización
-                    y: 120 // Posición Y: debajo del header y search bar
+                    x: geometry.size.width - 60,
+                    y: 120
                 )
             }
         }
@@ -326,11 +424,9 @@ struct WorkoutView: View {
                 animatingSelection = true
             }
             
-            // Efecto de vibración haptic
             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
             impactFeedback.impactOccurred()
             
-            // Animación de selección
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.selectedWorkoutMode = location
@@ -379,6 +475,39 @@ struct WorkoutView: View {
         }
         .scaleEffect(isAnimating ? 1.02 : 1.0)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isAnimating)
+    }
+    
+    private func setupView() {
+        searchBarVM.configure(exercises: viewModel.allExercises, muscleGroups: viewModel.muscleGroups)
+        userName = UserDefaults.standard.string(forKey: "userName")
+        animateTip = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            animateTip = true
+        }
+        var tipTimer: Timer?
+        func startTipTimer() {
+            tipTimer?.invalidate()
+            tipTimer = Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
+                withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {
+                    animateTip = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    let isLast = currentTipIndex == workoutTips.count - 1
+                    if isLast {
+                        tipTimer = Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { _ in
+                            currentTipIndex = 0
+                            animateTip = true
+                            startTipTimer()
+                        }
+                    } else {
+                        currentTipIndex = (currentTipIndex + 1)
+                        animateTip = true
+                        startTipTimer()
+                    }
+                }
+            }
+        }
+        startTipTimer()
     }
 }
 

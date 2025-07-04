@@ -264,7 +264,7 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
 
 // MARK: - CLLocationManagerDelegate
 extension TrainersMapsViewModel: CLLocationManagerDelegate {
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
         
         DispatchQueue.main.async {
@@ -274,7 +274,7 @@ extension TrainersMapsViewModel: CLLocationManagerDelegate {
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         DispatchQueue.main.async {
             self.isLoadingLocation = false
             // Use default location (NYC) if location fails
@@ -283,7 +283,7 @@ extension TrainersMapsViewModel: CLLocationManagerDelegate {
         print("Location error: \(error.localizedDescription)")
     }
     
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         DispatchQueue.main.async {
             self.locationPermissionStatus = status
             

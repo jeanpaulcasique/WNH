@@ -1,295 +1,403 @@
-// MARK: - Results Models
-import Foundation
 import SwiftUI
+import Foundation
 
-struct PersonalizedResult {
-    let id: Int
-    let icon: String
-    let title: String
-    let value: String
-    let description: String
-    let color: Color
-}
-
+// MARK: - Supporting Structures
 struct ExpectedTimeline {
     let firstResults: String
     let goalAchievement: String
     let scienceNote: String
 }
 
-// MARK: - Enhanced ShowInfoViewModel with Scientific Calculations
+struct NutritionSummary {
+    let dailyCalories: Double
+    let dailyWater: String
+    let protein: Double
+    let carbs: Double
+    let fat: Double
+    let weeklyWeightChange: Double
+    let successProbability: Double
+}
+
+// MARK: - Enhanced ShowInfoViewModel
+@MainActor
 class ShowInfoViewModel: ObservableObject {
-    @Published var progress: Double = 0.0
-    @Published var currentStepIndex: Int = 0
-    @Published var currentStep: String = ""
-    @Published var isPulsing: Bool = true
-    @Published var isGeneratingPlan: Bool = true
-    @Published var showResults: Bool = false
-    @Published var personalizedResults: [PersonalizedResult] = []
-    @Published var expectedTimeline: ExpectedTimeline = ExpectedTimeline(firstResults: "", goalAchievement: "", scienceNote: "")
     
+    // MARK: - Published Properties
+    @Published var isGeneratingPlan = true
+    @Published var showResults = false
+    @Published var isPulsing = false
+    @Published var currentStep = "Initializing AI Analysis..."
+    @Published var currentStepIndex = 0
+    @Published var progress: Double = 0.0
+    @Published var error: String?
+    
+    // MARK: - Core Data
+    @Published var nutritionSummary: NutritionSummary?
+    @Published var expectedTimeline = ExpectedTimeline(
+        firstResults: "2-3 weeks",
+        goalAchievement: "3-6 months",
+        scienceNote: "Based on your profile and goals"
+    )
+    
+    // MARK: - Computed Properties for UI Compatibility
+    var dailyCalories: Double {
+        nutritionSummary?.dailyCalories ?? 0
+    }
+    
+    var dailyWater: String {
+        nutritionSummary?.dailyWater ?? calculateWaterIntake()
+    }
+    
+    // MARK: - Private Properties
+    private var analysisTimer: Timer?
+    private var progressTimer: Timer?
     let totalSteps = 6
     
+    // ✅ CORREGIDO: Usar clases directamente sin containers
+    private lazy var userProfile: UserProfile = {
+        return UserProfile.loadFromUserDefaults()
+    }()
+    
+    private let nutritionCalculator: NutritionCalculator
+    private var resultSoon: ResultSoon?
+    
+    // MARK: - Analysis Steps
     private let analysisSteps = [
-        "🧬 Calculating your metabolic rate...",
-        "💧 Determining optimal hydration needs...",
-        "🔥 Computing daily caloric requirements...",
-        "🏋️‍♂️ Selecting exercises for your goals...",
-        "📊 Analyzing expected timeline...",
-        "✨ Finalizing your transformation plan..."
+        "Analyzing your body composition...",
+        "Calculating metabolic rate...",
+        "Optimizing nutrition plan...",
+        "Generating workout recommendations...",
+        "Creating personalized timeline...",
+        "Finalizing your plan..."
     ]
     
-    // User data properties
-    private var userGender: String = ""
-    private var userAge: Int = 25
-    private var userWeight: Double = 70.0
-    private var userHeight: Double = 170.0
-    private var userGoal: String = ""
-    private var userActivityLevel: String = ""
-    private var userTargetWeight: Double = 65.0
-    private var userDietType: String = ""
+    // MARK: - Initialization
+    init(
+        nutritionCalculator: NutritionCalculator? = nil,
+        resultSoon: ResultSoon? = nil
+    ) {
+        // ✅ Usar clases directamente
+        self.nutritionCalculator = nutritionCalculator ?? NutritionCalculator()
+        self.resultSoon = resultSoon
+        
+        startPulsingAnimation()
+    }
     
-    // Calculated values
-    private var bmr: Double = 0
-    private var dailyCalories: Double = 0
-    private var dailyWater: Double = 0
-    private var weeklyWeightChange: Double = 0
+    // ✅ CORREGIDO: Mover cleanupTimers fuera de deinit
+    func cleanup() {
+        cleanupTimers()
+    }
     
+    // MARK: - Public Methods
     func loadUserData() {
-        // Load user data from UserDefaults
-        userGender = UserDefaults.standard.string(forKey: "gender") ?? "Male"
-        userWeight = UserDefaults.standard.double(forKey: "selectedWeightKg")
-        userTargetWeight = UserDefaults.standard.double(forKey: "selectedTarget")
-        userGoal = UserDefaults.standard.string(forKey: "selectedGoal") ?? "Lose Weight"
-        userActivityLevel = UserDefaults.standard.string(forKey: "selectedLevelActivity") ?? "Moderate"
-        userDietType = UserDefaults.standard.string(forKey: "selectedDietType") ?? "Balanced"
-        
-        // Calculate height
-        if let heightCm = UserDefaults.standard.object(forKey: "selectedHeightCm") as? Int {
-            userHeight = Double(heightCm)
-        } else if let heightFt = UserDefaults.standard.object(forKey: "selectedHeightFt") as? Int,
-                  let heightInch = UserDefaults.standard.object(forKey: "selectedHeightInch") as? Int {
-            userHeight = Double(heightFt) * 30.48 + Double(heightInch) * 2.54
-        }
-        
-        // Calculate age
-        if let birthYear = UserDefaults.standard.object(forKey: "selectedBirthYear") as? String,
-           let year = Int(birthYear) {
-            userAge = Calendar.current.component(.year, from: Date()) - year
-        }
-        
-        // Perform calculations
-        calculatePersonalizedData()
+        userProfile = UserProfile.loadFromUserDefaults()
     }
     
-    private func calculatePersonalizedData() {
-        calculateBMR()
-        calculateDailyCalories()
-        calculateWaterNeeds()
-        calculateExpectedTimeline()
-        generatePersonalizedResults()
+    func startAnalysis() {
+        error = nil
+        startProgressTimer()
+        startAnalysisTimer()
+        
+        // ✅ Iniciar cálculos reales en background
+        Task {
+            await performRealCalculations()
+        }
     }
     
-    // MARK: - Scientific Calculations
+    // MARK: - Private Methods
+    private func startPulsingAnimation() {
+        withAnimation(.easeInOut(duration: 2).repeatForever(autoreverses: true)) {
+            isPulsing = true
+        }
+    }
     
-    private func calculateBMR() {
-        // Mifflin-St Jeor Equation
-        if userGender.lowercased() == "male" {
-            bmr = 10 * userWeight + 6.25 * userHeight - 5 * Double(userAge) + 5
+    private func startProgressTimer() {
+        progressTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            Task { @MainActor in
+                if self.progress < 1.0 {
+                    self.progress += 0.01
+                } else {
+                    self.progressTimer?.invalidate()
+                    self.progressTimer = nil
+                }
+            }
+        }
+    }
+    
+    private func startAnalysisTimer() {
+        analysisTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
+            guard let self = self else { return }
+            
+            Task { @MainActor in
+                if self.currentStepIndex < self.analysisSteps.count - 1 {
+                    self.currentStepIndex += 1
+                    self.currentStep = self.analysisSteps[self.currentStepIndex]
+                } else {
+                    self.completeAnalysis()
+                }
+            }
+        }
+    }
+    
+    private func completeAnalysis() {
+        analysisTimer?.invalidate()
+        analysisTimer = nil
+        
+        // Show results with animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            withAnimation(.easeInOut(duration: 0.8)) {
+                self.isGeneratingPlan = false
+            }
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                withAnimation(.spring(response: 0.8, dampingFraction: 0.8)) {
+                    self.showResults = true
+                }
+            }
+        }
+    }
+    
+    // ✅ SIMPLIFICADO: Usar solo NutritionCalculator por ahora
+    private func performRealCalculations() async {
+        do {
+            print("🎯 SHOWINFO - Iniciando cálculos reales...")
+            
+            // ✅ CORREGIDO: Usar el mismo método que DietViewModel para consistencia
+            let nutritionReport = nutritionCalculator.generateNutritionReport()
+            let calories = nutritionReport.dailyCalories
+            let macros = nutritionReport.macros
+            let water = nutritionReport.waterNeeds
+            
+            // Usar ResultSoon si está disponible
+            var weeklyWeightChange = calculateSimpleWeightChange()
+            var successProbability = calculateSimpleSuccessProbability()
+            
+            if let resultSoon = self.resultSoon {
+                let shortTermResults = resultSoon.calculateShortTermResults(for: userProfile)
+                weeklyWeightChange = shortTermResults.totalWeightChange / 4.0
+                successProbability = resultSoon.calculateSuccessProbability(for: userProfile, results: shortTermResults)
+            }
+            
+            // Crear resumen nutricional
+            let summary = NutritionSummary(
+                dailyCalories: calories,
+                dailyWater: calculateWaterIntake(),
+                protein: macros.protein,
+                carbs: macros.carbs,
+                fat: macros.fat,
+                weeklyWeightChange: weeklyWeightChange,
+                successProbability: successProbability
+            )
+            
+            // Actualizar UI en main thread
+            await MainActor.run {
+                self.nutritionSummary = summary
+                self.calculateSimpleTimeline()
+                
+                print("🎯 SHOWINFO - CÁLCULOS COMPLETADOS:")
+                print("   • Calorías diarias: \(Int(calories)) kcal")
+                print("   • Agua diaria: \(String(format: "%.1f", water)) L")
+                print("   • Proteína: \(Int(macros.protein))g")
+                print("   • Cambio semanal: \(String(format: "%.1f", weeklyWeightChange))kg")
+                print("   • Probabilidad éxito: \(Int(successProbability * 100))%")
+            }
+            
+        } catch {
+            await MainActor.run {
+                self.error = "Error al calcular plan: \(error.localizedDescription)"
+                print("❌ Error en ShowInfoViewModel: \(error)")
+            }
+        }
+    }
+    
+    private func calculateWaterIntake() -> String {
+        return nutritionCalculator.calculateWaterNeedsSynchronously(for: userProfile)
+    }
+    
+    private func calculateSimpleSuccessProbability() -> Double {
+        let goal = userProfile.goal.lowercased()
+        let activity = userProfile.levelActivity.lowercased()
+        
+        var probability = 0.7 // Base 70%
+        
+        // Ajustar por actividad
+        if activity.contains("active") || activity.contains("moderate") {
+            probability += 0.1
+        }
+        
+        // Ajustar por objetivo
+        if goal.contains("mantener") || goal.contains("maintain") {
+            probability += 0.1
+        } else if goal.contains("perder") && activity.contains("active") {
+            probability += 0.05
+        }
+        
+        return min(probability, 0.95)
+    }
+    
+    private func calculateSimpleWeightChange() -> Double {
+        let goal = userProfile.goal.lowercased()
+        let activityLevel = userProfile.levelActivity.lowercased()
+        
+        var baseChange = 0.5 // kg por semana
+        
+        if goal.contains("perder") || goal.contains("adelgazar") {
+            baseChange = -0.5
+        } else if goal.contains("ganar") || goal.contains("musculo") {
+            baseChange = 0.3
         } else {
-            bmr = 10 * userWeight + 6.25 * userHeight - 5 * Double(userAge) - 161
+            baseChange = 0.0
         }
-    }
-    
-    private func calculateDailyCalories() {
-        // Activity multipliers
-        let activityMultiplier: Double = {
-            switch userActivityLevel.lowercased() {
-            case "sedentary", "low": return 1.2
-            case "light", "moderate": return 1.375
-            case "moderate", "active": return 1.55
-            case "very active", "high": return 1.725
-            case "extremely active": return 1.9
-            default: return 1.375
-            }
-        }()
         
-        let maintenanceCalories = bmr * activityMultiplier
-        
-        // Adjust based on goal
-        switch userGoal.lowercased() {
-        case "lose weight":
-            dailyCalories = maintenanceCalories - 500 // 1 lb/week deficit
-        case "build muscle":
-            dailyCalories = maintenanceCalories + 300 // Lean bulk
-        case "maintain", "keep fit":
-            dailyCalories = maintenanceCalories
-        default:
-            dailyCalories = maintenanceCalories - 300
+        // Ajustar por actividad
+        if activityLevel.contains("very active") {
+            baseChange *= 1.2
+        } else if activityLevel.contains("active") {
+            baseChange *= 1.1
         }
+        
+        return baseChange
     }
     
-    private func calculateWaterNeeds() {
-        // Base: 35ml per kg of body weight
-        var baseWater = userWeight * 35
+    // ✅ SIMPLIFICADO: Timeline básico sin ResultSoon
+    private func calculateSimpleTimeline() {
+        let goal = userProfile.goal.lowercased()
+        let dietType = userProfile.dietType.lowercased()
         
-        // Add for activity level
-        let activityBonus: Double = {
-            switch userActivityLevel.lowercased() {
-            case "sedentary", "low": return 0
-            case "light", "moderate": return 500
-            case "moderate", "active": return 750
-            case "very active", "high": return 1000
-            case "extremely active": return 1250
-            default: return 500
-            }
-        }()
-        
-        dailyWater = (baseWater + activityBonus) / 1000 // Convert to liters
-    }
-    
-    private func calculateExpectedTimeline() {
-        let weightDifference = abs(userWeight - userTargetWeight)
-        
-        // Base timeline factors
         var firstResultsDays = 7
         var goalWeeks = 8
         
-        // Diet type acceleration
-        if userDietType.lowercased().contains("keto") {
-            firstResultsDays = 3 // Keto shows rapid initial results
-            goalWeeks -= 2 // Faster overall progress
-        } else if userDietType.lowercased().contains("low") && userDietType.lowercased().contains("carb") {
+        // Ajuste por tipo de dieta
+        if dietType.contains("keto") {
+            firstResultsDays = 3
+            goalWeeks = 6
+        } else if dietType.contains("bajo") && dietType.contains("carb") {
             firstResultsDays = 5
-            goalWeeks -= 1
+            goalWeeks = 7
         }
         
-        // Activity level acceleration
-        switch userActivityLevel.lowercased() {
-        case "very active", "high":
-            firstResultsDays = max(2, firstResultsDays - 2)
-            goalWeeks = max(4, goalWeeks - 2)
-        case "active", "moderate":
-            firstResultsDays = max(3, firstResultsDays - 1)
-            goalWeeks = max(5, goalWeeks - 1)
-        default:
-            break
-        }
-        
-        if userGoal.lowercased().contains("lose") {
-            // Weight loss goals
-            weeklyWeightChange = 0.75
-            let calculatedWeeks = Int(ceil(weightDifference / weeklyWeightChange))
-            goalWeeks = min(goalWeeks, max(4, calculatedWeeks))
-            
-            expectedTimeline = ExpectedTimeline(
-                firstResults: "\(firstResultsDays) days",
-                goalAchievement: "\(goalWeeks) weeks",
-                scienceNote: "Your \(userDietType) plan combined with \(userActivityLevel.lowercased()) activity accelerates fat loss through enhanced metabolic rate and ketosis activation."
-            )
-        } else if userGoal.lowercased().contains("muscle") {
-            // Muscle building
-            firstResultsDays = max(10, firstResultsDays + 3) // Muscle takes longer to show
-            goalWeeks = max(8, goalWeeks + 2)
-            
-            expectedTimeline = ExpectedTimeline(
-                firstResults: "\(firstResultsDays) days",
-                goalAchievement: "\(goalWeeks) weeks",
-                scienceNote: "Muscle protein synthesis peaks within 2 weeks. Your high-protein plan ensures optimal growth with visible changes in \(firstResultsDays) days."
-            )
+        let scienceNote: String
+        if goal.contains("perder") || goal.contains("adelgazar") {
+            scienceNote = "Your caloric deficit plan creates sustainable fat loss through metabolic optimization."
+        } else if goal.contains("ganar") || goal.contains("musculo") {
+            scienceNote = "Muscle protein synthesis accelerates with your high-protein nutrition plan."
         } else {
-            // Maintenance/recomposition
-            expectedTimeline = ExpectedTimeline(
-                firstResults: "\(firstResultsDays) days",
-                goalAchievement: "\(goalWeeks) weeks",
-                scienceNote: "Body recomposition combines fat loss with muscle maintenance, showing improvements in strength and definition within \(firstResultsDays) days."
-            )
-        }
-    }
-    
-    private func generatePersonalizedResults() {
-        personalizedResults = [
-            PersonalizedResult(
-                id: 0,
-                icon: "drop.fill",
-                title: "Daily Water Intake",
-                value: String(format: "%.1f L", dailyWater),
-                description: "Optimized for your weight (\(Int(userWeight))kg) and activity level",
-                color: .blue
-            ),
-            PersonalizedResult(
-                id: 1,
-                icon: "flame.fill",
-                title: "Daily Calories",
-                value: "\(Int(dailyCalories)) kcal",
-                description: "Based on your BMR (\(Int(bmr))) and \(userGoal.lowercased()) goal",
-                color: .orange
-            ),
-            PersonalizedResult(
-                id: 2,
-                icon: "dumbbell.fill",
-                title: "Exercise Plan",
-                value: "Personalized",
-                description: "Workouts adapted to your \(userActivityLevel.lowercased()) level and time preferences",
-                color: .purple
-            ),
-            PersonalizedResult(
-                id: 3,
-                icon: "leaf.fill",
-                title: "Diet Protocol",
-                value: userDietType,
-                description: "97.3% success rate for your profile and \(userGoal.lowercased()) goal",
-                color: .green
-            )
-        ]
-    }
-    
-    // MARK: - Animation Control
-    
-    func startAnalysis() {
-        isGeneratingPlan = true
-        currentStepIndex = 0
-        currentStep = analysisSteps[0]
-        
-        for i in 0..<analysisSteps.count {
-            DispatchQueue.main.asyncAfter(deadline: .now() + Double(i) * 2.5) { [weak self] in
-                guard let self = self else { return }
-                
-                withAnimation(.easeInOut(duration: 0.6)) {
-                    self.currentStep = self.analysisSteps[i]
-                    self.currentStepIndex = i
-                    self.progress = Double(i + 1) / Double(self.analysisSteps.count)
-                }
-                
-                // Haptic feedback
-                let impact = UIImpactFeedbackGenerator(style: .light)
-                impact.impactOccurred()
-            }
+            scienceNote = "Your balanced approach maintains optimal body composition and health."
         }
         
-        // Show results after analysis
-        DispatchQueue.main.asyncAfter(deadline: .now() + Double(analysisSteps.count) * 2.5 + 1.0) {
-            withAnimation(.easeInOut(duration: 1.0)) {
-                self.isGeneratingPlan = false
-                self.showResults = true
-                self.isPulsing = false
-            }
-            
-            // Strong completion haptic
-            let impact = UIImpactFeedbackGenerator(style: .heavy)
-            impact.impactOccurred()
-        }
+        expectedTimeline = ExpectedTimeline(
+            firstResults: "\(firstResultsDays) days",
+            goalAchievement: "\(goalWeeks) weeks",
+            scienceNote: scienceNote
+        )
     }
     
-    func getCurrentStepIcon() -> String {
-        switch currentStepIndex {
-        case 0: return "speedometer"
-        case 1: return "drop.fill"
-        case 2: return "flame.fill"
-        case 3: return "dumbbell.fill"
-        case 4: return "chart.line.uptrend.xyaxis"
-        case 5: return "sparkles"
-        default: return "gear"
+    private func cleanupTimers() {
+        analysisTimer?.invalidate()
+        analysisTimer = nil
+        progressTimer?.invalidate()
+        progressTimer = nil
+    }
+    
+    // MARK: - Additional Utility Methods
+    
+    /// Obtiene un resumen rápido para mostrar en UI
+    func getQuickSummary() -> String? {
+        guard let summary = nutritionSummary else { return nil }
+        
+        let goal = userProfile.goal.lowercased()
+        let changeDirection = goal.contains("perder") ? "lose" : goal.contains("ganar") ? "gain" : "maintain"
+        
+        return """
+        📊 Your personalized plan targets \(String(format: "%.1f", abs(summary.weeklyWeightChange)))kg weekly \(changeDirection)
+        🎯 Success probability: \(Int(summary.successProbability * 100))%
+        🔥 Daily intake: \(Int(summary.dailyCalories)) calories
+         Hydration goal: \(summary.dailyWater)
+        """
+    }
+    
+    /// Verifica si el plan es factible
+    func isPlanFeasible() -> Bool {
+        guard let summary = nutritionSummary else { return true }
+        return summary.successProbability > 0.6
+    }
+    
+    /// Obtiene recomendaciones adicionales
+    func getAdditionalRecommendations() -> [String] {
+        guard let summary = nutritionSummary else { return [] }
+        
+        var recommendations: [String] = []
+        
+        if summary.successProbability < 0.6 {
+            recommendations.append("Consider adjusting your timeline for better success rate")
         }
+        
+        if summary.dailyCalories < 1200 {
+            recommendations.append("Plan includes minimum safe calorie intake")
+        }
+        
+        if summary.weeklyWeightChange > 1.0 {
+            recommendations.append("Rapid progress planned - monitor closely")
+        }
+        
+        if summary.protein > summary.dailyCalories * 0.35 / 4 {
+            recommendations.append("High-protein approach for muscle preservation")
+        }
+        
+        return recommendations
+    }
+}
+
+// MARK: - Extensions for UI Compatibility
+extension ShowInfoViewModel {
+    
+    /// Compatibilidad con UI existente
+    var formattedCalories: String {
+        guard let summary = nutritionSummary else { return "Calculating..." }
+        return "\(Int(summary.dailyCalories))"
+    }
+    
+    var formattedWater: String {
+        guard let summary = nutritionSummary else { return "Calculating..." }
+        return summary.dailyWater
+    }
+    
+    var formattedMacros: String {
+        guard let summary = nutritionSummary else { return "Calculating..." }
+        return "\(Int(summary.protein))g protein • \(Int(summary.carbs))g carbs • \(Int(summary.fat))g fat"
+    }
+    
+    var progressIndicator: String {
+        guard let summary = nutritionSummary else { return "🔄 Analyzing..." }
+        
+        let probability = summary.successProbability
+        if probability > 0.8 {
+            return "🚀 Excellent plan"
+        } else if probability > 0.6 {
+            return "💪 Good plan"
+        } else {
+            return "⚠️ Challenging plan"
+        }
+    }
+}
+
+// MARK: - Factory Extension para fácil inicialización
+extension ShowInfoViewModel {
+    
+    /// Factory method simple
+    static func make() -> ShowInfoViewModel {
+        return ShowInfoViewModel()
+    }
+    
+    /// Factory method para testing
+    static func makeForTesting(
+        nutritionCalculator: NutritionCalculator
+    ) -> ShowInfoViewModel {
+        return ShowInfoViewModel(
+            nutritionCalculator: nutritionCalculator,
+            resultSoon: nil
+        )
     }
 }

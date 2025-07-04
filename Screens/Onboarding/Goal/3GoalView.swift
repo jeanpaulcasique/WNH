@@ -14,36 +14,36 @@ struct GoalView: View {
         ZStack {
             ScrollView {
                 VStack(spacing: 30) {
-                    progressSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
-                    headerSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
-                    goalSelectionSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
-                    
+                    progressSection.cascadingAppear(index: 0)
+                    headerSection.cascadingAppear(index: 1)
+                    goalSelectionSection.cascadingAppear(index: 2)
                     Spacer(minLength: 100)
                 }
-                .padding(.horizontal, 20)
+                .screenHorizontalPadding()
                 .padding(.bottom, 120)
             }
-            
-            // Next button overlay
             if viewModel.selectedGoal != nil {
                 VStack {
                     Spacer()
-                    nextButtonSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
-                        .padding(.horizontal, 0)
-                        .padding(.bottom, 0)
+                    NextButton(
+                        title: "Next",
+                        action: proceedToNext,
+                        isLoading: $isLoading,
+                        isDisabled: $isButtonDisabled
+                    )
+                    .frame(maxWidth: .infinity)
+                    .screenHorizontalPadding()
+                    .padding(.bottom, 32)
+                    .cascadingAppear(index: 3)
+                    NavigationLink(
+                        destination: BodyCurrentView(viewModel: BodyCurrentViewModel(), progressViewModel: progressViewModel),
+                        isActive: $navigateToBodyCurrent
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
                 }
+                .frame(maxWidth: .infinity)
             }
         }
         .blackGradientBackground()
@@ -91,77 +91,88 @@ private extension GoalView {
     }
     
     var headerSection: some View {
-        VStack(spacing: 20) {
-            // Animated target icon
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-                
-                Image(systemName: "target")
-                    .font(.system(size: 50))
-                    .foregroundColor(.appYellow)
-                    .scaleEffect(viewModel.selectedGoal != nil ? 1.1 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.selectedGoal)
-            }
-            
-            VStack(spacing: 12) {
-                Text("What's your main goal?")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.appYellow)
-                    .multilineTextAlignment(.center)
-            }
-        }
+        PageHeader(
+            icon: "target",
+            title: "What's your main goal?",
+            subtitle: nil,
+            progressViewModel: nil
+        )
         .padding(.top, 10)
     }
     
     var goalSelectionSection: some View {
         VStack(spacing: 20) {
-            HStack {
-                Text("Choose Your Goal")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.appYellow)
-                
-                Spacer()
-                
-            }
-            
+            SimpleSectionHeader(title: "Choose Your Goal")
             VStack(spacing: 16) {
-                ForEach(Goal.allCases, id: \.self) { goal in
-                    EnhancedGoalOptionCard(
-                        goal: goal,
-                        imageName: viewModel.imageName(for: goal),
-                        isSelected: viewModel.selectedGoal == goal
-                    ) {
-                        selectGoal(goal)
-                    }
+                ForEach(Goal.allCases, id: \ .self) { goal in
+                    let info = goalInfo(for: goal)
+                    ExpandableSelectionCard(
+                        isSelected: viewModel.selectedGoal == goal,
+                        color: info.color,
+                        action: { selectGoal(goal) },
+                        header: {
+                            HStack(spacing: 16) {
+                                ZStack {
+                                    Circle()
+                                        .fill(
+                                            LinearGradient(
+                                                colors: [info.color.opacity(viewModel.selectedGoal == goal ? 0.3 : 0.2), info.color.opacity(viewModel.selectedGoal == goal ? 0.1 : 0.05)],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .frame(width: 70, height: 70)
+                                    Image(systemName: info.icon)
+                                        .font(.system(size: 30))
+                                        .foregroundColor(info.color)
+                                }
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text(goal.rawValue)
+                                            .font(.system(size: 18, weight: .semibold))
+                                            .foregroundColor(.appWhite)
+                                        Spacer()
+                                        if viewModel.selectedGoal == goal {
+                                            Image(systemName: "checkmark.circle.fill")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.green)
+                                        } else {
+                                            Image(systemName: "circle")
+                                                .font(.system(size: 20))
+                                                .foregroundColor(.appWhite.opacity(0.3))
+                                        }
+                                    }
+                                    Text(info.description)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.appWhite.opacity(0.7))
+                                        .lineLimit(2)
+                                }
+                            }
+                        },
+                        expandedContent: {
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Text("What you'll get:")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(info.color)
+                                    Spacer()
+                                }
+                                ForEach(info.benefits, id: \ .self) { benefit in
+                                    HStack(spacing: 8) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(info.color)
+                                        Text(benefit)
+                                            .font(.system(size: 13))
+                                            .foregroundColor(.appWhite.opacity(0.8))
+                                        Spacer()
+                                    }
+                                }
+                            }
+                        }
+                    )
                 }
             }
-        }
-    }
-    
-    var nextButtonSection: some View {
-        VStack {
-            NextButton(
-                title: "Next",
-                action: proceedToNext,
-                isLoading: $isLoading,
-                isDisabled: $isButtonDisabled
-            )
-            
-            NavigationLink(
-                destination: BodyCurrentView(viewModel: BodyCurrentViewModel(), progressViewModel: progressViewModel),
-                isActive: $navigateToBodyCurrent
-            ) {
-                EmptyView()
-            }
-            .hidden()
         }
     }
 }
@@ -194,6 +205,32 @@ private extension GoalView {
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             self.navigateToBodyCurrent = true
+        }
+    }
+}
+
+// Helper para info de cada goal
+private extension GoalView {
+    func goalInfo(for goal: Goal) -> (color: Color, icon: String, description: String, benefits: [String]) {
+        switch goal {
+        case .loseWeight:
+            return (.red, "flame.fill", "Focus on burning calories and fat loss", [
+                "High-intensity cardio workouts",
+                "Calorie tracking and nutrition guidance",
+                "Fat-burning exercise routines"
+            ])
+        case .buildMuscle:
+            return (.blue, "dumbbell.fill", "Build strength and increase muscle mass", [
+                "Progressive strength training",
+                "Muscle-building nutrition plans",
+                "Recovery and growth optimization"
+            ])
+        case .keepFit:
+            return (.green, "heart.fill", "Maintain fitness and overall health", [
+                "Balanced cardio and strength mix",
+                "Flexibility and mobility focus",
+                "Sustainable healthy habits"
+            ])
         }
     }
 }

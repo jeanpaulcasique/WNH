@@ -59,12 +59,8 @@ final class SubscriptionViewModel: ObservableObject {
     
     // MARK: - Public Methods
     func loadSubscriptionData() {
-        isLoading = true
-        
-        // Simulate API call
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            self.isLoading = false
-        }
+        // ✅ ELIMINADO: Loading inicial innecesario
+        // Los datos ya están disponibles desde la inicialización
     }
     
     func selectPlan(_ plan: SubscriptionPlan) {

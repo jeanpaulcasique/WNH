@@ -159,6 +159,7 @@ class GroceryListViewModel: ObservableObject {
     @Published var groceryList: [Ingredient] = []
     
     private static let checkedKey = "checkedIngredients"
+    private static let expandedCategoriesKey = "expandedCategories"
     
     // MARK: - Agrupación por categorías
     enum GroceryCategory: String, CaseIterable {
@@ -191,6 +192,19 @@ class GroceryListViewModel: ObservableObject {
 
     @Published var groceryListByCategory: [GroceryCategory: [Ingredient]] = [:]
     
+    // ✅ NUEVO: Estado persistente de categorías expandidas
+    @Published var expandedCategories: [GroceryCategory: Bool] = [:]
+    
+    // ✅ NUEVO: Cache para optimizar rendimiento
+    private var filteredIngredientsCache: [GroceryCategory: [Ingredient]] = [:]
+    private var lastFilterState: Bool = false
+    
+    init() {
+        loadExpandedCategoriesState()
+        // Colapsar todas las categorías por defecto
+        expandedCategories = Dictionary(uniqueKeysWithValues: GroceryCategory.allCases.map { ($0, false) })
+    }
+    
     // MARK: - Public Methods
     
     func updateGroceryList(from weeklyRecipes: [Date: [Recipe]]) {
@@ -218,6 +232,9 @@ class GroceryListViewModel: ObservableObject {
         // Agrupar por categoría
         groceryListByCategory = Dictionary(grouping: groceryList, by: { categorizeIngredient($0.name) })
         
+        // ✅ NUEVO: Limpiar cache cuando cambia la lista
+        clearCache()
+        
         print("✅ Lista actualizada:")
         print("   📊 Total: \(totalCount) ingredientes")
         print("   ✅ Completados: \(checkedCount)")
@@ -244,23 +261,14 @@ class GroceryListViewModel: ObservableObject {
     func toggleCheck(for ingredient: Ingredient) {
         print("🔄 Intentando toggle para: '\(ingredient.name)' (actual: \(ingredient.isChecked))")
         
-        // Buscar por nombre en lugar de ID, ya que los IDs pueden cambiar
-        if let index = groceryList.firstIndex(where: { $0.name == ingredient.name }) {
-            // Crear una copia de la lista para forzar la actualización
-            var updatedList = groceryList
-            updatedList[index].isChecked.toggle()
-            groceryList = updatedList
-            
+        // Buscar por id para mutar directamente el struct en el array
+        if let index = groceryList.firstIndex(where: { $0.id == ingredient.id }) {
+            groceryList[index].isChecked.toggle()
             // ACTUALIZAR agrupación por categoría tras toggle
             groceryListByCategory = Dictionary(grouping: groceryList, by: { categorizeIngredient($0.name) })
-            
             let newState = groceryList[index].isChecked
             print("✅ Toggle exitoso: '\(ingredient.name)' cambiado a \(newState)")
-            
-            // Guardar el estado
             saveCheckedIngredientNames()
-            
-            // Forzar actualización de la UI
             objectWillChange.send()
         } else {
             print("❌ ERROR: No se encontró '\(ingredient.name)' en la lista")
@@ -302,10 +310,13 @@ class GroceryListViewModel: ObservableObject {
     }
     
     func clearAllChecked() {
-        for index in groceryList.indices {
-            groceryList[index].isChecked = false
+        // Crea una nueva lista con nuevos IDs para forzar el refresco
+        groceryList = groceryList.map { ing in
+            Ingredient(name: ing.name, quantity: ing.quantity, isChecked: false)
         }
+        groceryListByCategory = Dictionary(grouping: groceryList, by: { categorizeIngredient($0.name) })
         saveCheckedIngredientNames()
+        objectWillChange.send()
     }
     
     func getCheckedIngredients() -> [Ingredient] {
@@ -407,6 +418,58 @@ class GroceryListViewModel: ObservableObject {
                 print("❌ Sin conversión práctica: '", name, "'")
             }
         }
+    }
+    
+    // ✅ NUEVO: Métodos para manejar estado persistente
+    func toggleCategoryExpansion(_ category: GroceryCategory) {
+        expandedCategories[category] = !(expandedCategories[category] ?? false)
+        saveExpandedCategoriesState()
+    }
+    
+    func isCategoryExpanded(_ category: GroceryCategory) -> Bool {
+        return expandedCategories[category] ?? false
+    }
+    
+    private func saveExpandedCategoriesState() {
+        let expandedCategoryNames = expandedCategories.compactMap { category, isExpanded in
+            isExpanded ? category.rawValue : nil
+        }
+        UserDefaults.standard.set(expandedCategoryNames, forKey: Self.expandedCategoriesKey)
+    }
+    
+    private func loadExpandedCategoriesState() {
+        if let savedCategories = UserDefaults.standard.array(forKey: Self.expandedCategoriesKey) as? [String] {
+            expandedCategories = Dictionary(uniqueKeysWithValues: savedCategories.map { category in
+                (GroceryCategory(rawValue: category) ?? .otros, true)
+            })
+        } else {
+            // Por defecto, todas las categorías están colapsadas
+            expandedCategories = Dictionary(uniqueKeysWithValues: GroceryCategory.allCases.map { ($0, false) })
+        }
+    }
+    
+    // ✅ NUEVO: Método optimizado para obtener ingredientes filtrados
+    func getFilteredIngredients(for category: GroceryCategory, showOnlyUnchecked: Bool) -> [Ingredient] {
+        guard let items = groceryListByCategory[category] else { return [] }
+        let filtered = showOnlyUnchecked ? items.filter { !$0.isChecked } : items
+        let sorted = filtered.sorted { $0.name < $1.name }
+        return sorted
+    }
+    
+    // ✅ NUEVO: Método para limpiar cache cuando cambia la lista
+    private func clearCache() {
+        filteredIngredientsCache.removeAll()
+    }
+
+    // Devuelve todos los ingredientes filtrados según el toggle global
+    func getFilteredIngredientsForAll(showOnlyUnchecked: Bool) -> [Ingredient] {
+        let all = groceryList
+        return showOnlyUnchecked ? all.filter { !$0.isChecked } : all
+    }
+
+    // Devuelve solo las categorías presentes según el filtro
+    func presentCategories(showOnlyUnchecked: Bool) -> [GroceryCategory] {
+        GroceryCategory.allCases.filter { getFilteredIngredients(for: $0, showOnlyUnchecked: showOnlyUnchecked).isEmpty == false }
     }
 }
 
@@ -922,5 +985,12 @@ struct IngredientInfo {
         case .imperial:
             return count == 1 ? englishUnit : englishPluralUnit
         }
+    }
+}
+
+// MARK: - Extensions
+extension Array where Element == (GroceryListViewModel.GroceryCategory, Bool) {
+    func toDictionary() -> [GroceryListViewModel.GroceryCategory: Bool] {
+        return Dictionary(uniqueKeysWithValues: self)
     }
 }

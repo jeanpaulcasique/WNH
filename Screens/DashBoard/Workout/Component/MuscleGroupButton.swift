@@ -7,24 +7,23 @@ struct MuscleGroupButton: View {
     
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 6) {
                 Circle()
-                    .fill(Color.yellow)
-                    .frame(width: 8, height: 8)
-                
+                    .fill(Color.appYellow)
+                    .frame(width: 10, height: 10)
                 Text(muscleGroup.name)
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.black.opacity(0.7))
-                    .cornerRadius(8)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.appWhite)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(10)
             }
         }
         .position(
             x: geometry.size.width * muscleGroup.position.x,
             y: geometry.size.height * muscleGroup.position.y
         )
+        .shadow(color: Color.appYellow.opacity(0.10), radius: 4, x: 0, y: 2)
     }
 } 

@@ -1,5 +1,19 @@
 import SwiftUI
 
+// MARK: - Tips de dieta animados (ESPAÑOL)
+private let dietTips: [String] = [
+    "¡Mantén tu cuerpo hidratado! Bebe agua antes de cada comida.",
+    "Come proteínas magras en cada comida para mantener la masa muscular.",
+    "Incluye vegetales de colores en tu plato para obtener más nutrientes.",
+    "Planifica tus comidas con anticipación para evitar decisiones impulsivas.",
+    "Mastica lentamente y disfruta cada bocado para mejor digestión.",
+    "¡No te saltes el desayuno! Es la comida más importante del día.",
+    "Incluye grasas saludables como aguacate y nueces en tu dieta.",
+    "Controla las porciones usando platos más pequeños.",
+    "Cocina en casa más seguido para controlar ingredientes y calorías.",
+    "¡Escucha a tu cuerpo! Come cuando tengas hambre, para cuando estés satisfecho."
+]
+
 // MARK: - Botón animado al presionar
 struct PressableButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -17,6 +31,9 @@ struct DietView: View {
     @State private var showGrocerySheet = false
     @State private var headerScale: CGFloat = 1.0
     @State private var showCalorieAlert = false
+    @State private var currentTipIndex = 0
+    @State private var animateTip = false
+    @State private var userName: String? = nil
 
     var body: some View {
         NavigationView {
@@ -62,7 +79,7 @@ struct DietView: View {
         .accentColor(.appYellow)
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showGrocerySheet) {
-            GroceryListSheetView(vm: vm)
+            GroceryListSheetView2(groceryListViewModel: vm.groceryListViewModel)
         }
         .alert("Calorie Target", isPresented: $showCalorieAlert) {
             Button("OK", role: .cancel) { }
@@ -70,13 +87,18 @@ struct DietView: View {
             Text("Your daily target is \(Int(vm.getDailyCaloriesTarget())) calories")
         }
         .onAppear {
-            vm.loadRecipesForSelectedDiet()
+            Task {
+                await vm.loadRecipesForSelectedDiet()
+            }
             setupViewModels()
             animateViewIn()
         }
     }
     
     private func setupViewModels() {
+        // Obtener nombre del usuario
+        userName = UserDefaults.standard.string(forKey: "userName")
+        
         // Sincronizar el día seleccionado entre los ViewModels
         daySelectorVM.$selectedDay
             .sink { [weak todaysMealsVM] day in
@@ -105,6 +127,35 @@ extension DietView {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0).delay(0.3)) {
             vm.showSelectors = true
         }
+        
+        // Iniciar animación de tips
+        animateTip = false
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            animateTip = true
+        }
+        startTipTimer()
+    }
+    
+    private func startTipTimer() {
+        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
+            withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {
+                animateTip = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                let isLast = currentTipIndex == dietTips.count - 1
+                if isLast {
+                    Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { _ in
+                        currentTipIndex = 0
+                        animateTip = true
+                        startTipTimer()
+                    }
+                } else {
+                    currentTipIndex = (currentTipIndex + 1)
+                    animateTip = true
+                    startTipTimer()
+                }
+            }
+        }
     }
 }
 
@@ -112,65 +163,45 @@ extension DietView {
 private extension DietView {
     
     var headerSection: some View {
-        VStack(spacing: 20) {
-            // Diet icon with animated ring (similar to profile section)
-            ZStack {
-                // Animated ring (reusing the animation pattern from MeView)
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.appYellow, Color.orange, Color.appYellow],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 3
-                    )
-                    .frame(width: 100, height: 100)
-                    .rotationEffect(.degrees(vm.ringRotation))
-                
-                // Diet icon
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 90, height: 90)
-                    
-                    Image(systemName: "fork.knife.circle.fill")
-                        .font(.system(size: 40))
-                        .foregroundColor(.appYellow)
-                }
-                .scaleEffect(headerScale)
-                .onTapGesture {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        headerScale = 1.1
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            headerScale = 1.0
-                        }
-                    }
-                    // Haptic feedback
-                    let generator = UIImpactFeedbackGenerator(style: .light)
-                    generator.impactOccurred()
-                }
-            }
-            
-            VStack(spacing: 8) {
-                Text("\(vm.selectedDiet) Plan")
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: "fork.knife.circle.fill")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.appYellow)
-                
-                Text("Fuel your body right")
-                    .font(.system(size: 16))
-                    .foregroundColor(.appWhite.opacity(0.8))
-                    .multilineTextAlignment(.center)
+                Text(userName != nil ? "¡Hola, \(userName!)!" : "¡Listo para comer saludable!")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.appYellow)
+                Spacer()
             }
+            .padding(.horizontal, 12)
+            .padding(.top, 12)
+            .padding(.bottom, 2)
+            
+            ZStack {
+                ForEach(0..<dietTips.count, id: \.self) { i in
+                    if i == currentTipIndex {
+                        Text(dietTips[i])
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(.appWhite.opacity(0.85))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 12)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
+                            .id(i)
+                            .opacity(animateTip ? 1 : 0)
+                            .offset(y: animateTip ? 0 : 30)
+                            .animation(.spring(response: 0.7, dampingFraction: 0.7), value: animateTip)
+                    }
+                }
+            }
+            .frame(height: 36)
         }
+        .background(.ultraThinMaterial)
+        .cornerRadius(18)
+        .shadow(color: Color.appYellow.opacity(0.08), radius: 8, x: 0, y: 2)
+        .padding(.horizontal, 8)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
     
     var nutritionOverviewSection: some View {

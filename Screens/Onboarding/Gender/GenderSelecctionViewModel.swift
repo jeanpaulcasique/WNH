@@ -2,9 +2,7 @@
 import SwiftUI
 
 class GenderSelectionViewModel: ObservableObject {
-    @Published var selectedGender: Gender? {
-        didSet { saveGenderToUserDefaults() }
-    }
+    @Published var selectedGender: Gender?
     @Published var isButtonDisabled = false
     @Published var isLoading = false
     @Published var navigateToGoal = false
@@ -14,37 +12,34 @@ class GenderSelectionViewModel: ObservableObject {
     private let userDefaultsKey = "gender"
 
     init() {
-        loadGenderFromUserDefaults()
+        // No cargar género automáticamente para evitar preselección
+        // loadGenderFromUserDefaults()
     }
 
     func selectGender(_ gender: Gender) {
         selectedGender = gender
-        HapticManager.generateImpact()
     }
 
     func onNextTapped(progressViewModel: ProgressViewModel) {
-        guard selectedGender != nil && !isButtonDisabled else { return }
+        guard selectedGender != nil && !isButtonDisabled && !isLoading else { return }
 
         isButtonDisabled = true
         isLoading = true
         progressUpdating = true
 
-        HapticManager.generateImpact()
+        HapticManager.shared.impact(style: .medium)
         progressViewModel.advanceProgress()
 
-        self.navigateToGoal = true
-        self.progressUpdating = false
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-            self.isButtonDisabled = false
-            self.isLoading = false
-        }
-    }
-
-    private func saveGenderToUserDefaults() {
+        // Guardar género seleccionado solo al avanzar
         if let gender = selectedGender {
-            UserDefaults.standard.set(gender.rawValue, forKey: userDefaultsKey)
+            UserDefaults.standard.set(gender.rawValue, forKey: self.userDefaultsKey)
         }
+
+        // Navegación instantánea
+        self.isLoading = false
+        self.isButtonDisabled = false
+        self.progressUpdating = false
+        self.navigateToGoal = true
     }
 
     private func loadGenderFromUserDefaults() {
@@ -58,12 +53,4 @@ class GenderSelectionViewModel: ObservableObject {
 // Gender enum
 enum Gender: String, CaseIterable {
     case male, female
-}
-
-// Haptic Manager
-enum HapticManager {
-    static func generateImpact() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-    }
 }

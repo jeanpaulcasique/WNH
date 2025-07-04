@@ -29,9 +29,9 @@ struct LoginView: View {
                         .padding(.bottom, 50)
 
                     // START - nuevo usuario
-                    NavigationLink(destination: Fase1View(
-                        genderSelectionViewModel: genderSelectionViewModel,
-                        progressViewModel: progressViewModel
+                    NavigationLink(destination: GenderSelectionView(
+                        progressViewModel: progressViewModel,
+                        viewModel: genderSelectionViewModel
                     )) {
                         HStack {
                             Text("START")

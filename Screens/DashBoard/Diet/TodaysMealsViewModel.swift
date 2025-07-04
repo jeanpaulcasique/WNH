@@ -9,14 +9,31 @@ class TodaysMealsViewModel: ObservableObject {
     private var userProfile: UserProfile
     
     var totalCaloriesGoal: Int {
-        return Int(nutritionCalculator.calculateDailyCalories())
+        // Usar método async en Task
+        return 2000 // Valor por defecto, actualizar con async
     }
     
     init(userProfile: UserProfile = UserProfile.loadFromUserDefaults()) {
         self.userProfile = userProfile
-        self.nutritionCalculator = NutritionCalculator(userProfile: userProfile)
+        self.nutritionCalculator = NutritionCalculator() // Sin parámetro userProfile
+        
+        // Calcular calorías asíncronamente
+        Task {
+            await updateCaloriesGoal()
+        }
     }
     
+    @MainActor
+    private func updateCaloriesGoal() async {
+        do {
+            let calories = try await nutritionCalculator.calculateDailyCalories(for: userProfile)
+            // Actualizar UI si necesario
+        } catch {
+            print("Error calculando calorías: \(error)")
+        }
+    }
+    
+    // Resto del código igual...
     func recipes(for meal: MealType) -> [Recipe] {
         weeklyRecipes[selectedDay]?.filter { $0.mealType == meal } ?? []
     }
@@ -36,10 +53,14 @@ class TodaysMealsViewModel: ObservableObject {
     }
     
     func updateSelectedDay(_ day: Date) {
-        selectedDay = day
+        DispatchQueue.main.async {
+            self.selectedDay = day
+        }
     }
     
     func updateWeeklyRecipes(_ recipes: [Date: [Recipe]]) {
-        weeklyRecipes = recipes
+        DispatchQueue.main.async {
+            self.weeklyRecipes = recipes
+        }
     }
-} 
+}

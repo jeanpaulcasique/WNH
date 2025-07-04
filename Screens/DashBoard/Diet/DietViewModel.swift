@@ -8,12 +8,18 @@ class DietViewModel: ObservableObject {
     @Published var selectedDiet: String {
         didSet {
             UserDefaults.standard.set(selectedDiet, forKey: Self.selectedDietKey)
-            loadRecipesForSelectedDiet()
+            Task {
+                await loadRecipesForSelectedDiet()
+            }
         }
     }
     @Published var days: [Date] = []
     @Published var selectedDay: Date = Date()
-    @Published var weeklyRecipes: [Date: [Recipe]] = [:]
+    @Published var weeklyRecipes: [Date: [Recipe]] = [:] {
+        didSet {
+            updateGroceryList()
+        }
+    }
     @Published var nutritionReport: NutritionReport?
     @Published var isLoadingNutrition = false
     @Published var ringRotation: Double = 0.0
@@ -25,30 +31,35 @@ class DietViewModel: ObservableObject {
     private let calendar = Calendar(identifier: .gregorian)
     private static let selectedDietKey = "selectedDietType"
 
-    private var userProfile: UserProfile = UserProfile.loadFromUserDefaults()
-    private var nutritionCalculator: NutritionCalculator
+    // ✅ OPTIMIZACIÓN: Lazy loading de componentes pesados
+    private lazy var userProfile: UserProfile = {
+        return UserProfile.loadFromUserDefaults()
+    }()
+    
+    private lazy var nutritionCalculator: NutritionCalculator = {
+        return NutritionCalculator()
+    }()
+    
+    // ✅ OPTIMIZACIÓN: Cache para evitar recálculos
+    private var nutritionCache: [String: NutritionReport] = [:]
+    private var recipesCache: [String: [Recipe]] = [:]
     
     // MARK: - Grocery List Integration
     @Published var groceryListViewModel = GroceryListViewModel()
     var cancellables = Set<AnyCancellable>()
 
-    // MARK: - Init
+    // MARK: - Init Optimizado
 
     init() {
         let stored = UserDefaults.standard.string(forKey: Self.selectedDietKey) ?? "Keto"
         selectedDiet = stored
 
-        // Inicializar calculadora nutricional sin distribution
-        nutritionCalculator = NutritionCalculator(userProfile: userProfile)
-
+        // ✅ OPTIMIZACIÓN: Solo setup básico en init
         setupDays()
-        // Carga pesada movida fuera del init
-        // loadNutritionData()
-        // loadRecipesWithCorrectCalories()
-        // updateGroceryList()
-        
         setupGroceryListSubscription()
         startRingAnimation()
+        
+        // ❌ REMOVIDO: Carga pesada movida a loadHeavyDataIfNeeded()
     }
     
     private func startRingAnimation() {
@@ -80,16 +91,16 @@ class DietViewModel: ObservableObject {
         selectedDay = day
     }
 
-    func updateUserProfile(_ newProfile: UserProfile) {
+    func updateUserProfile(_ newProfile: UserProfile) async {
         userProfile = newProfile
         UserDefaults.standard.set(newProfile.dietType, forKey: Self.selectedDietKey)
 
         // Actualizar calculadora sin distribution
-        nutritionCalculator = NutritionCalculator(userProfile: newProfile)
+        nutritionCalculator = NutritionCalculator()
 
         selectedDiet = newProfile.dietType
-        loadNutritionData()
-        loadRecipesForSelectedDiet()
+        await loadNutritionData()
+        await loadRecipesForSelectedDiet()
         updateGroceryList()
     }
 
@@ -105,15 +116,15 @@ class DietViewModel: ObservableObject {
     // MARK: - Métodos nutricionales
 
     func getDailyCaloriesTarget() -> Double {
-        return nutritionCalculator.calculateDailyCalories()
+        return nutritionCalculator.generateNutritionReport().dailyCalories
     }
 
     func getMacroTargets() -> MacroTargets {
-        return nutritionCalculator.calculateMacros()
+        return nutritionCalculator.generateNutritionReport().macros
     }
 
     func getMealDistribution() -> [MealType: Double] {
-        return nutritionCalculator.calculateMealDistribution()
+        return nutritionCalculator.generateNutritionReport().mealDistribution
     }
 
     func getConsumedCalories() -> [MealType: Int] {
@@ -137,31 +148,7 @@ class DietViewModel: ObservableObject {
     }
 
     func calculateRecommendedWaterIntake() -> String {
-        let weight = userProfile.weightKg
-        let age: Int = {
-            let currentYear = Calendar.current.component(.year, from: Date())
-            return currentYear - (Int(userProfile.birthYear) ?? (currentYear - 30))
-        }()
-        let gender = userProfile.gender.lowercased()
-        let height = Double(userProfile.resolvedHeightCm)
-
-        guard weight > 0 else { return "Set your weight to get recommendation" }
-        var liters = weight * 0.033
-        if height > 180 { liters *= 1.05 }
-        else if height < 160 { liters *= 0.95 }
-        if age < 14 { liters *= 0.8 }
-        if gender.contains("male") { liters *= 1.1 }
-
-        switch userProfile.levelActivity.lowercased() {
-        case "high", "active", "very active":
-            liters *= 1.2
-        case "moderate", "moderately active":
-            liters *= 1.1
-        default:
-            break
-        }
-
-        return String(format: "%.1f L", liters)
+        return nutritionCalculator.calculateWaterNeedsSynchronously(for: userProfile)
     }
 
     // MARK: - Grocery List Methods (Delegated)
@@ -244,17 +231,17 @@ class DietViewModel: ObservableObject {
         selectedDay = days.first ?? today
     }
 
-    private func loadNutritionData() {
+    private func loadNutritionData() async {
         isLoadingNutrition = true
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        await MainActor.run {
             self.nutritionReport = self.nutritionCalculator.generateNutritionReport()
             self.isLoadingNutrition = false
         }
     }
 
-     func loadRecipesForSelectedDiet() {
-        loadRecipesWithCorrectCalories()
+    func loadRecipesForSelectedDiet() async {
+        await loadRecipesWithCorrectCalories()
     }
 
     func organizeRecipesByDay(_ recipes: [Recipe]) -> [[Recipe]] {
@@ -277,15 +264,199 @@ class DietViewModel: ObservableObject {
     }
 
     private func updateGroceryList() {
-        groceryListViewModel.updateGroceryList(from: weeklyRecipes)
+        Task { @MainActor in
+            self.groceryListViewModel.updateGroceryList(from: self.weeklyRecipes)
+        }
     }
 
-    /// Carga pesada diferida: recetas, nutrición, grocery
-    func loadHeavyDataIfNeeded() {
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.loadNutritionData()
-            self?.loadRecipesWithCorrectCalories()
-            self?.updateGroceryList()
+    // ✅ NUEVO: Método para carga pesada bajo demanda
+    func loadHeavyDataIfNeeded() async {
+        guard nutritionReport == nil else { return }
+        
+        await withTaskGroup(of: Void.self) { group in
+            group.addTask { await self.loadNutritionData() }
+            group.addTask { await self.loadRecipesWithCorrectCalories() }
+            group.addTask { self.updateGroceryList() }
+        }
+    }
+
+    // Método que ajusta recetas por día y por tipo de comida según el objetivo diario
+    func loadRecipesWithCorrectCalories() async {
+        let normalizedDiet = selectedDiet.lowercased().filter { $0.isLetter }
+        print("🔄 CARGANDO DIETA CON AJUSTE POR COMIDA: \(normalizedDiet)")
+
+        // 1. Obtener recetas base
+        let baseRecipes: [Recipe]
+        switch normalizedDiet {
+        case "keto":
+            baseRecipes = RecipesKeto.getWeeklyRecipes()
+        case "lowcarb":
+            baseRecipes = RecipesLowCarb.getWeeklyRecipes()
+        case "caloriedeficit", "deficit":
+            baseRecipes = RecipesDeficit.getWeeklyRecipes()
+        default:
+            baseRecipes = RecipesDeficit.getWeeklyRecipes()
+        }
+
+        // 2. Organizar recetas por día (7 días)
+        let recipesPerDay = 3
+        var dailyRecipes: [[Recipe]] = []
+        var currentDayRecipes: [Recipe] = []
+        for (index, recipe) in baseRecipes.enumerated() {
+            currentDayRecipes.append(recipe)
+            if (index + 1) % recipesPerDay == 0 {
+                dailyRecipes.append(currentDayRecipes)
+                currentDayRecipes = []
+            }
+        }
+        if !currentDayRecipes.isEmpty {
+            dailyRecipes.append(currentDayRecipes)
+        }
+
+        // 3. Ajustar las recetas de cada día individualmente, y por tipo de comida
+        let targetDaily = getDailyCaloriesTarget()
+        var adjustedWeeklyRecipes: [[Recipe]] = []
+
+        for dayGroup in dailyRecipes {
+            var adjustedDay: [Recipe] = []
+
+            let distribution = getMealDistribution()
+            let mealGroups = Dictionary(grouping: dayGroup, by: { $0.mealType })
+
+            for mealType in MealType.allCases {
+                guard let group = mealGroups[mealType] else { continue }
+
+                // CORRECCIÓN CRÍTICA: distribution[mealType] ya es el valor en calorías, no un porcentaje
+                let mealTargetCalories = distribution[mealType] ?? 0.0
+                
+                print("   • \(mealType.displayName) objetivo: \(Int(mealTargetCalories)) cal")
+                
+                let currentCalories = group.reduce(0) { $0 + $1.calories }
+                let factor = currentCalories > 0 ? mealTargetCalories / Double(currentCalories) : 1.0
+
+                let adjustedMeal = group.map { recipe -> Recipe in
+                    let newCalories = Int((Double(recipe.calories) * factor).rounded())
+                    let adjustedIngredients = recipe.ingredients.map { ingredient -> Ingredient in
+                        let (qty, unit) = parseQuantitySimple(ingredient.quantity)
+                        let newQty = qty * factor
+                        let newQuantityString = formatQuantitySimple(newQty, unit: unit)
+
+                        return Ingredient(
+                            name: ingredient.name,
+                            quantity: newQuantityString,
+                            isChecked: ingredient.isChecked
+                        )
+                    }
+                    return Recipe(
+                        title: recipe.title,    
+                        mealType: recipe.mealType,
+                        imageName: recipe.imageName,
+                        ingredients: adjustedIngredients,
+                        instructions: recipe.instructions,
+                        calories: newCalories
+                    )
+                }
+
+                adjustedDay.append(contentsOf: adjustedMeal)
+            }
+            adjustedWeeklyRecipes.append(adjustedDay)
+        }
+
+        // 4. Asignar resultado en el hilo principal
+        let result: [Date: [Recipe]] = {
+            var dict: [Date: [Recipe]] = [:]
+            for (i, day) in days.enumerated() {
+                if i < adjustedWeeklyRecipes.count {
+                    dict[day] = adjustedWeeklyRecipes[i]
+                }
+            }
+            return dict
+        }()
+        await MainActor.run {
+            self.weeklyRecipes = result
+        }
+    }
+    
+    // Parseo simple de cantidades
+    private func parseQuantitySimple(_ quantity: String) -> (Double, String) {
+        let pattern = #"([0-9]*\.?[0-9]+)\s*(.*)?"#
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: quantity, range: NSRange(quantity.startIndex..., in: quantity)),
+              let numberRange = Range(match.range(at: 1), in: quantity) else {
+            return (1.0, quantity)
+        }
+        
+        let number = Double(quantity[numberRange]) ?? 1.0
+        let unitRange = Range(match.range(at: 2), in: quantity)
+        let unit = unitRange != nil ? String(quantity[unitRange!]) : ""
+        
+        return (number, unit.trimmingCharacters(in: .whitespaces))
+    }
+    
+    // Formateo simple de cantidades
+    private func formatQuantitySimple(_ value: Double, unit: String) -> String {
+        let rounded = (value * 10).rounded() / 10
+        
+        if rounded.truncatingRemainder(dividingBy: 1) == 0 {
+            return "\(Int(rounded))\(unit.isEmpty ? "" : " \(unit)")"
+        } else {
+            return String(format: "%.1f%@", rounded, unit.isEmpty ? "" : " \(unit)")
+        }
+    }
+    
+    // Verificar resultado final
+    private func verifyFinalResult() {
+        let target = getDailyCaloriesTarget()
+        let actual = getTotalDailyCalories()
+        let difference = actual - Int(target)
+        
+        print("📊 VERIFICACIÓN FINAL:")
+        print("   • Objetivo: \(Int(target)) kcal")
+        print("   • Actual: \(actual) kcal")
+        print("   • Diferencia: \(difference) kcal")
+        print("   • Estado: \(abs(difference) <= 50 ? "✅ CORRECTO" : "❌ NECESITA AJUSTE")")
+    }
+
+    // MARK: - Fix Temporal para Debug
+
+    func debugCalorieIssue() async throws {
+        print("🔍 DEBUGGING CALORIE ISSUE...")
+        
+        // 1. Verificar recetas base
+        let baseRecipes = RecipesDeficit.getWeeklyRecipes()
+        let baseTotal = baseRecipes.reduce(0) { $0 + $1.calories }
+        let baseDailyAvg = Double(baseTotal) / 7.0
+        
+        print("📦 RECETAS BASE:")
+        print("   • Total semanal: \(baseTotal) kcal")
+        print("   • Promedio diario: \(Int(baseDailyAvg)) kcal")
+        
+        // 2. Verificar objetivo
+        let target = getDailyCaloriesTarget()
+        print("🎯 OBJETIVO: \(Int(target)) kcal/día")
+        
+        // 3. Calcular factor necesario
+        let neededFactor = target / baseDailyAvg
+        print("⚙️ FACTOR NECESARIO: \(String(format: "%.2f", neededFactor))")
+        
+        // 4. Verificar si NutritionCalculator está funcionando
+        let adjustedByCalculator = try await nutritionCalculator.adjustRecipes(baseRecipes, for: userProfile)
+        let adjustedTotal = adjustedByCalculator.reduce(0) { $0 + $1.calories }
+        let adjustedDailyAvg = Double(adjustedTotal) / 7.0
+        
+        print("🔧 DESPUÉS DEL NUTRITION CALCULATOR:")
+        print("   • Total semanal: \(adjustedTotal) kcal")
+        print("   • Promedio diario: \(Int(adjustedDailyAvg)) kcal")
+        print("   • Factor aplicado: \(String(format: "%.2f", adjustedDailyAvg / baseDailyAvg))")
+        
+        // 5. Verificar recetas específicas
+        print("📋 EJEMPLOS DE RECETAS:")
+        for i in 0..<min(3, baseRecipes.count) {
+            let original = baseRecipes[i]
+            let adjusted = adjustedByCalculator[i]
+            print("   • \(original.title):")
+            print("     - Original: \(original.calories) kcal")
+            print("     - Ajustada: \(adjusted.calories) kcal")
         }
     }
 }
@@ -408,53 +579,6 @@ enum MealType: String, CaseIterable, Identifiable {
     }
 }
 
-// MARK: - Fix Temporal para Debug
-
-extension DietViewModel {
-    
-    // Método para verificar qué está pasando exactamente
-    func debugCalorieIssue() {
-        print("🔍 DEBUGGING CALORIE ISSUE...")
-        
-        // 1. Verificar recetas base
-        let baseRecipes = RecipesDeficit.getWeeklyRecipes()
-        let baseTotal = baseRecipes.reduce(0) { $0 + $1.calories }
-        let baseDailyAvg = Double(baseTotal) / 7.0
-        
-        print("📦 RECETAS BASE:")
-        print("   • Total semanal: \(baseTotal) kcal")
-        print("   • Promedio diario: \(Int(baseDailyAvg)) kcal")
-        
-        // 2. Verificar objetivo
-        let target = getDailyCaloriesTarget()
-        print("🎯 OBJETIVO: \(Int(target)) kcal/día")
-        
-        // 3. Calcular factor necesario
-        let neededFactor = target / baseDailyAvg
-        print("⚙️ FACTOR NECESARIO: \(String(format: "%.2f", neededFactor))")
-        
-        // 4. Verificar si NutritionCalculator está funcionando
-        let adjustedByCalculator = nutritionCalculator.adjustRecipes(baseRecipes)
-        let adjustedTotal = adjustedByCalculator.reduce(0) { $0 + $1.calories }
-        let adjustedDailyAvg = Double(adjustedTotal) / 7.0
-        
-        print("🔧 DESPUÉS DEL NUTRITION CALCULATOR:")
-        print("   • Total semanal: \(adjustedTotal) kcal")
-        print("   • Promedio diario: \(Int(adjustedDailyAvg)) kcal")
-        print("   • Factor aplicado: \(String(format: "%.2f", adjustedDailyAvg / baseDailyAvg))")
-        
-        // 5. Verificar recetas específicas
-        print("📋 EJEMPLOS DE RECETAS:")
-        for i in 0..<min(3, baseRecipes.count) {
-            let original = baseRecipes[i]
-            let adjusted = adjustedByCalculator[i]
-            print("   • \(original.title):")
-            print("     - Original: \(original.calories) kcal")
-            print("     - Ajustada: \(adjusted.calories) kcal")
-        }
-    }
-}
-
 // MARK: - Fix Temporal - Forzar Ajuste Correcto
 
 extension DietViewModel {
@@ -476,147 +600,6 @@ extension DietViewModel {
                 print("   • \(meal.displayName): \(cal) kcal")
             }
         }
-    }
-
-    // Método que ajusta recetas por día y por tipo de comida según el objetivo diario
-    func loadRecipesWithCorrectCalories() {
-        let normalizedDiet = selectedDiet.lowercased().filter { $0.isLetter }
-        print("🔄 CARGANDO DIETA CON AJUSTE POR COMIDA: \(normalizedDiet)")
-
-        // 1. Obtener recetas base
-        let baseRecipes: [Recipe]
-        switch normalizedDiet {
-        case "keto":
-            baseRecipes = RecipesKeto.getWeeklyRecipes()
-        case "lowcarb":
-            baseRecipes = RecipesLowCarb.getWeeklyRecipes()
-        case "caloriedeficit", "deficit":
-            baseRecipes = RecipesDeficit.getWeeklyRecipes()
-        default:
-            baseRecipes = RecipesDeficit.getWeeklyRecipes()
-        }
-
-        // 2. Organizar recetas por día (7 días)
-        let recipesPerDay = 3
-        var dailyRecipes: [[Recipe]] = []
-        var currentDayRecipes: [Recipe] = []
-        for (index, recipe) in baseRecipes.enumerated() {
-            currentDayRecipes.append(recipe)
-            if (index + 1) % recipesPerDay == 0 {
-                dailyRecipes.append(currentDayRecipes)
-                currentDayRecipes = []
-            }
-        }
-        if !currentDayRecipes.isEmpty {
-            dailyRecipes.append(currentDayRecipes)
-        }
-
-        // 3. Ajustar las recetas de cada día individualmente, y por tipo de comida
-        let targetDaily = getDailyCaloriesTarget()
-        var adjustedWeeklyRecipes: [[Recipe]] = []
-
-        for dayGroup in dailyRecipes {
-            var adjustedDay: [Recipe] = []
-
-            let distribution = getMealDistribution()
-            let mealGroups = Dictionary(grouping: dayGroup, by: { $0.mealType })
-
-            for mealType in MealType.allCases {
-                guard let group = mealGroups[mealType] else { continue }
-
-                // CORRECCIÓN CRÍTICA: distribution[mealType] ya es el valor en calorías, no un porcentaje
-                let mealTargetCalories = distribution[mealType] ?? 0.0
-                
-                print("   • \(mealType.displayName) objetivo: \(Int(mealTargetCalories)) cal")
-                
-                let currentCalories = group.reduce(0) { $0 + $1.calories }
-                let factor = currentCalories > 0 ? mealTargetCalories / Double(currentCalories) : 1.0
-
-                let adjustedMeal = group.map { recipe -> Recipe in
-                    let newCalories = Int((Double(recipe.calories) * factor).rounded())
-                    let adjustedIngredients = recipe.ingredients.map { ingredient -> Ingredient in
-                        let (qty, unit) = parseQuantitySimple(ingredient.quantity)
-                        let newQty = qty * factor
-                        let newQuantityString = formatQuantitySimple(newQty, unit: unit)
-
-                        return Ingredient(
-                            name: ingredient.name,
-                            quantity: newQuantityString,
-                            isChecked: ingredient.isChecked
-                        )
-                    }
-                    return Recipe(
-                        title: recipe.title,
-                        mealType: recipe.mealType,
-                        imageName: recipe.imageName,
-                        ingredients: adjustedIngredients,
-                        instructions: recipe.instructions,
-                        calories: newCalories
-                    )
-                }
-
-                adjustedDay.append(contentsOf: adjustedMeal)
-            }
-
-            adjustedWeeklyRecipes.append(adjustedDay)
-        }
-
-        // 4. Asignar recetas ajustadas al diccionario weeklyRecipes por día
-        weeklyRecipes.removeAll()
-        for (index, day) in days.enumerated() where index < adjustedWeeklyRecipes.count {
-            weeklyRecipes[day] = adjustedWeeklyRecipes[index]
-        }
-
-        updateGroceryList()
-        printCalorieSummary()
-
-        // 5. Verificar resultado diario para debug
-        for (index, day) in days.enumerated() where index < adjustedWeeklyRecipes.count {
-            let totalCaloriesDay = adjustedWeeklyRecipes[index].reduce(0) { $0 + $1.calories }
-            print("📅 Día \(index + 1) (\(day)) calorías ajustadas: \(totalCaloriesDay)")
-        }
-
-        verifyFinalResult()
-    }
-    
-    // Parseo simple de cantidades
-    private func parseQuantitySimple(_ quantity: String) -> (Double, String) {
-        let pattern = #"([0-9]*\.?[0-9]+)\s*(.*)?"#
-        guard let regex = try? NSRegularExpression(pattern: pattern),
-              let match = regex.firstMatch(in: quantity, range: NSRange(quantity.startIndex..., in: quantity)),
-              let numberRange = Range(match.range(at: 1), in: quantity) else {
-            return (1.0, quantity)
-        }
-        
-        let number = Double(quantity[numberRange]) ?? 1.0
-        let unitRange = Range(match.range(at: 2), in: quantity)
-        let unit = unitRange != nil ? String(quantity[unitRange!]) : ""
-        
-        return (number, unit.trimmingCharacters(in: .whitespaces))
-    }
-    
-    // Formateo simple de cantidades
-    private func formatQuantitySimple(_ value: Double, unit: String) -> String {
-        let rounded = (value * 10).rounded() / 10
-        
-        if rounded.truncatingRemainder(dividingBy: 1) == 0 {
-            return "\(Int(rounded))\(unit.isEmpty ? "" : " \(unit)")"
-        } else {
-            return String(format: "%.1f%@", rounded, unit.isEmpty ? "" : " \(unit)")
-        }
-    }
-    
-    // Verificar resultado final
-    private func verifyFinalResult() {
-        let target = getDailyCaloriesTarget()
-        let actual = getTotalDailyCalories()
-        let difference = actual - Int(target)
-        
-        print("📊 VERIFICACIÓN FINAL:")
-        print("   • Objetivo: \(Int(target)) kcal")
-        print("   • Actual: \(actual) kcal")
-        print("   • Diferencia: \(difference) kcal")
-        print("   • Estado: \(abs(difference) <= 50 ? "✅ CORRECTO" : "❌ NECESITA AJUSTE")")
     }
 }
 

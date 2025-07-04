@@ -5,10 +5,10 @@ struct FitnessTrainerApp: View {
     @State private var searchText = ""
     @State private var selectedCategory: TrainerCategory = .all
     @State private var selectedTrainer: Trainer?
-    @State private var showTrainerDetail = false
     @State private var showChat = false
     @State private var showMap = false
     @State private var favorites: Set<UUID> = []
+    @State private var isDataReady = false
     
     var filteredTrainers: [Trainer] {
         viewModel.getFilteredTrainers(searchText: searchText, category: selectedCategory)
@@ -24,12 +24,10 @@ struct FitnessTrainerApp: View {
                 trainersList
             }
         }
-        .sheet(isPresented: $showTrainerDetail) {
-            if let trainer = selectedTrainer, !viewModel.isLoading {
-                TrainerDetailView(trainer: trainer) { trainer in
-                    // Handle booking
-                    showChat = true
-                }
+        .sheet(item: $selectedTrainer) { trainer in
+            TrainerDetailView(trainer: trainer) { trainer in
+                // Handle booking
+                showChat = true
             }
         }
         .sheet(isPresented: $showChat) {
@@ -43,13 +41,17 @@ struct FitnessTrainerApp: View {
                 onSelectTrainer: { trainer in
                     selectedTrainer = trainer
                     showMap = false
-                    showTrainerDetail = true
                 }
             )
         }
         .onAppear {
             print("📱 FitnessTrainerApp onAppear - Cargando entrenadores...")
-            viewModel.loadTrainers()
+            viewModel.loadTrainers { [self] in
+                DispatchQueue.main.async {
+                    self.isDataReady = true
+                    print("🎯 Datos listos para selección")
+                }
+            }
         }
     }
 }
@@ -122,6 +124,7 @@ private extension FitnessTrainerApp {
                             onTap: { selectedCategory = category }
                         )
                     }
+                    Spacer(minLength: 0)
                 }
                 .padding(.horizontal, 20)
             }
@@ -142,13 +145,15 @@ private extension FitnessTrainerApp {
                             trainer: trainer,
                             isFavorited: favorites.contains(trainer.id),
                             onTap: {
-                                guard !viewModel.isLoading && !viewModel.trainers.isEmpty else { 
-                                    print("⚠️ Datos no cargados aún. Trainers: \(viewModel.trainers.count), Loading: \(viewModel.isLoading)")
+                                // Verificar que los datos estén listos para selección
+                                guard isDataReady else { 
+                                    print("⚠️ Datos no listos aún. isDataReady: \(isDataReady)")
                                     return 
                                 }
                                 print("✅ Seleccionando entrenador: \(trainer.name)")
+                                print("📊 Trainer data - Name: \(trainer.name), Specialty: \(trainer.specialty), Rating: \(trainer.rating)")
                                 selectedTrainer = trainer
-                                showTrainerDetail = true
+                                print("🎯 selectedTrainer establecido: \(selectedTrainer?.name ?? "nil")")
                             },
                             onFavorite: {
                                 if favorites.contains(trainer.id) {
@@ -362,7 +367,7 @@ struct CategoryTag: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(isSelected ? Color.yellow : Color.gray.opacity(0.3))
             )
         }
@@ -386,6 +391,26 @@ class FitnessTrainerViewModel: ObservableObject {
         print("✅ Entrenadores cargados: \(self.trainers.count)")
         self.isLoading = false
         print("🏁 Carga completada. Loading: \(self.isLoading)")
+    }
+    
+    func loadTrainers(completion: @escaping () -> Void) {
+        guard trainers.isEmpty else { 
+            completion()
+            return 
+        }
+        print("🔄 Iniciando carga de entrenadores...")
+        isLoading = true
+        
+        // Cargar inmediatamente sin delay
+        self.trainers = TrainerData.sampleTrainers
+        print("✅ Entrenadores cargados: \(self.trainers.count)")
+        self.isLoading = false
+        print("🏁 Carga completada. Loading: \(self.isLoading)")
+        
+        // Notificar que los datos están listos
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            completion()
+        }
     }
     
     func getFilteredTrainers(searchText: String, category: TrainerCategory) -> [Trainer] {

@@ -1,4 +1,4 @@
-// MARK: - SubscriptionView.swift - Solo correcciones necesarias
+// MARK: - SubscriptionView.swift - Con gradiente
 import SwiftUI
 
 struct SubscriptionView: View {
@@ -9,7 +9,13 @@ struct SubscriptionView: View {
     
     var body: some View {
         ZStack {
-            Color.appBlack.ignoresSafeArea()
+            // ✅ GRADIENTE LINEAR: Consistente con el resto de la app
+            LinearGradient(
+                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
             
             ScrollView {
                 VStack(spacing: 30) {
@@ -25,9 +31,6 @@ struct SubscriptionView: View {
         .navigationTitle("Subscription")
         .navigationBarTitleDisplayMode(.inline)
         .foregroundColor(.appWhite)
-        .onAppear {
-            viewModel.loadSubscriptionData()
-        }
         .alert("Subscription", isPresented: $viewModel.showAlert) {
             Button("OK") { }
         } message: {

@@ -34,6 +34,11 @@ struct TrainerDetailView: View {
                 leading: Button("Close") { dismiss() }.foregroundColor(.yellow),
                 trailing: Button("Hire Now") { onHire(trainer); dismiss() }.foregroundColor(.yellow)
             )
+            .onAppear {
+                print("🎬 TrainerDetailView apareció para: \(trainer.name)")
+                print("📋 Trainer details - Bio: \(trainer.bio.prefix(50))...")
+                print("🏷️ Certifications: \(trainer.certifications.count)")
+            }
         }
         .preferredColorScheme(.dark)
     }

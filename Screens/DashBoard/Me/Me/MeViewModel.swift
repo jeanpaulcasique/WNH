@@ -17,6 +17,10 @@ final class MeViewModel: ObservableObject {
     @Published var isPremium: Bool = false
     @Published var ringRotation: Double = 0
     
+    // ✅ OPTIMIZACIÓN: Control de animaciones
+    @Published var isViewVisible: Bool = false
+    private var animationTimer: Timer?
+    
     let accountSection: [MeMenuItem] = [
         MeMenuItem(title: "Subscription", icon: "crown.fill", color: .appYellow),
         MeMenuItem(title: "Coaches", icon: "person.2.fill", color: .blue),
@@ -31,12 +35,41 @@ final class MeViewModel: ObservableObject {
     ]
     
     init() {
+        // ✅ OPTIMIZACIÓN: No iniciar animación automáticamente
+    }
+    
+    // ✅ NUEVO: Métodos para controlar animaciones
+    func startRingAnimation() {
+        guard isViewVisible else { return }
+        
+        stopRingAnimation() // Limpiar timer anterior
+        
+        animationTimer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+            DispatchQueue.main.async {
+                self?.ringRotation += 1
+                if self?.ringRotation ?? 0 >= 360 {
+                    self?.ringRotation = 0
+                }
+            }
+        }
+    }
+    
+    func stopRingAnimation() {
+        animationTimer?.invalidate()
+        animationTimer = nil
+    }
+    
+    func viewDidAppear() {
+        isViewVisible = true
         startRingAnimation()
     }
     
-    private func startRingAnimation() {
-        withAnimation(.linear(duration: 3.0).repeatForever(autoreverses: false)) {
-            ringRotation = 360
-        }
+    func viewDidDisappear() {
+        isViewVisible = false
+        stopRingAnimation()
+    }
+    
+    deinit {
+        stopRingAnimation()
     }
 }

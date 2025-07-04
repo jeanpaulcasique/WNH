@@ -447,9 +447,4 @@ extension ProfileViewModel {
     }
 }
 
-// MARK: - Color Extension
-extension Color {
-    static let lightGold = Color(red: 1.0, green: 0.84, blue: 0.0)
-    static let lightMint = Color(red: 0.0, green: 1.0, blue: 0.8)
-    static let lightTeal = Color(red: 0.0, green: 0.5, blue: 0.5)
-}
+
