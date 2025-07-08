@@ -1,5 +1,9 @@
 import SwiftUI
 
+struct AppConstants {
+    static let horizontalPadding: CGFloat = 10
+}
+
 // MARK: - ViewModifier para Fondo Negro con Gradiente
 struct BlackGradientBackgroundModifier: ViewModifier {
     func body(content: Content) -> some View {

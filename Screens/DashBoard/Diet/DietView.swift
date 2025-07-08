@@ -165,7 +165,7 @@ private extension DietView {
     var headerSection: some View {
         VStack(spacing: 8) {
             HStack {
-                Image(systemName: "fork.knife.circle.fill")
+                    Image(systemName: "fork.knife.circle.fill")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.appYellow)
                 Text(userName != nil ? "¡Hola, \(userName!)!" : "¡Listo para comer saludable!")
@@ -183,7 +183,7 @@ private extension DietView {
                         Text(dietTips[i])
                             .font(.system(size: 15, weight: .medium))
                             .foregroundColor(.appWhite.opacity(0.85))
-                            .multilineTextAlignment(.center)
+                    .multilineTextAlignment(.center)
                             .padding(.horizontal, 12)
                             .lineLimit(2)
                             .minimumScaleFactor(0.85)
@@ -192,8 +192,8 @@ private extension DietView {
                             .offset(y: animateTip ? 0 : 30)
                             .animation(.spring(response: 0.7, dampingFraction: 0.7), value: animateTip)
                     }
-                }
             }
+        }
             .frame(height: 36)
         }
         .background(.ultraThinMaterial)

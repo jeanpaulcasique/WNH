@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 
 // MARK: - Trainer Model
 struct Trainer: Identifiable, Hashable {
@@ -173,11 +174,23 @@ enum TrainerCategory: String, CaseIterable {
 
 // MARK: - ChatMessage
 struct ChatMessage: Identifiable {
-    let id = UUID()
+    let id: UUID
     let text: String
     let isFromUser: Bool
     let timestamp: Date
     let trainerId: UUID
+    var image: UIImage? = nil
+    var pdfURL: URL? = nil
+    
+    init(id: UUID = UUID(), text: String, isFromUser: Bool, timestamp: Date, trainerId: UUID, image: UIImage? = nil, pdfURL: URL? = nil) {
+        self.id = id
+        self.text = text
+        self.isFromUser = isFromUser
+        self.timestamp = timestamp
+        self.trainerId = trainerId
+        self.image = image
+        self.pdfURL = pdfURL
+    }
 }
 
 // MARK: - TrainerData

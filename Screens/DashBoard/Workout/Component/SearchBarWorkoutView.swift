@@ -8,8 +8,8 @@ struct SearchBarWorkoutView: View {
     @Binding var showSearchResults: Bool
     
     var body: some View {
-        HStack(spacing: 8) {
-            HStack {
+        HStack(spacing: 0) {
+            HStack(spacing: 8) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
                 TextField("Search exercise...", text: $viewModel.searchText, onEditingChanged: { editing in
@@ -33,13 +33,11 @@ struct SearchBarWorkoutView: View {
             .padding(10)
             .background(.ultraThinMaterial)
             .cornerRadius(12)
+            Spacer(minLength: 8)
             Button(action: onLocationTapped) {
                 Image(systemName: "location.fill")
                     .font(.title2)
                     .foregroundColor(.yellow)
-                    .padding(8)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
             }
         }
         .padding(.vertical, 8)

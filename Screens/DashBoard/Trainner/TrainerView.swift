@@ -5,10 +5,22 @@ struct FitnessTrainerApp: View {
     @State private var searchText = ""
     @State private var selectedCategory: TrainerCategory = .all
     @State private var selectedTrainer: Trainer?
-    @State private var showChat = false
-    @State private var showMap = false
+    @State private var activeSheet: ActiveSheet?
     @State private var favorites: Set<UUID> = []
     @State private var isDataReady = false
+    
+    enum ActiveSheet: Identifiable {
+        case detail(Trainer)
+        case chat(Trainer)
+        case map
+        var id: String {
+            switch self {
+            case .detail(let t): return "detail-\(t.id)"
+            case .chat(let t): return "chat-\(t.id)"
+            case .map: return "map"
+            }
+        }
+    }
     
     var filteredTrainers: [Trainer] {
         viewModel.getFilteredTrainers(searchText: searchText, category: selectedCategory)
@@ -24,25 +36,27 @@ struct FitnessTrainerApp: View {
                 trainersList
             }
         }
-        .sheet(item: $selectedTrainer) { trainer in
-            TrainerDetailView(trainer: trainer) { trainer in
-                // Handle booking
-                showChat = true
-            }
-        }
-        .sheet(isPresented: $showChat) {
-            if let trainer = selectedTrainer {
-                TrainerChatView(trainer: trainer)
-            }
-        }
-        .sheet(isPresented: $showMap) {
-            TrainersMapsView(
-                trainers: filteredTrainers,
-                onSelectTrainer: { trainer in
+        .sheet(item: $activeSheet) { item in
+            switch item {
+            case .detail(let trainer):
+                TrainerDetailView(trainer: trainer) { trainer in
                     selectedTrainer = trainer
-                    showMap = false
+                    // Espera antes de mostrar el chat para evitar conflicto de sheets
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                        activeSheet = .chat(trainer)
+                    }
                 }
-            )
+            case .chat(let trainer):
+                TrainerChatView(trainer: trainer)
+            case .map:
+                TrainersMapsView(
+                    trainers: filteredTrainers,
+                    onSelectTrainer: { trainer in
+                        selectedTrainer = trainer
+                        activeSheet = .detail(trainer)
+                    }
+                )
+            }
         }
         .onAppear {
             print("📱 FitnessTrainerApp onAppear - Cargando entrenadores...")
@@ -74,7 +88,7 @@ private extension FitnessTrainerApp {
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.yellow)
                 
-                Text("FitPro Trainers")
+                Text("Trainers")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.white)
             }
@@ -92,28 +106,30 @@ private extension FitnessTrainerApp {
     var searchAndFilterSection: some View {
         VStack(spacing: 16) {
             // Search Bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundColor(.gray)
-                
-                TextField("Search trainers by name, specialty, or location...", text: $searchText)
-                    .textFieldStyle(PlainTextFieldStyle())
-                    .foregroundColor(.white)
-                
-                Button(action: { showMap = true }) {
+            HStack(spacing: 0) {
+                HStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundColor(.gray)
+                    TextField("Search trainers by name, specialty, or location...", text: $searchText)
+                        .textFieldStyle(PlainTextFieldStyle())
+                        .foregroundColor(.white)
+                }
+                .padding(.vertical, 10)
+                .padding(.horizontal, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.gray.opacity(0.2))
+                )
+                Button(action: { activeSheet = .map }) {
                     Image(systemName: "map")
                         .foregroundColor(.gray)
-                        .font(.system(size: 18))
+                        .font(.system(size: 20))
+                        .padding(.leading, 10)
+                        .padding(.vertical, 10)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.2))
-            )
-            .padding(.horizontal, 20)
-            
+            .padding(.leading, 0)
+
             // Category Tags
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -124,12 +140,11 @@ private extension FitnessTrainerApp {
                             onTap: { selectedCategory = category }
                         )
                     }
-                    Spacer(minLength: 0)
                 }
-                .padding(.horizontal, 20)
             }
             .padding(.bottom, 20)
         }
+        .padding(.horizontal, 20)
     }
     
     var trainersList: some View {
@@ -145,15 +160,9 @@ private extension FitnessTrainerApp {
                             trainer: trainer,
                             isFavorited: favorites.contains(trainer.id),
                             onTap: {
-                                // Verificar que los datos estén listos para selección
-                                guard isDataReady else { 
-                                    print("⚠️ Datos no listos aún. isDataReady: \(isDataReady)")
-                                    return 
-                                }
-                                print("✅ Seleccionando entrenador: \(trainer.name)")
-                                print("📊 Trainer data - Name: \(trainer.name), Specialty: \(trainer.specialty), Rating: \(trainer.rating)")
+                                guard isDataReady else { return }
                                 selectedTrainer = trainer
-                                print("🎯 selectedTrainer establecido: \(selectedTrainer?.name ?? "nil")")
+                                activeSheet = .detail(trainer)
                             },
                             onFavorite: {
                                 if favorites.contains(trainer.id) {
@@ -222,19 +231,11 @@ struct TrainerCard: View {
                     // Profile Image
                     ZStack {
                         Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [specialty.color, specialty.color.opacity(0.6)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
+                            .fill(Color.gray.opacity(0.18))
                             .frame(width: 70, height: 70)
-                        
                         Image(systemName: "person.fill")
                             .font(.system(size: 30))
                             .foregroundColor(.white)
-                        
                         if trainer.isOnline {
                             Circle()
                                 .fill(Color.green)
@@ -246,25 +247,21 @@ struct TrainerCard: View {
                                 .offset(x: 25, y: -25)
                         }
                     }
-                    
                     // Info Section
                     VStack(alignment: .leading, spacing: 6) {
                         HStack {
                             Text(trainer.name)
                                 .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.white)
-                            
                             if trainer.isVerified {
                                 Image(systemName: "checkmark.shield.fill")
                                     .font(.system(size: 14))
                                     .foregroundColor(.blue)
                             }
                         }
-                        
                         Text(specialty.displayName)
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(specialty.color)
-                        
                         HStack(spacing: 12) {
                             HStack(spacing: 2) {
                                 Image(systemName: "star.fill")
@@ -274,19 +271,15 @@ struct TrainerCard: View {
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(.white.opacity(0.8))
                             }
-                            
                             Text("\(trainer.experience)y exp")
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.6))
-                            
                             Text("$\(trainer.pricePerSession)/session")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.yellow)
                         }
                     }
-                    
                     Spacer()
-                    
                     // Actions
                     VStack(spacing: 8) {
                         Button(action: onFavorite) {
@@ -294,7 +287,6 @@ struct TrainerCard: View {
                                 .font(.system(size: 20))
                                 .foregroundColor(isFavorited ? .red : .gray)
                         }
-                        
                         if trainer.isOnline {
                             Text("ONLINE")
                                 .font(.system(size: 8, weight: .bold))
@@ -307,7 +299,6 @@ struct TrainerCard: View {
                     }
                 }
                 .padding(20)
-                
                 // Bio
                 if !trainer.bio.isEmpty {
                     HStack {
@@ -323,27 +314,20 @@ struct TrainerCard: View {
             }
         }
         .buttonStyle(PlainButtonStyle())
-        .background(cardBackground)
-        .cornerRadius(20)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
-                .stroke(specialty.color.opacity(0.3), lineWidth: 1)
-        )
-    }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 20)
-            .fill(
-                LinearGradient(
-                    colors: [
-                        Color.gray.opacity(0.2),
-                        Color.gray.opacity(0.1),
-                        specialty.color.opacity(0.05)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
                 )
-            )
+        )
+        .shadow(color: Color.appYellow.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -359,77 +343,37 @@ struct CategoryTag: View {
                 Image(systemName: category.icon)
                     .font(.system(size: 12))
                     .foregroundColor(isSelected ? .black : .yellow)
-                
                 Text(category.displayName)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundColor(isSelected ? .black : .white)
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? Color.yellow : Color.gray.opacity(0.3))
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .stroke(
+                        LinearGradient(
+                            colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.5
+                    )
             )
+            .shadow(color: Color.appYellow.opacity(0.15), radius: 8, x: 0, y: 4)
         }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }
 
-// MARK: - ViewModel
-@MainActor
-class FitnessTrainerViewModel: ObservableObject {
-    @Published var trainers: [Trainer] = []
-    @Published var isLoading = false
-    
-    func loadTrainers() {
-        guard trainers.isEmpty else { return }
-        print("🔄 Iniciando carga de entrenadores...")
-        isLoading = true
-        
-        // Cargar inmediatamente sin delay
-        self.trainers = TrainerData.sampleTrainers
-        print("✅ Entrenadores cargados: \(self.trainers.count)")
-        self.isLoading = false
-        print("🏁 Carga completada. Loading: \(self.isLoading)")
-    }
-    
-    func loadTrainers(completion: @escaping () -> Void) {
-        guard trainers.isEmpty else { 
-            completion()
-            return 
-        }
-        print("🔄 Iniciando carga de entrenadores...")
-        isLoading = true
-        
-        // Cargar inmediatamente sin delay
-        self.trainers = TrainerData.sampleTrainers
-        print("✅ Entrenadores cargados: \(self.trainers.count)")
-        self.isLoading = false
-        print("🏁 Carga completada. Loading: \(self.isLoading)")
-        
-        // Notificar que los datos están listos
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            completion()
-        }
-    }
-    
-    func getFilteredTrainers(searchText: String, category: TrainerCategory) -> [Trainer] {
-        var filtered = trainers
-        
-        if !searchText.isEmpty {
-            filtered = filtered.filter { trainer in
-                trainer.name.localizedCaseInsensitiveContains(searchText) ||
-                trainer.bio.localizedCaseInsensitiveContains(searchText) ||
-                trainer.location.address.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-        
-        if category != .all {
-            filtered = filtered.filter { trainer in
-                trainer.specialty == category.rawValue
-            }
-        }
-        
-        return filtered
+
+#if DEBUG
+struct FitnessTrainerApp_Previews: PreviewProvider {
+    static var previews: some View {
+        FitnessTrainerApp()
+            .preferredColorScheme(.dark)
     }
 }
+#endif

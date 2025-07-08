@@ -42,39 +42,51 @@ struct WorkoutView: View {
                 .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    headerSection
-                    SearchBarWorkoutView(
-                        viewModel: searchBarVM,
-                        onExerciseSelected: { exercise in
-                            path = [exercise.name]
-                        },
-                        onFilterChanged: { _ in },
-                        onLocationTapped: { showLocationMenu = true },
-                        showSearchResults: $showSearchResults
-                    )
-                    .padding(.horizontal, 8)
-                    .padding(.top, 4)
-                    // Scroll horizontal de chips
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 10) {
-                            ForEach(viewModel.muscleGroups, id: \.name) { muscle in
-                                Button(action: { path = [muscle.name] }) {
-                                    Text(muscle.name.capitalized)
-                                        .font(.system(size: 15, weight: .medium))
-                                        .foregroundColor(.appYellow)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
-                                        .background(.ultraThinMaterial)
-                                        .cornerRadius(8)
-                                        .shadow(color: Color.appYellow.opacity(0.08), radius: 4, x: 0, y: 2)
+                    VStack(spacing: 0) {
+                        headerSection
+                        SearchBarWorkoutView(
+                            viewModel: searchBarVM,
+                            onExerciseSelected: { exercise in
+                                path = [exercise.name]
+                            },
+                            onFilterChanged: { _ in },
+                            onLocationTapped: { showLocationMenu = true },
+                            showSearchResults: $showSearchResults
+                        )
+                        .padding(.top, 4)
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 10) {
+                                ForEach(viewModel.muscleGroups, id: \.name) { muscle in
+                                    Button(action: { path = [muscle.name] }) {
+                                        Text(muscle.name.capitalized)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(.appYellow)
+                                            .padding(.horizontal, 14)
+                                            .padding(.vertical, 8)
+                                            .background(.ultraThinMaterial)
+                                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                                    .stroke(
+                                                        LinearGradient(
+                                                            colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
+                                                            startPoint: .topLeading,
+                                                            endPoint: .bottomTrailing
+                                                        ),
+                                                        lineWidth: 1.5
+                                                    )
+                                            )
+                                            .shadow(color: Color.appYellow.opacity(0.15), radius: 8, x: 0, y: 4)
+                                    }
                                 }
                             }
+                            .padding(.vertical, 2)
                         }
-                        .padding(.horizontal, 4)
-                        .padding(.vertical, 2)
+                        .padding(.top, 6)
+                        .padding(.bottom, 2)
                     }
-                    .padding(.top, 6)
-                    .padding(.bottom, 2)
+                    .padding(.horizontal, AppConstants.horizontalPadding)
+
                     if showSearchResults && !searchBarVM.filteredExercises.isEmpty {
                         EmptyView()
                     } else {
@@ -158,12 +170,23 @@ struct WorkoutView: View {
             }
             .frame(height: 36)
         }
-        .background(.ultraThinMaterial)
-        .cornerRadius(18)
-        .shadow(color: Color.appYellow.opacity(0.08), radius: 8, x: 0, y: 2)
-        .padding(.horizontal, 8)
-        .padding(.top, 8)
+        .padding(.horizontal, 0)
+        .padding(.top, 0)
         .padding(.bottom, 4)
+        .background(.ultraThinMaterial)
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .stroke(
+                    LinearGradient(
+                        colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 1.5
+                )
+        )
+        .shadow(color: Color.appYellow.opacity(0.15), radius: 8, x: 0, y: 4)
     }
     
     // Imagen protagonista épica centrada y un poco más arriba, con ligero ajuste horizontal
@@ -401,9 +424,10 @@ struct WorkoutView: View {
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
+                        .ignoresSafeArea()
                     )
-                    .cornerRadius(12)
-                    .shadow(color: .black.opacity(0.8), radius: 15, x: 0, y: 8)
+                    // .cornerRadius(12) // Eliminado
+                    // .shadow(color: .black.opacity(0.8), radius: 15, x: 0, y: 8) // Eliminado
                 }
                 .frame(maxWidth: 200)
                 .position(
@@ -417,21 +441,17 @@ struct WorkoutView: View {
     private func locationOptionButton(location: WorkoutLocation, icon: String, title: String) -> some View {
         let isSelected = viewModel.selectedWorkoutMode == location
         let isAnimating = selectedLocationOption == location && animatingSelection
-        
         return Button(action: {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 selectedLocationOption = location
                 animatingSelection = true
             }
-            
             let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
             impactFeedback.impactOccurred()
-            
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     viewModel.selectedWorkoutMode = location
                 }
-                
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                     withAnimation(.easeInOut(duration: 0.2)) {
                         showLocationMenu = false
@@ -441,22 +461,19 @@ struct WorkoutView: View {
                 }
             }
         }) {
-            HStack {
+            HStack(spacing: 12) {
                 Image(systemName: icon)
                     .foregroundColor(.yellow)
                     .font(.title3)
                     .scaleEffect(isAnimating ? 1.3 : 1.0)
                     .rotationEffect(.degrees(isAnimating ? 360 : 0))
                     .animation(.spring(response: 0.4, dampingFraction: 0.6), value: isAnimating)
-                
                 Text(title)
                     .foregroundColor(.yellow)
                     .fontWeight(.semibold)
                     .scaleEffect(isAnimating ? 1.1 : 1.0)
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isAnimating)
-                
                 Spacer()
-                
                 if isSelected {
                     Image(systemName: "checkmark")
                         .foregroundColor(.yellow)
@@ -466,14 +483,10 @@ struct WorkoutView: View {
             }
             .padding(.vertical, 12)
             .padding(.horizontal, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.white.opacity(isAnimating ? 0.15 : 0.05))
-                    .scaleEffect(isAnimating ? 1.05 : 1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isAnimating)
-            )
+            // Sin fondo, sin círculo, sin sombra, solo icono amarillo y texto
         }
-        .scaleEffect(isAnimating ? 1.02 : 1.0)
+        .buttonStyle(PlainButtonStyle())
+        .background(Color.clear)
         .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isAnimating)
     }
     
