@@ -1,6 +1,7 @@
 import SwiftUI
 import Combine
 
+
 // MARK: - Animated greeting and workout tips (ENGLISH)
 private let workoutTips: [String] = [
     "Start your session with a proper warm-up!",
@@ -107,6 +108,15 @@ struct WorkoutView: View {
                 .frame(maxHeight: .infinity, alignment: .top)
                 .padding(.vertical, 0)
                 .zIndex(1)
+                .overlay(
+                    GeometryReader { geo in
+                        HeartRateIndicatorSim(
+                            isAuthorized: viewModel.healthKitAuthorized,
+                            onRequestAuthorization: { viewModel.requestHealthKitAuthorization() }
+                        )
+                        .position(x: geo.size.width * 0.16, y: 260)
+                    }
+                )
 
                 if showLocationMenu {
                     locationMenuOverlay

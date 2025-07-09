@@ -4,6 +4,7 @@ import UIKit
 
 // MARK: - Trainer Model
 struct Trainer: Identifiable, Hashable {
+    // Puede ser extendida para integración con backend/Firebase
     let id = UUID()
     let name: String
     let specialty: String
@@ -22,6 +23,7 @@ struct Trainer: Identifiable, Hashable {
     let responseTime: String
     let location: TrainerLocation
     let nextAvailable: String
+    let isActive: Bool // Este campo será gestionado por backend/Firebase
     
     static func == (lhs: Trainer, rhs: Trainer) -> Bool {
         lhs.id == rhs.id
@@ -34,6 +36,7 @@ struct Trainer: Identifiable, Hashable {
 
 // MARK: - TrainerLocation
 struct TrainerLocation: Codable, Hashable {
+    // Puede ser extendida para integración con backend/Firebase
     let latitude: Double
     let longitude: Double
     let address: String
@@ -54,6 +57,7 @@ struct TrainerLocation: Codable, Hashable {
 
 // MARK: - TrainerSpecialty
 enum TrainerSpecialty: String, CaseIterable {
+    // Puede ser extendida para integración con backend/Firebase
     case weightLoss = "weightLoss"
     case muscleBuilding = "muscleBuilding"
     case strength = "strength"
@@ -121,6 +125,7 @@ enum TrainerSpecialty: String, CaseIterable {
 
 // MARK: - TrainerCategory
 enum TrainerCategory: String, CaseIterable {
+    // Puede ser extendida para integración con backend/Firebase
     case all = "all"
     case weightLoss = "weightLoss"
     case muscleBuilding = "muscleBuilding"
@@ -174,6 +179,7 @@ enum TrainerCategory: String, CaseIterable {
 
 // MARK: - ChatMessage
 struct ChatMessage: Identifiable {
+    // Puede ser extendida para integración con backend/Firebase
     let id: UUID
     let text: String
     let isFromUser: Bool
@@ -195,25 +201,28 @@ struct ChatMessage: Identifiable {
 
 // MARK: - TrainerData
 struct TrainerData {
+    // Puede ser extendida para integración con backend/Firebase
+    // sampleTrainers es solo mock, en el futuro vendrá del repositorio/backend
     static let sampleTrainers: [Trainer] = [
         Trainer(
             name: "Sarah Mitchell",
-            specialty: "weightLoss",
+            specialty: "Yoga",
             rating: 4.9,
-            reviews: 247,
+            reviews: 120,
             experience: 8,
-            pricePerSession: 85,
+            pricePerSession: 40,
             isOnline: true,
             isVerified: true,
-            bio: "Certified personal trainer specializing in sustainable weight loss. I help clients achieve their goals through personalized workout plans and lifestyle coaching.",
-            tags: ["Fat Loss", "HIIT", "Nutrition", "Lifestyle Coaching"],
-            certifications: ["NASM-CPT", "Precision Nutrition", "TRX Certified"],
-            totalClients: 247,
+            bio: "Certified yoga instructor with 8 years of experience.",
+            tags: ["Yoga", "Flexibility"],
+            certifications: ["RYT 500"],
+            totalClients: 200,
             languages: ["English", "Spanish"],
-            availability: ["Mon-Fri: 6AM-8PM", "Sat: 8AM-6PM"],
-            responseTime: "< 2 hours",
+            availability: ["Monday", "Wednesday"],
+            responseTime: "1h",
             location: TrainerLocation(lat: 40.7128, lng: -74.0060, address: "New York, NY"),
-            nextAvailable: "Today 3:00 PM"
+            nextAvailable: "Tomorrow",
+            isActive: true // Mock, en el futuro vendrá del backend
         ),
         
         Trainer(
@@ -233,7 +242,8 @@ struct TrainerData {
             availability: ["Daily: 5AM-9PM"],
             responseTime: "< 1 hour",
             location: TrainerLocation(lat: 34.0522, lng: -118.2437, address: "Los Angeles, CA"),
-            nextAvailable: "Tomorrow 9:00 AM"
+            nextAvailable: "Tomorrow 9:00 AM",
+            isActive: true
         ),
         
         Trainer(
@@ -253,7 +263,8 @@ struct TrainerData {
             availability: ["Mon-Sat: 7AM-7PM"],
             responseTime: "< 3 hours",
             location: TrainerLocation(lat: 25.7617, lng: -80.1918, address: "Miami, FL"),
-            nextAvailable: "Today 6:00 PM"
+            nextAvailable: "Today 6:00 PM",
+            isActive: true
         ),
         
         Trainer(
@@ -273,7 +284,8 @@ struct TrainerData {
             availability: ["Mon-Sat: 6AM-8PM"],
             responseTime: "< 1 hour",
             location: TrainerLocation(lat: 41.8781, lng: -87.6298, address: "Chicago, IL"),
-            nextAvailable: "Today 4:00 PM"
+            nextAvailable: "Today 4:00 PM",
+            isActive: true
         ),
         
         Trainer(
@@ -293,7 +305,8 @@ struct TrainerData {
             availability: ["Mon-Fri: 8AM-5PM"],
             responseTime: "< 3 hours",
             location: TrainerLocation(lat: 32.7767, lng: -96.7970, address: "Dallas, TX"),
-            nextAvailable: "Tomorrow 10:00 AM"
+            nextAvailable: "Tomorrow 10:00 AM",
+            isActive: true
         ),
         
         Trainer(
@@ -313,7 +326,8 @@ struct TrainerData {
             availability: ["Daily: 7AM-8PM"],
             responseTime: "< 2 hours",
             location: TrainerLocation(lat: 37.7749, lng: -122.4194, address: "San Francisco, CA"),
-            nextAvailable: "Today 5:00 PM"
+            nextAvailable: "Today 5:00 PM",
+            isActive: true
         )
     ]
 }
@@ -321,4 +335,12 @@ struct TrainerData {
 // MARK: - Sample Extensions
 extension Trainer {
     static let sample = TrainerData.sampleTrainers.first!
+}
+
+// Este archivo debe ir en la nueva carpeta Repository/TrainerRepositoryProtocol.swift
+
+import Foundation
+
+protocol TrainerRepositoryProtocol {
+    func fetchTrainers(completion: @escaping ([Trainer]) -> Void)
 }

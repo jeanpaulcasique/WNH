@@ -4,6 +4,9 @@ import MapKit
 struct TrainersMapsView: View {
     let trainers: [Trainer]
     let onSelectTrainer: (Trainer) -> Void
+    @Binding var favoritedTrainers: Set<UUID>
+    var toggleFavorite: ((Trainer) -> Void)? = nil
+    var isFavorited: ((Trainer) -> Bool)? = nil
     
     @StateObject private var viewModel = TrainersMapsViewModel()
     @Environment(\.dismiss) private var dismiss
@@ -15,9 +18,10 @@ struct TrainersMapsView: View {
                 headerSection
                 mapContent
             }
-            .background(Color.black)
+            .background(Color.clear)
             .onAppear {
                 viewModel.setTrainers(trainers)
+                viewModel.onAppearMap() // Centrar en la ubicación del usuario al entrar
             }
         }
         .preferredColorScheme(.dark)
@@ -28,127 +32,125 @@ struct TrainersMapsView: View {
 private extension TrainersMapsView {
     var headerSection: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .center, spacing: 4) {
                 Text("Trainers Near You")
                     .font(.system(size: 24, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(.black)
                 
                 Text("Found \(trainers.count) trainer\(trainers.count != 1 ? "s" : "") nearby")
                     .font(.system(size: 14))
-                    .foregroundColor(.gray)
+                    .foregroundColor(.black.opacity(0.7))
             }
+            .frame(maxWidth: .infinity)
             
             Spacer()
-            
-            Button("Close") {
-                dismiss()
-            }
-            .foregroundColor(.yellow)
-            .font(.system(size: 16, weight: .medium))
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 16)
-        .background(Color.black.opacity(0.9))
+        .background(Color.appYellow)
     }
     
     var mapContent: some View {
-        HStack(spacing: 0) {
-            // Map Section
+        ZStack {
             mapSection
-                .frame(maxWidth: .infinity)
-            
-            // Trainers List Section
-            trainersList
-                .frame(maxWidth: .infinity)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if selectedTrainer != nil {
+                        selectedTrainer = nil
+                    }
+                }
+            if let trainer = selectedTrainer {
+                VStack {
+                    Spacer()
+                    ZStack {
+                        TrainerCard(
+                            trainer: trainer,
+                            isFavorited: isFavorited?(trainer) ?? favoritedTrainers.contains(trainer.id),
+                            onTap: {}, // No hace nada aquí
+                            onFavorite: {
+                                if let toggle = toggleFavorite {
+                                    toggle(trainer)
+                                } else {
+                                    if favoritedTrainers.contains(trainer.id) {
+                                        favoritedTrainers.remove(trainer.id)
+                                    } else {
+                                        favoritedTrainers.insert(trainer.id)
+                                    }
+                                }
+                            }
+                        )
+                        .frame(maxWidth: min(UIScreen.main.bounds.width - 40, 400))
+                        .background(.ultraThinMaterial)
+                        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                        .shadow(radius: 16)
+                        .highPriorityGesture(TapGesture().onEnded {
+                            onSelectTrainer(trainer)
+                        })
+                        .overlay(
+                            HStack {
+                                Spacer()
+                                VStack {
+                                    Button(action: { selectedTrainer = nil }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 24))
+                                            .foregroundColor(.gray.opacity(0.8))
+                                            .padding(10)
+                                    }
+                                    Spacer()
+                                }
+                            }
+                            .padding(.top, -2)
+                            .padding(.trailing, -2)
+                        )
+                    }
+                    .padding(.bottom, 32)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .zIndex(1)
+                }
+                .background(
+                    Color.black.opacity(0.001)
+                        .onTapGesture { selectedTrainer = nil }
+                )
+            }
         }
     }
     
     var mapSection: some View {
         ZStack {
-            // Background gradient to simulate map
-            RoundedRectangle(cornerRadius: 16)
-                .fill(
-                    LinearGradient(
-                        colors: [
-                            Color.blue.opacity(0.3),
-                            Color.green.opacity(0.2),
-                            Color.gray.opacity(0.1)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                )
-            
-            // Map placeholder content
-            VStack {
-                Image(systemName: "map.fill")
-                    .font(.system(size: 48))
-                    .foregroundColor(.yellow.opacity(0.6))
-                
-                Text("Interactive Map")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white.opacity(0.8))
-                
-                Text("Location-based trainer search")
-                    .font(.system(size: 12))
-                    .foregroundColor(.gray)
-            }
-            .opacity(0.4)
-            
-            // Trainer pins
-            ForEach(Array(trainers.enumerated()), id: \.element.id) { index, trainer in
-                TrainerPin(
-                    trainer: trainer,
-                    index: index,
-                    isSelected: selectedTrainer?.id == trainer.id,
-                    position: viewModel.getPinPosition(for: index)
-                ) {
-                    selectedTrainer = trainer
-                    onSelectTrainer(trainer)
+            // Mapa real con pines de entrenadores
+            Map(coordinateRegion: $viewModel.region, annotationItems: trainers) { trainer in
+                MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: trainer.location.latitude, longitude: trainer.location.longitude)) {
+                    Button(action: {
+                        selectedTrainer = trainer
+                        // NO llamar onSelectTrainer aquí
+                    }) {
+                        VStack(spacing: 0) {
+                            Image(systemName: selectedTrainer?.id == trainer.id ? "mappin.circle.fill" : "mappin.circle")
+                                .font(.system(size: selectedTrainer?.id == trainer.id ? 36 : 28))
+                                .foregroundColor(selectedTrainer?.id == trainer.id ? .yellow : .appYellow)
+                        }
+                    }
+                    .simultaneousGesture(TapGesture().onEnded {
+                        selectedTrainer = trainer
+                    })
                 }
             }
-            
-            // Map controls
+            // ... controles y overlays existentes ...
             VStack {
                 HStack {
                     Spacer()
                     VStack(spacing: 8) {
                         mapControlButton("+") { viewModel.zoomIn() }
                         mapControlButton("-") { viewModel.zoomOut() }
-                        mapControlButton("⊙") { viewModel.recenter() }
+                        mapControlButton("⊙") { viewModel.centerMapOnUserLocation() }
                     }
                 }
                 Spacer()
             }
             .padding(16)
-            
-            // User location indicator
-            VStack {
-                Spacer()
-                HStack {
-                    Circle()
-                        .fill(Color.blue)
-                        .frame(width: 12, height: 12)
-                        .overlay(
-                            Circle()
-                                .stroke(Color.white, lineWidth: 2)
-                        )
-                        .scaleEffect(viewModel.isUserLocationPulsing ? 1.2 : 1.0)
-                        .animation(
-                            Animation.easeInOut(duration: 1.0).repeatForever(autoreverses: true),
-                            value: viewModel.isUserLocationPulsing
-                        )
-                    Spacer()
-                }
-                .padding(.bottom, 16)
-                .padding(.leading, 16)
-            }
+            .zIndex(4)
+            // ... user location indicator ...
         }
-        .padding(.leading, 20)
         .onAppear {
             viewModel.startLocationPulsing()
         }
@@ -163,27 +165,11 @@ private extension TrainersMapsView {
                 .background(Color.gray.opacity(0.7))
                 .cornerRadius(8)
         }
-    }
-    
-    var trainersList: some View {
-        ScrollView {
-            LazyVStack(spacing: 12) {
-                ForEach(Array(trainers.enumerated()), id: \.element.id) { index, trainer in
-                    TrainerMapCard(
-                        trainer: trainer,
-                        index: index,
-                        isSelected: selectedTrainer?.id == trainer.id,
-                        distance: viewModel.getDistanceString(for: trainer)
-                    ) {
-                        selectedTrainer = trainer
-                        onSelectTrainer(trainer)
-                    }
-                }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-        }
-        .background(Color.gray.opacity(0.1))
+        .highPriorityGesture(TapGesture().onEnded {
+            action()
+        })
+        .allowsHitTesting(true)
+        .zIndex(5)
     }
 }
 
@@ -336,7 +322,8 @@ struct TrainersMapsView_Previews: PreviewProvider {
     static var previews: some View {
         TrainersMapsView(
             trainers: TrainerData.sampleTrainers,
-            onSelectTrainer: { _ in }
+            onSelectTrainer: { _ in },
+            favoritedTrainers: .constant([])
         )
         .preferredColorScheme(.dark)
     }

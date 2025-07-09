@@ -1,6 +1,7 @@
 import Foundation
 import CoreLocation
 import SwiftUI
+import MapKit
 
 @MainActor
 class TrainersMapsViewModel: NSObject, ObservableObject {
@@ -11,6 +12,10 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
     @Published var isUserLocationPulsing = false
     @Published var mapZoomLevel: Double = 10.0
     @Published var locationPermissionStatus: CLAuthorizationStatus = .notDetermined
+    @Published var region: MKCoordinateRegion = MKCoordinateRegion(
+        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+        span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+    )
     
     private let locationManager = CLLocationManager()
     private let earthRadiusMiles: Double = 3959.0
@@ -129,20 +134,22 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
     
     func zoomIn() {
         withAnimation(.easeInOut(duration: 0.3)) {
-            mapZoomLevel = min(mapZoomLevel * 1.5, 18.0)
+            let newDelta = max(region.span.latitudeDelta / 1.5, 0.002)
+            region.span = MKCoordinateSpan(latitudeDelta: newDelta, longitudeDelta: newDelta)
         }
     }
     
     func zoomOut() {
         withAnimation(.easeInOut(duration: 0.3)) {
-            mapZoomLevel = max(mapZoomLevel / 1.5, 1.0)
+            let newDelta = min(region.span.latitudeDelta * 1.5, 80.0)
+            region.span = MKCoordinateSpan(latitudeDelta: newDelta, longitudeDelta: newDelta)
         }
     }
     
-    func recenter() {
-        getCurrentLocation()
+    func centerMapOnUserLocation() {
+        guard let userLoc = userLocation else { return }
         withAnimation(.easeInOut(duration: 0.5)) {
-            mapZoomLevel = 12.0
+            region.center = userLoc
         }
     }
     
@@ -260,6 +267,15 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
     func getVerifiedTrainersCount() -> Int {
         return trainers.filter { $0.isVerified }.count
     }
+
+    // Llama a este método cuando el usuario entra al mapa
+    func onAppearMap() {
+        if let userLoc = userLocation {
+            region.center = userLoc
+        } else {
+            getCurrentLocation()
+        }
+    }
 }
 
 // MARK: - CLLocationManagerDelegate
@@ -271,6 +287,7 @@ extension TrainersMapsViewModel: CLLocationManagerDelegate {
             self.userLocation = location.coordinate
             self.isLoadingLocation = false
             self.sortTrainersByDistance()
+            self.region.center = location.coordinate // Centrar el mapa automáticamente
         }
     }
     

@@ -27,7 +27,13 @@ struct TrainerDetailView: View {
                 }
                 .padding(20)
             }
-            .background(Color.black)
+            .background(
+                LinearGradient(
+                    colors: [Color.black, Color.gray.opacity(0.3), Color.black],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .navigationTitle("Trainer Profile")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(

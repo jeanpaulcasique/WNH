@@ -6,8 +6,8 @@ struct FitnessTrainerApp: View {
     @State private var selectedCategory: TrainerCategory = .all
     @State private var selectedTrainer: Trainer?
     @State private var activeSheet: ActiveSheet?
-    @State private var favorites: Set<UUID> = []
     @State private var isDataReady = false
+    @State private var showMap = false // Nuevo estado para toggle
     
     enum ActiveSheet: Identifiable {
         case detail(Trainer)
@@ -33,7 +33,22 @@ struct FitnessTrainerApp: View {
             VStack(spacing: 0) {
                 headerSection
                 searchAndFilterSection
-                trainersList
+                if showMap {
+                    TrainersMapsView(
+                        trainers: filteredTrainers,
+                        onSelectTrainer: { trainer in
+                            selectedTrainer = trainer
+                            activeSheet = .detail(trainer)
+                        },
+                        favoritedTrainers: $viewModel.favorites,
+                        toggleFavorite: { viewModel.toggleFavorite(for: $0) },
+                        isFavorited: { viewModel.isFavorited($0) }
+                    )
+                    .transition(.move(edge: .trailing))
+                } else {
+                    trainersList
+                        .transition(.move(edge: .leading))
+                }
             }
         }
         .sheet(item: $activeSheet) { item in
@@ -54,7 +69,10 @@ struct FitnessTrainerApp: View {
                     onSelectTrainer: { trainer in
                         selectedTrainer = trainer
                         activeSheet = .detail(trainer)
-                    }
+                    },
+                    favoritedTrainers: $viewModel.favorites,
+                    toggleFavorite: { viewModel.toggleFavorite(for: $0) },
+                    isFavorited: { viewModel.isFavorited($0) }
                 )
             }
         }
@@ -84,7 +102,7 @@ private extension FitnessTrainerApp {
     var headerSection: some View {
         VStack(spacing: 16) {
             HStack(spacing: 12) {
-                Image(systemName: "dumbbell.fill")
+                Image(systemName: "person.2.fill")
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.yellow)
                 
@@ -120,16 +138,23 @@ private extension FitnessTrainerApp {
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.gray.opacity(0.2))
                 )
-                Button(action: { activeSheet = .map }) {
-                    Image(systemName: "map")
-                        .foregroundColor(.gray)
-                        .font(.system(size: 20))
-                        .padding(.leading, 10)
-                        .padding(.vertical, 10)
+                Spacer()
+                Button(action: { showMap.toggle() }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: showMap ? "list.bullet" : "map")
+                            .font(.system(size: 18, weight: .bold))
+                        Text(showMap ? "List" : "Map")
+                            .font(.system(size: 15, weight: .semibold))
+                    }
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(Color.appYellow)
+                    .foregroundColor(.black)
+                    .clipShape(Capsule())
+                    .shadow(color: Color.appYellow.opacity(0.18), radius: 6, x: 0, y: 2)
                 }
+                .padding(.leading, 10)
             }
-            .padding(.leading, 0)
-
             // Category Tags
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -158,18 +183,14 @@ private extension FitnessTrainerApp {
                     ForEach(filteredTrainers) { trainer in
                         TrainerCard(
                             trainer: trainer,
-                            isFavorited: favorites.contains(trainer.id),
+                            isFavorited: viewModel.isFavorited(trainer),
                             onTap: {
                                 guard isDataReady else { return }
                                 selectedTrainer = trainer
                                 activeSheet = .detail(trainer)
                             },
                             onFavorite: {
-                                if favorites.contains(trainer.id) {
-                                    favorites.remove(trainer.id)
-                                } else {
-                                    favorites.insert(trainer.id)
-                                }
+                                viewModel.toggleFavorite(for: trainer)
                             }
                         )
                     }
@@ -315,9 +336,9 @@ struct TrainerCard: View {
         }
         .buttonStyle(PlainButtonStyle())
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .stroke(
                     LinearGradient(
                         colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
@@ -327,7 +348,6 @@ struct TrainerCard: View {
                     lineWidth: 1.5
                 )
         )
-        .shadow(color: Color.appYellow.opacity(0.15), radius: 8, x: 0, y: 4)
     }
 }
 
@@ -349,10 +369,12 @@ struct CategoryTag: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .background(
+                isSelected ? Color.appYellow : Color.white.opacity(0.08)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(
                         LinearGradient(
                             colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],

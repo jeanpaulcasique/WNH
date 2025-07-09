@@ -306,6 +306,24 @@
 		6965DE6F2E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */; };
 		6965DE702E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */; };
 		6965DE712E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */; };
+		6965DE792E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE782E1E848C00F8099A /* FirebaseTrainerRepository.swift */; };
+		6965DE7A2E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE782E1E848C00F8099A /* FirebaseTrainerRepository.swift */; };
+		6965DE7B2E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE782E1E848C00F8099A /* FirebaseTrainerRepository.swift */; };
+		6965DE7D2E1E849400F8099A /* MockTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE7C2E1E849400F8099A /* MockTrainerRepository.swift */; };
+		6965DE7E2E1E849400F8099A /* MockTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE7C2E1E849400F8099A /* MockTrainerRepository.swift */; };
+		6965DE7F2E1E849400F8099A /* MockTrainerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE7C2E1E849400F8099A /* MockTrainerRepository.swift */; };
+		6965DE862E1E866A00F8099A /* FirebaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE852E1E866A00F8099A /* FirebaseService.swift */; };
+		6965DE872E1E866A00F8099A /* FirebaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE852E1E866A00F8099A /* FirebaseService.swift */; };
+		6965DE882E1E866A00F8099A /* FirebaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE852E1E866A00F8099A /* FirebaseService.swift */; };
+		6965DE8A2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE892E1E9AA100F8099A /* TrainerRepositoryProtocol.swift */; };
+		6965DE8B2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE892E1E9AA100F8099A /* TrainerRepositoryProtocol.swift */; };
+		6965DE8C2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE892E1E9AA100F8099A /* TrainerRepositoryProtocol.swift */; };
+		6965DE8E2E1E9AC200F8099A /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE8D2E1E9AC200F8099A /* HealthKitManager.swift */; };
+		6965DE8F2E1E9AC200F8099A /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE8D2E1E9AC200F8099A /* HealthKitManager.swift */; };
+		6965DE902E1E9AC200F8099A /* HealthKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE8D2E1E9AC200F8099A /* HealthKitManager.swift */; };
+		6965DE922E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */; };
+		6965DE932E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */; };
+		6965DE942E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */; };
 		699A64B42E01DC49008D6BDA /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B32E01DC49008D6BDA /* FirebaseAI */; };
 		699A64B62E01DC49008D6BDA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B52E01DC49008D6BDA /* FirebaseAnalytics */; };
 		699A64B82E01DC49008D6BDA /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B72E01DC49008D6BDA /* FirebaseAnalyticsCore */; };
@@ -487,6 +505,12 @@
 		693476C52E03141B00916824 /* SearchBarWorkoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchBarWorkoutViewModel.swift; sourceTree = "<group>"; };
 		693476D32E0897BC00916824 /* GoalViewComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalViewComponent.swift; sourceTree = "<group>"; };
 		6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerMapsViewModel.swift; sourceTree = "<group>"; };
+		6965DE782E1E848C00F8099A /* FirebaseTrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseTrainerRepository.swift; sourceTree = "<group>"; };
+		6965DE7C2E1E849400F8099A /* MockTrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTrainerRepository.swift; sourceTree = "<group>"; };
+		6965DE852E1E866A00F8099A /* FirebaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseService.swift; sourceTree = "<group>"; };
+		6965DE892E1E9AA100F8099A /* TrainerRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRepositoryProtocol.swift; sourceTree = "<group>"; };
+		6965DE8D2E1E9AC200F8099A /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
+		6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateIndicator.swift; sourceTree = "<group>"; };
 		699A64D62E01EEAF008D6BDA /* MuscleGroupButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupButton.swift; sourceTree = "<group>"; };
 		699A64DC2E01EEAF008D6BDA /* VideoMuscleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleView.swift; sourceTree = "<group>"; };
 		699A64DD2E01EEAF008D6BDA /* VideoMuscleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleViewModel.swift; sourceTree = "<group>"; };
@@ -889,6 +913,8 @@
 		691995A42DFC8722007FAB40 /* Trainner */ = {
 			isa = PBXGroup;
 			children = (
+				6965DE842E1E859500F8099A /* Service */,
+				6965DE732E1E844D00F8099A /* RepositoryTrainer */,
 				6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */,
 				69B0667B2E0DF1C100A954B7 /* TrainerChatView.swift */,
 				69B066772E0DF1AC00A954B7 /* TrainerDetailView.swift */,
@@ -1103,12 +1129,31 @@
 			path = SearchBar;
 			sourceTree = "<group>";
 		};
+		6965DE732E1E844D00F8099A /* RepositoryTrainer */ = {
+			isa = PBXGroup;
+			children = (
+				6965DE782E1E848C00F8099A /* FirebaseTrainerRepository.swift */,
+				6965DE7C2E1E849400F8099A /* MockTrainerRepository.swift */,
+				6965DE892E1E9AA100F8099A /* TrainerRepositoryProtocol.swift */,
+			);
+			path = RepositoryTrainer;
+			sourceTree = "<group>";
+		};
+		6965DE842E1E859500F8099A /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				6965DE852E1E866A00F8099A /* FirebaseService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
 		699A64DB2E01EEAF008D6BDA /* Component */ = {
 			isa = PBXGroup;
 			children = (
 				693476C42E0313FA00916824 /* SearchBar */,
 				699A65072E01F063008D6BDA /* ExerciseVideo.swift */,
 				699A64D62E01EEAF008D6BDA /* MuscleGroupButton.swift */,
+				6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */,
 			);
 			path = Component;
 			sourceTree = "<group>";
@@ -1137,6 +1182,7 @@
 			children = (
 				699A64E22E01EEAF008D6BDA /* WorkoutView.swift */,
 				699A64E32E01EEAF008D6BDA /* WorkoutViewModel.swift */,
+				6965DE8D2E1E9AC200F8099A /* HealthKitManager.swift */,
 			);
 			path = WorkoutMVVM;
 			sourceTree = "<group>";
@@ -1322,10 +1368,12 @@
 				6919971A2DFCB482007FAB40 /* TodaysMealsViewModel.swift in Sources */,
 				691995D52DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */,
 				691996462DFC8D8A007FAB40 /* TellAFView.swift in Sources */,
+				6965DE7A2E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */,
 				691996222DFC8CFC007FAB40 /* GymEquipmentViewModel.swift in Sources */,
 				693476BA2E02EEBE00916824 /* WorkoutRepositoryProtocol.swift in Sources */,
 				693476C72E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */,
 				691995C72DFC8886007FAB40 /* GoalViewModel.swift in Sources */,
+				6965DE932E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */,
 				691995C32DFC8878007FAB40 /* GenderSelecctionViewModel.swift in Sources */,
 				691996512DFC8D9A007FAB40 /* SubscriptionView.swift in Sources */,
 				690DF80A2E149CDD0038A671 /* OnboardingComponents.swift in Sources */,
@@ -1373,6 +1421,7 @@
 				699A650A2E01F063008D6BDA /* ExerciseVideo.swift in Sources */,
 				691995FB2DFC8C69007FAB40 /* 9DietTypeView.swift in Sources */,
 				69B066702E0DEF4E00A954B7 /* TrainerData.swift in Sources */,
+				6965DE7D2E1E849400F8099A /* MockTrainerRepository.swift in Sources */,
 				6919969D2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */,
 				691995E92DFC8C03007FAB40 /* 7WeightView.swift in Sources */,
 				691995C92DFC888C007FAB40 /* 3GoalView.swift in Sources */,
@@ -1400,11 +1449,13 @@
 				691995DB2DFC88BD007FAB40 /* 5BirthYearView.swift in Sources */,
 				691996FF2DFC91AF007FAB40 /* FAQView.swift in Sources */,
 				691996112DFC8CA4007FAB40 /* LevelActivityViewModel.swift in Sources */,
+				6965DE862E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				6919962D2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
 				6919965D2DFC8DAE007FAB40 /* RateAppView.swift in Sources */,
 				691996022DFC8C7B007FAB40 /* WhichPlaceViewModel.swift in Sources */,
 				69B066782E0DF1B100A954B7 /* TrainerDetailView.swift in Sources */,
 				6930C4FE2DFF589A009FB959 /* ContentView.swift in Sources */,
+				6965DE8A2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */,
 				6901B48B2E0079E800173562 /* ViewModifiers.swift in Sources */,
 				690DF81B2E14A3FB0038A671 /* Layout.swift in Sources */,
 				6919964A2DFC8D8E007FAB40 /* WriteTSView.swift in Sources */,
@@ -1412,6 +1463,7 @@
 				691996BA2DFC8F6B007FAB40 /* RecipesCalorieDeficit.swift in Sources */,
 				693476BE2E02EED200916824 /* MockWorkoutRepository.swift in Sources */,
 				693476C22E03137600916824 /* SearchBarWorkoutView.swift in Sources */,
+				6965DE8E2E1E9AC200F8099A /* HealthKitManager.swift in Sources */,
 				6919967A2DFC8E34007FAB40 /* DietView.swift in Sources */,
 				691996332DFC8D24007FAB40 /* ProfileViewModel.swift in Sources */,
 				691995B32DFC881F007FAB40 /* 1LoginView.swift in Sources */,
@@ -1444,10 +1496,12 @@
 				6919971B2DFCB482007FAB40 /* TodaysMealsViewModel.swift in Sources */,
 				69B0667A2E0DF1B100A954B7 /* TrainerDetailView.swift in Sources */,
 				691996062DFC8C85007FAB40 /* WorkoutLevelViewModel.swift in Sources */,
+				6965DE7B2E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */,
 				6919963F2DFC8D60007FAB40 /* RateAppViewModel.swift in Sources */,
 				691996032DFC8C7B007FAB40 /* WhichPlaceViewModel.swift in Sources */,
 				693476BB2E02EEBE00916824 /* WorkoutRepositoryProtocol.swift in Sources */,
 				693476C82E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */,
+				6965DE922E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */,
 				69B066662E0C757900A954B7 /* AllergySelectionView.swift in Sources */,
 				691995CA2DFC888C007FAB40 /* 3GoalView.swift in Sources */,
 				690DF80B2E149CDD0038A671 /* OnboardingComponents.swift in Sources */,
@@ -1495,6 +1549,7 @@
 				691996612DFC8DBB007FAB40 /* CoachesView.swift in Sources */,
 				699A65092E01F063008D6BDA /* ExerciseVideo.swift in Sources */,
 				691996312DFC8D24007FAB40 /* ProfileViewModel.swift in Sources */,
+				6965DE7F2E1E849400F8099A /* MockTrainerRepository.swift in Sources */,
 				691996122DFC8CA4007FAB40 /* LevelActivityViewModel.swift in Sources */,
 				691996CC2DFC8F94007FAB40 /* ImagePicker.swift in Sources */,
 				691995F12DFC8C12007FAB40 /* TargetWeightViewModel.swift in Sources */,
@@ -1521,11 +1576,13 @@
 				690DF8272E14A42C0038A671 /* Buttons.swift in Sources */,
 				691996882DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */,
 				6919962B2DFC8D1A007FAB40 /* SubscriptionViewModel.swift in Sources */,
+				6965DE872E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				691996FD2DFC91AF007FAB40 /* FAQView.swift in Sources */,
 				691996822DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */,
 				691996A92DFC8F25007FAB40 /* WNHApp.swift in Sources */,
 				6919964F2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				6919968A2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
+				6965DE8B2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */,
 				69B0667E2E0DF1C200A954B7 /* TrainerChatView.swift in Sources */,
 				6901B48A2E0079E800173562 /* ViewModifiers.swift in Sources */,
 				690DF81C2E14A3FB0038A671 /* Layout.swift in Sources */,
@@ -1533,6 +1590,7 @@
 				691996BC2DFC8F6B007FAB40 /* RecipesCalorieDeficit.swift in Sources */,
 				691996192DFC8CDC007FAB40 /* showInfo.swift in Sources */,
 				693476BF2E02EED200916824 /* MockWorkoutRepository.swift in Sources */,
+				6965DE902E1E9AC200F8099A /* HealthKitManager.swift in Sources */,
 				693476C12E03137600916824 /* SearchBarWorkoutView.swift in Sources */,
 				691995E22DFC88CB007FAB40 /* HeightViewModel.swift in Sources */,
 				6919967B2DFC8E34007FAB40 /* DietView.swift in Sources */,
@@ -1563,6 +1621,7 @@
 			files = (
 				691996722DFC8E20007FAB40 /* DietViewModel.swift in Sources */,
 				691995D62DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */,
+				6965DE7E2E1E849400F8099A /* MockTrainerRepository.swift in Sources */,
 				691996472DFC8D8A007FAB40 /* TellAFView.swift in Sources */,
 				691997022DFC91C4007FAB40 /* FAQViewModel.swift in Sources */,
 				69D11C142DFCCC21004721EF /* RecipeComponent.swift in Sources */,
@@ -1601,13 +1660,16 @@
 				699A64F72E01EEAF008D6BDA /* VideosDashBoardView.swift in Sources */,
 				699A64F82E01EEAF008D6BDA /* VideoMuscleView.swift in Sources */,
 				690DF8022E1194050038A671 /* ResultSoon.swift in Sources */,
+				6965DE8F2E1E9AC200F8099A /* HealthKitManager.swift in Sources */,
 				699A64F92E01EEAF008D6BDA /* WorkoutView.swift in Sources */,
 				699A64FA2E01EEAF008D6BDA /* WorkoutViewModel.swift in Sources */,
 				691996352DFC8D34007FAB40 /* TellAFViewModel.swift in Sources */,
 				6919964D2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				691995FF2DFC8C74007FAB40 /* WhichPlaceView.swift in Sources */,
+				6965DE882E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				6919961B2DFC8CDC007FAB40 /* showInfo.swift in Sources */,
 				690DF80C2E149CDD0038A671 /* OnboardingComponents.swift in Sources */,
+				6965DE8C2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */,
 				691996D92DFC8FCD007FAB40 /* NotificationWater.swift in Sources */,
 				6919965B2DFC8DA8007FAB40 /* ProfileView.swift in Sources */,
 				691996692DFC8DCA007FAB40 /* HealthyView.swift in Sources */,
@@ -1659,6 +1721,7 @@
 				6919962E2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
 				6919965E2DFC8DAE007FAB40 /* RateAppView.swift in Sources */,
 				691996012DFC8C7B007FAB40 /* WhichPlaceViewModel.swift in Sources */,
+				6965DE942E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */,
 				691997172DFCB47C007FAB40 /* TodaysMealsView.swift in Sources */,
 				691996492DFC8D8E007FAB40 /* WriteTSView.swift in Sources */,
 				690DF81D2E14A3FB0038A671 /* Layout.swift in Sources */,
@@ -1670,6 +1733,7 @@
 				691996322DFC8D24007FAB40 /* ProfileViewModel.swift in Sources */,
 				691995B22DFC881F007FAB40 /* 1LoginView.swift in Sources */,
 				691995E32DFC88CB007FAB40 /* HeightViewModel.swift in Sources */,
+				6965DE792E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */,
 				69B066692E0C759C00A954B7 /* AllergySelectionViewModel.swift in Sources */,
 				693476B92E02EEBE00916824 /* WorkoutRepositoryProtocol.swift in Sources */,
 				691996812DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */,
@@ -1750,6 +1814,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
+				NEW_SETTING = "";
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
@@ -1807,6 +1872,7 @@
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
+				NEW_SETTING = "";
 				SDKROOT = iphoneos;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;

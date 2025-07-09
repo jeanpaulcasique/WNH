@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import HealthKit
 
 // MARK: - Models
 struct MuscleGroup: Identifiable, Equatable {
@@ -32,6 +33,8 @@ class WorkoutViewModel: ObservableObject {
     @Published var allExercises: [Exercise] = []
     @Published var filteredExercises: [Exercise] = []
     @Published var selectedMuscleFilter: String? = nil
+    @Published var heartRate: Double? = nil
+    @Published var healthKitAuthorized: Bool = false
     
     // ✅ Repository inyectado
     private let repository: WorkoutRepositoryProtocol
@@ -152,5 +155,24 @@ class WorkoutViewModel: ObservableObject {
     
     func clearMuscleFilter() {
         selectedMuscleFilter = nil
+    }
+    
+    func requestHealthKitAuthorization() {
+        HealthKitManager.shared.requestAuthorization { [weak self] success, error in
+            DispatchQueue.main.async {
+                self?.healthKitAuthorized = success
+                if success {
+                    self?.fetchLatestHeartRate()
+                }
+            }
+        }
+    }
+    
+    func fetchLatestHeartRate() {
+        HealthKitManager.shared.fetchLatestHeartRate { [weak self] value in
+            DispatchQueue.main.async {
+                self?.heartRate = value
+            }
+        }
     }
 }
