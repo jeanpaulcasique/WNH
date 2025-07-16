@@ -11,167 +11,26 @@ struct DietTypeView: View {
     
     var body: some View {
         ZStack {
-            backgroundWithParticles
-            mainContent
-            // ✅ CAMBIO: Botón next solo aparece cuando hay selección válida
-            if viewModel.hasValidSelection {
-                nextButtonOverlay
-            }
-        }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
-        .navigationBarItems(leading: backButton)
-        .onAppear {
-            viewModel.startStaggeredAnimations()
-        }
-    }
-}
-
-// MARK: - Background & Particles
-private extension DietTypeView {
-    var backgroundWithParticles: some View {
-        ZStack {
-            // Black background
-            Color.black
-                .ignoresSafeArea()
-            
-            // Gradient overlay
-            LinearGradient(
-                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            // Floating particles
-            FloatingParticles()
-        }
-    }
-}
-
-// MARK: - Main Content
-private extension DietTypeView {
-    var mainContent: some View {
-        ScrollView {
-            VStack(spacing: 28) {
-                progressSection
-                headerSection
-                dietCardsSection
-                Spacer(minLength: 80)
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 100)
-        }
-    }
-    
-    var progressSection: some View {
-        VStack(spacing: 5) {
-            ProgressBarWithIcons(progressViewModel: progressViewModel)
-        }
-        .padding(.top, 10)
-        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.header.rawValue ? 1 : 0)
-        .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.header.rawValue ? 0 : -20)
-        .animation(.spring(response: 0.7, dampingFraction: 0.8), value: viewModel.animationPhase)
-    }
-    
-    var headerSection: some View {
-        VStack(spacing: 16) {
-            enhancedIcon
-            headerText
-        }
-        .padding(.top, 15)
-    }
-    
-    var enhancedIcon: some View {
-        ZStack {
-            // Animated rings
-            if viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue {
-                Circle()
-                    .stroke(Color.appYellow.opacity(0.2), lineWidth: 1)
-                    .frame(width: 120, height: 120)
-                    .scaleEffect(1.2)
-                    .opacity(0.6)
-                    .animation(.easeInOut(duration: 2).repeatForever(), value: UUID())
-                
-                Circle()
-                    .stroke(Color.appYellow.opacity(0.1), lineWidth: 1)
-                    .frame(width: 140, height: 140)
-                    .scaleEffect(1.4)
-                    .opacity(0.4)
-                    .animation(.easeInOut(duration: 3).repeatForever().delay(1), value: UUID())
-            }
-            
-            // Main icon container
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.appYellow.opacity(0.4), Color.appYellow.opacity(0.05)],
-                            center: .center,
-                            startRadius: 30,
-                            endRadius: 70
-                        )
-                    )
-                    .frame(width: 96, height: 96)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.appYellow.opacity(0.2), lineWidth: 1)
-                    )
-                
-                // Rotating gradient
-                if viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue {
-                    Circle()
-                        .stroke(
-                            AngularGradient(
-                                colors: [Color.clear, Color.appYellow.opacity(0.3), Color.clear],
-                                center: .center
-                            ),
-                            lineWidth: 2
-                        )
-                        .frame(width: 88, height: 88)
-                        .rotationEffect(.degrees(Date().timeIntervalSince1970 * 60))
-                        .animation(.linear(duration: 6).repeatForever(autoreverses: false), value: UUID())
-                }
-                
-                HStack(spacing: 2) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 20))
-                        .foregroundColor(.appYellow)
-                    
-                    Image(systemName: "flame.fill")
-                        .font(.system(size: 28))
-                        .foregroundColor(.appYellow)
-                }
-            }
-        }
-        .scaleEffect(viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue ? 1 : 0.5)
-        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.icon.rawValue ? 1 : 0)
-        .animation(.spring(response: 1.0, dampingFraction: 0.6), value: viewModel.animationPhase)
-    }
-    
-    var headerText: some View {
-        VStack(spacing: 12) {
-            Text("Which diet suits your goal?")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundColor(.appYellow)
+            Color.white.ignoresSafeArea()
+            VStack(spacing: 0) {
+                OnboardingLogo()
+                OnboardingCard(backgroundColor: Color.yellow) {
+                    VStack(spacing: 6) {
+                        Text("WHICH DIET SUITS YOU BEST?")
+                            .font(.system(size: 26, weight: .black, design: .default))
+                            .foregroundColor(.black)
                 .multilineTextAlignment(.center)
-            
-            HStack(spacing: 6) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.caption)
-                    .foregroundColor(.gray)
-                
                 Text("Choose your transformation path")
-                    .font(.system(size: 16))
-                    .foregroundColor(.gray)
-            }
-        }
-        .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.title.rawValue ? 0 : 20)
-        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.title.rawValue ? 1 : 0)
-        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.1), value: viewModel.animationPhase)
+                            .font(.system(size: 17, weight: .medium))
+                            .foregroundColor(.black.opacity(0.9))
+                            .multilineTextAlignment(.center)
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
     }
-    
-    var dietCardsSection: some View {
+                }
+                .padding(.top, 10)
+                .padding(.bottom, 10)
+                ScrollView {
         VStack(spacing: 20) {
             ForEach(0..<viewModel.imageCount, id: \.self) { index in
                 DietCard(
@@ -179,22 +38,61 @@ private extension DietTypeView {
                     index: index,
                     isSelected: index == viewModel.currentIndex,
                     isRecommended: index == viewModel.getRecommendedDietIndex(),
-                    animationPhase: viewModel.animationPhase,
+                                animationPhase: .cards,
                     onTap: {
                         viewModel.selectDiet(index)
                     }
                 )
-                .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 0 : 40)
-                .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 1 : 0)
-                .animation(
-                    .spring(response: 0.7, dampingFraction: 0.8)
-                        .delay(Double(index) * 0.15),
-                    value: viewModel.animationPhase
+                        }
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 10)
+                    .padding(.bottom, 80)
+                }
+                .overlay(
+                    Group {
+                        if viewModel.hasValidSelection {
+                            HStack {
+                                OnboardingBack {
+                                    progressViewModel.decreaseProgress()
+                                    presentationMode.wrappedValue.dismiss()
+                                }
+                                Spacer()
+                                OnboardingNext {
+                                    proceedToNext()
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.bottom, 0)
+                        }
+                    },
+                    alignment: .bottom
                 )
+                Spacer(minLength: 0)
             }
+            // NavigationLink oculto
+            NavigationLink(
+                destination: LevelActivityView(progressViewModel: progressViewModel),
+                isActive: $navigateToNextView
+            ) {
+                EmptyView()
+            }
+            .hidden()
         }
-        // ✅ Padding horizontal de las cards
-        .padding(.horizontal, 20)
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+    }
+    
+    private func proceedToNext() {
+        viewModel.disableNextButtonTemporarily()
+        withAnimation(.easeInOut(duration: 0.5)) {
+            progressViewModel.advanceProgress()
+        }
+        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+        impactFeedback.impactOccurred()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            navigateToNextView = true
+        }
     }
 }
 
@@ -214,16 +112,16 @@ struct DietCard: View {
                     cardContent
                     if isRecommended {
                         Text("RECOMMENDED")
-                            .font(.system(size: 9, weight: .bold))
+                            .font(.system(size: 11, weight: .bold))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(
                                 Capsule()
-                                    .fill(Color.appYellow)
-                                    .shadow(color: Color.black.opacity(0.4), radius: 6, x: 0, y: 3)
+                                    .fill(Color.black)
+                                    .shadow(color: Color.yellow.opacity(0.4), radius: 6, x: 0, y: 3)
                             )
-                            .foregroundColor(.black)
-                            .offset(x: -2, y: 6)
+                            .foregroundColor(.white)
+                            .offset(x: -3, y: 1)
                             .scaleEffect(0.95)
                             .animation(
                                 Animation.easeInOut(duration: 1.5)
@@ -233,8 +131,8 @@ struct DietCard: View {
                             )
                     }
                 }
-                .padding(.top, 16)
-                .padding(.trailing, 12)
+                .padding(.top, 10)
+                .padding(.trailing, 5)
                 if isSelected {
                     expandedContent
                         .transition(.asymmetric(
@@ -265,12 +163,10 @@ struct DietCard: View {
     }
     
     private var cardBackground: some View {
-        LinearGradient(
-            colors: isSelected
-                ? [Color.appSurface.opacity(0.8), Color.appSurface.opacity(0.6)]
-                : [Color.appSurface.opacity(0.4), Color.appSurface.opacity(0.6)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+        Color.yellow
+            .overlay(
+                RoundedRectangle(cornerRadius: 24)
+                    .stroke(Color.black, lineWidth: 5)
         )
     }
     
@@ -318,16 +214,14 @@ struct DietCard: View {
     
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 4) {
-            // ✅ Título ahora tiene todo el espacio horizontal
             Text(diet.title)
-                .font(.system(size: 22, weight: .bold))
-                .foregroundColor(isSelected ? .appYellow : .appWhite)
+                .font(.system(size: 25, weight: .bold))
+                .foregroundColor(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
-            
             Text(diet.subtitle)
                 .font(.system(size: 14))
-                .foregroundColor(isSelected ? .appWhite.opacity(0.8) : .appWhite.opacity(0.7))
+                .foregroundColor(.black.opacity(0.8))
         }
     }
     
@@ -340,22 +234,13 @@ struct DietCard: View {
                     .padding(.vertical, 4)
                     .background(
                         Capsule()
-                            .fill(
-                                isSelected
-                                    ? Color.appYellow.opacity(0.2)
-                                    : Color.appSurface.opacity(0.5)
-                            )
+                            .fill(Color.black)
                             .overlay(
                                 Capsule()
-                                    .stroke(
-                                        isSelected
-                                            ? Color.appYellow.opacity(0.3)
-                                            : Color.appWhite.opacity(0.2),
-                                        lineWidth: 1
-                                    )
+                                    .stroke(Color.yellow, lineWidth: 1)
                             )
                     )
-                    .foregroundColor(isSelected ? .appYellow : .appWhite.opacity(0.8))
+                    .foregroundColor(.white)
                     .scaleEffect(isSelected ? 1.0 : 0.95)
                     .animation(.spring(response: 0.3, dampingFraction: 0.8).delay(Double(index) * 0.05), value: isSelected)
             }
@@ -382,7 +267,7 @@ struct DietCard: View {
     private var descriptionSection: some View {
         Text(diet.description)
             .font(.system(size: 14))
-            .foregroundColor(.appWhite.opacity(0.8))
+            .foregroundColor(.black.opacity(0.9))
             .lineLimit(nil)
             .multilineTextAlignment(.leading)
     }
@@ -398,7 +283,7 @@ struct DietCard: View {
                 
                 Text("Success Rate")
                     .font(.system(size: 14))
-                    .foregroundColor(.appWhite.opacity(0.8))
+                    .foregroundColor(.black.opacity(0.8))
             }
             
             Spacer()
@@ -414,7 +299,7 @@ struct DietCard: View {
             HStack {
                 Text("Macro Breakdown")
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(.appYellow)
+                    .foregroundColor(.black)
                 Spacer()
             }
             
@@ -428,8 +313,8 @@ struct DietCard: View {
     
     private var statsGrid: some View {
         HStack(spacing: 12) {
-            StatCardDietType(title: diet.difficulty, subtitle: "Difficulty")
-            StatCardDietType(title: diet.timeToResults, subtitle: "Results")
+            StatCardDietType(title: diet.difficulty, subtitle: "Difficulty", textColor: .white)
+            StatCardDietType(title: diet.timeToResults, subtitle: "Results", textColor: .white)
         }
     }
 }
@@ -445,7 +330,7 @@ struct MacroCircle: View {
         VStack(spacing: 6) {
             ZStack {
                 Circle()
-                    .stroke(Color.appWhite.opacity(0.2), lineWidth: 4)
+                    .stroke(Color.appBlack.opacity(0.2), lineWidth: 4)
                     .frame(width: 50, height: 50)
                 
                 Circle()
@@ -456,12 +341,12 @@ struct MacroCircle: View {
                 
                 Text("\(Int(percentage))%")
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.appWhite)
+                    .foregroundColor(.appBlack)
             }
             
             Text(label)
                 .font(.system(size: 10))
-                .foregroundColor(.appWhite.opacity(0.7))
+                .foregroundColor(.appBlack.opacity(0.7))
         }
         .onAppear {
             withAnimation(.easeOut(duration: 1).delay(0.2)) {
@@ -475,26 +360,26 @@ struct MacroCircle: View {
 struct StatCardDietType: View {
     let title: String
     let subtitle: String
+    var textColor: Color = .white
     
     var body: some View {
         VStack(spacing: 4) {
             Text(title)
                 .font(.system(size: 16, weight: .bold))
-                .foregroundColor(.appWhite)
-            
+                .foregroundColor(textColor)
             Text(subtitle.uppercased())
                 .font(.system(size: 10, weight: .medium))
-                .foregroundColor(.appWhite.opacity(0.6))
+                .foregroundColor(textColor.opacity(0.7))
                 .tracking(1)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color.appSurface.opacity(0.3))
+                .fill(Color.black)
                 .overlay(
                     RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.appWhite.opacity(0.1), lineWidth: 1)
+                        .stroke(Color.yellow, lineWidth: 1)
                 )
         )
     }
@@ -544,68 +429,6 @@ struct FloatingParticles: View {
     }
 }
 
-// MARK: - Navigation & Actions
-private extension DietTypeView {
-    var backButton: some View {
-        Button(action: {
-            progressViewModel.decreaseProgress()
-            presentationMode.wrappedValue.dismiss()
-        }) {
-            Image(systemName: "chevron.left")
-                .foregroundColor(.appYellow)
-                .font(.system(size: 18))
-        }
-    }
-    
-    var nextButtonOverlay: some View {
-        VStack {
-            Spacer()
-            VStack {
-                NextButton(
-                    title: "Next",
-                    action: proceedToNext,
-                    isLoading: $viewModel.isLoading,
-                    isDisabled: $viewModel.isNextButtonDisabled
-                )
-                
-                NavigationLink(
-                    destination: LevelActivityView(progressViewModel: progressViewModel),
-                    isActive: $navigateToNextView
-                ) {
-                    EmptyView()
-                }
-                .hidden()
-            }
-            .padding(.horizontal, 0)
-            .padding(.bottom, 0)
-        }
-        .opacity(viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 1 : 0)
-        .offset(y: viewModel.animationPhase.rawValue >= AnimationPhase.cards.rawValue ? 0 : 30)
-        .animation(.spring(response: 0.8, dampingFraction: 0.8).delay(0.6), value: viewModel.animationPhase)
-        // ✅ Animación suave cuando aparece el botón
-        .transition(.asymmetric(
-            insertion: .opacity.combined(with: .move(edge: .bottom)),
-            removal: .opacity
-        ))
-        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: viewModel.hasValidSelection)
-    }
-    
-    func proceedToNext() {
-        viewModel.disableNextButtonTemporarily()
-        
-        withAnimation(.easeInOut(duration: 0.5)) {
-            progressViewModel.advanceProgress()
-        }
-        
-        let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
-        impactFeedback.impactOccurred()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            navigateToNextView = true
-        }
-    }
-}
-
 // MARK: - Preview
 struct DietTypeView_Previews: PreviewProvider {
     static var previews: some View {
@@ -615,3 +438,4 @@ struct DietTypeView_Previews: PreviewProvider {
         .preferredColorScheme(.dark)
     }
 }
+

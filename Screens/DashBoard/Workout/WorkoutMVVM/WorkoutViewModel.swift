@@ -34,6 +34,7 @@ class WorkoutViewModel: ObservableObject {
     @Published var filteredExercises: [Exercise] = []
     @Published var selectedMuscleFilter: String? = nil
     @Published var heartRate: Double? = nil
+    @Published var userWeight: Double? = nil
     @Published var healthKitAuthorized: Bool = false
     
     // ✅ Repository inyectado
@@ -163,6 +164,8 @@ class WorkoutViewModel: ObservableObject {
                 self?.healthKitAuthorized = success
                 if success {
                     self?.fetchLatestHeartRate()
+                    self?.fetchLatestWeight()
+                    self?.startHeartRateTimer()
                 }
             }
         }
@@ -174,5 +177,33 @@ class WorkoutViewModel: ObservableObject {
                 self?.heartRate = value
             }
         }
+    }
+    
+    func fetchLatestWeight() {
+        HealthKitManager.shared.fetchLatestWeight { [weak self] value in
+            DispatchQueue.main.async {
+                self?.userWeight = value
+            }
+        }
+    }
+    
+    private var heartRateTimer: Timer?
+
+    private func startHeartRateTimer() {
+        heartRateTimer?.invalidate()
+        heartRateTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+            self?.fetchLatestHeartRate()
+        }
+    }
+
+    // Hacer pública la función para iniciar el timer desde la vista
+    func startHeartRateTimerIfNeeded() {
+        if healthKitAuthorized {
+            startHeartRateTimer()
+        }
+    }
+
+    deinit {
+        heartRateTimer?.invalidate()
     }
 }

@@ -40,4 +40,24 @@ class HealthKitManager {
         }
         healthStore.execute(query)
     }
+    
+    // Obtiene el último peso registrado
+    func fetchLatestWeight(completion: @escaping (Double?) -> Void) {
+        let weightType = HKQuantityType.quantityType(forIdentifier: .bodyMass)!
+        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+        let query = HKSampleQuery(
+            sampleType: weightType,
+            predicate: nil,
+            limit: 1,
+            sortDescriptors: [sortDescriptor]
+        ) { _, samples, _ in
+            guard let sample = samples?.first as? HKQuantitySample else {
+                completion(nil)
+                return
+            }
+            let value = sample.quantity.doubleValue(for: HKUnit.gramUnit(with: .kilo))
+            completion(value)
+        }
+        healthStore.execute(query)
+    }
 } 

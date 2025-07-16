@@ -86,12 +86,12 @@
 		691995C92DFC888C007FAB40 /* 3GoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995C82DFC888C007FAB40 /* 3GoalView.swift */; };
 		691995CA2DFC888C007FAB40 /* 3GoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995C82DFC888C007FAB40 /* 3GoalView.swift */; };
 		691995CB2DFC888C007FAB40 /* 3GoalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995C82DFC888C007FAB40 /* 3GoalView.swift */; };
-		691995CD2DFC889D007FAB40 /* 4BodyCurrentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995CC2DFC889D007FAB40 /* 4BodyCurrentView.swift */; };
-		691995CE2DFC889D007FAB40 /* 4BodyCurrentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995CC2DFC889D007FAB40 /* 4BodyCurrentView.swift */; };
-		691995CF2DFC889D007FAB40 /* 4BodyCurrentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995CC2DFC889D007FAB40 /* 4BodyCurrentView.swift */; };
-		691995D12DFC88AE007FAB40 /* BodyCurrentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D02DFC88AE007FAB40 /* BodyCurrentViewModel.swift */; };
-		691995D22DFC88AE007FAB40 /* BodyCurrentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D02DFC88AE007FAB40 /* BodyCurrentViewModel.swift */; };
-		691995D32DFC88AE007FAB40 /* BodyCurrentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D02DFC88AE007FAB40 /* BodyCurrentViewModel.swift */; };
+		691995CD2DFC889D007FAB40 /* BMIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995CC2DFC889D007FAB40 /* BMIView.swift */; };
+		691995CE2DFC889D007FAB40 /* BMIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995CC2DFC889D007FAB40 /* BMIView.swift */; };
+		691995CF2DFC889D007FAB40 /* BMIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995CC2DFC889D007FAB40 /* BMIView.swift */; };
+		691995D12DFC88AE007FAB40 /* BMIViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D02DFC88AE007FAB40 /* BMIViewModel.swift */; };
+		691995D22DFC88AE007FAB40 /* BMIViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D02DFC88AE007FAB40 /* BMIViewModel.swift */; };
+		691995D32DFC88AE007FAB40 /* BMIViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D02DFC88AE007FAB40 /* BMIViewModel.swift */; };
 		691995D52DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D42DFC88B6007FAB40 /* BirthYearViewModel.swift */; };
 		691995D62DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D42DFC88B6007FAB40 /* BirthYearViewModel.swift */; };
 		691995D72DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691995D42DFC88B6007FAB40 /* BirthYearViewModel.swift */; };
@@ -324,6 +324,37 @@
 		6965DE922E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */; };
 		6965DE932E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */; };
 		6965DE942E1EAD7300F8099A /* HeartRateIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */; };
+		6965DEA62E21599B00F8099A /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DEA52E21599800F8099A /* Font.swift */; };
+		6965DEA72E21599B00F8099A /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DEA52E21599800F8099A /* Font.swift */; };
+		6965DEA82E21599B00F8099A /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DEA52E21599800F8099A /* Font.swift */; };
+		6965DEAF2E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEA92E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html */; };
+		6965DEB02E2159C200F8099A /* Get Commercial License-cca5.url in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAA2E2159C200F8099A /* Get Commercial License-cca5.url */; };
+		6965DEB12E2159C200F8099A /* info.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAC2E2159C200F8099A /* info.txt */; };
+		6965DEB22E2159C200F8099A /* Swansong-0v5gd.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAD2E2159C200F8099A /* Swansong-0v5gd.ttf */; };
+		6965DEB32E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEA92E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html */; };
+		6965DEB42E2159C200F8099A /* Get Commercial License-cca5.url in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAA2E2159C200F8099A /* Get Commercial License-cca5.url */; };
+		6965DEB52E2159C200F8099A /* info.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAC2E2159C200F8099A /* info.txt */; };
+		6965DEB62E2159C200F8099A /* Swansong-0v5gd.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAD2E2159C200F8099A /* Swansong-0v5gd.ttf */; };
+		6965DEB72E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEA92E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html */; };
+		6965DEB82E2159C200F8099A /* Get Commercial License-cca5.url in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAA2E2159C200F8099A /* Get Commercial License-cca5.url */; };
+		6965DEB92E2159C200F8099A /* info.txt in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAC2E2159C200F8099A /* info.txt */; };
+		6965DEBA2E2159C200F8099A /* Swansong-0v5gd.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6965DEAD2E2159C200F8099A /* Swansong-0v5gd.ttf */; };
+		696EBA162E2580C200A296FB /* LaunchSamson.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 696EBA152E2580C200A296FB /* LaunchSamson.storyboard */; };
+		696EBA182E26C16C00A296FB /* OnboardingBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA172E26C16C00A296FB /* OnboardingBack.swift */; };
+		696EBA192E26C16C00A296FB /* OnboardingBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA172E26C16C00A296FB /* OnboardingBack.swift */; };
+		696EBA1A2E26C16C00A296FB /* OnboardingBack.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA172E26C16C00A296FB /* OnboardingBack.swift */; };
+		696EBA1C2E26C17200A296FB /* OnboardingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA1B2E26C17200A296FB /* OnboardingCard.swift */; };
+		696EBA1D2E26C17200A296FB /* OnboardingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA1B2E26C17200A296FB /* OnboardingCard.swift */; };
+		696EBA1E2E26C17200A296FB /* OnboardingCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA1B2E26C17200A296FB /* OnboardingCard.swift */; };
+		696EBA202E26C17900A296FB /* OnboardingLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA1F2E26C17900A296FB /* OnboardingLogo.swift */; };
+		696EBA212E26C17900A296FB /* OnboardingLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA1F2E26C17900A296FB /* OnboardingLogo.swift */; };
+		696EBA222E26C17900A296FB /* OnboardingLogo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA1F2E26C17900A296FB /* OnboardingLogo.swift */; };
+		696EBA242E26C18000A296FB /* OnboardingNext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA232E26C18000A296FB /* OnboardingNext.swift */; };
+		696EBA252E26C18000A296FB /* OnboardingNext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA232E26C18000A296FB /* OnboardingNext.swift */; };
+		696EBA262E26C18000A296FB /* OnboardingNext.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA232E26C18000A296FB /* OnboardingNext.swift */; };
+		696EBA292E2802BA00A296FB /* ProgressWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA282E2802B300A296FB /* ProgressWorkout.swift */; };
+		696EBA2A2E2802BA00A296FB /* ProgressWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA282E2802B300A296FB /* ProgressWorkout.swift */; };
+		696EBA2B2E2802BA00A296FB /* ProgressWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBA282E2802B300A296FB /* ProgressWorkout.swift */; };
 		699A64B42E01DC49008D6BDA /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B32E01DC49008D6BDA /* FirebaseAI */; };
 		699A64B62E01DC49008D6BDA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B52E01DC49008D6BDA /* FirebaseAnalytics */; };
 		699A64B82E01DC49008D6BDA /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B72E01DC49008D6BDA /* FirebaseAnalyticsCore */; };
@@ -429,8 +460,8 @@
 		691995C02DFC8878007FAB40 /* GenderSelecctionViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GenderSelecctionViewModel.swift; sourceTree = "<group>"; };
 		691995C42DFC8886007FAB40 /* GoalViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalViewModel.swift; sourceTree = "<group>"; };
 		691995C82DFC888C007FAB40 /* 3GoalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 3GoalView.swift; sourceTree = "<group>"; };
-		691995CC2DFC889D007FAB40 /* 4BodyCurrentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 4BodyCurrentView.swift; sourceTree = "<group>"; };
-		691995D02DFC88AE007FAB40 /* BodyCurrentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyCurrentViewModel.swift; sourceTree = "<group>"; };
+		691995CC2DFC889D007FAB40 /* BMIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIView.swift; sourceTree = "<group>"; };
+		691995D02DFC88AE007FAB40 /* BMIViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BMIViewModel.swift; sourceTree = "<group>"; };
 		691995D42DFC88B6007FAB40 /* BirthYearViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BirthYearViewModel.swift; sourceTree = "<group>"; };
 		691995D82DFC88BD007FAB40 /* 5BirthYearView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 5BirthYearView.swift; sourceTree = "<group>"; };
 		691995DC2DFC88C4007FAB40 /* 6HeightView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = 6HeightView.swift; sourceTree = "<group>"; };
@@ -511,6 +542,19 @@
 		6965DE892E1E9AA100F8099A /* TrainerRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerRepositoryProtocol.swift; sourceTree = "<group>"; };
 		6965DE8D2E1E9AC200F8099A /* HealthKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitManager.swift; sourceTree = "<group>"; };
 		6965DE912E1EAD7300F8099A /* HeartRateIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateIndicator.swift; sourceTree = "<group>"; };
+		6965DEA32E20212100F8099A /* WNH.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = WNH.entitlements; sourceTree = "<group>"; };
+		6965DEA42E2021B200F8099A /* WNH-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "WNH-Info.plist"; sourceTree = "<group>"; };
+		6965DEA52E21599800F8099A /* Font.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
+		6965DEA92E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = "FSLA_NonCommercial_License-d5e8.html"; sourceTree = "<group>"; };
+		6965DEAA2E2159C200F8099A /* Get Commercial License-cca5.url */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Get Commercial License-cca5.url"; sourceTree = "<group>"; };
+		6965DEAC2E2159C200F8099A /* info.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = info.txt; sourceTree = "<group>"; };
+		6965DEAD2E2159C200F8099A /* Swansong-0v5gd.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Swansong-0v5gd.ttf"; sourceTree = "<group>"; };
+		696EBA152E2580C200A296FB /* LaunchSamson.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchSamson.storyboard; sourceTree = "<group>"; };
+		696EBA172E26C16C00A296FB /* OnboardingBack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingBack.swift; sourceTree = "<group>"; };
+		696EBA1B2E26C17200A296FB /* OnboardingCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingCard.swift; sourceTree = "<group>"; };
+		696EBA1F2E26C17900A296FB /* OnboardingLogo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingLogo.swift; sourceTree = "<group>"; };
+		696EBA232E26C18000A296FB /* OnboardingNext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingNext.swift; sourceTree = "<group>"; };
+		696EBA282E2802B300A296FB /* ProgressWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressWorkout.swift; sourceTree = "<group>"; };
 		699A64D62E01EEAF008D6BDA /* MuscleGroupButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupButton.swift; sourceTree = "<group>"; };
 		699A64DC2E01EEAF008D6BDA /* VideoMuscleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleView.swift; sourceTree = "<group>"; };
 		699A64DD2E01EEAF008D6BDA /* VideoMuscleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleViewModel.swift; sourceTree = "<group>"; };
@@ -618,6 +662,10 @@
 			children = (
 				690DF8092E149CDD0038A671 /* OnboardingComponents.swift */,
 				690DF80D2E149CE80038A671 /* OnboardingTemplate.swift */,
+				696EBA172E26C16C00A296FB /* OnboardingBack.swift */,
+				696EBA1B2E26C17200A296FB /* OnboardingCard.swift */,
+				696EBA1F2E26C17900A296FB /* OnboardingLogo.swift */,
+				696EBA232E26C18000A296FB /* OnboardingNext.swift */,
 			);
 			path = OnboardingModel;
 			sourceTree = "<group>";
@@ -625,6 +673,9 @@
 		691995432DFC8057007FAB40 = {
 			isa = PBXGroup;
 			children = (
+				696EBA152E2580C200A296FB /* LaunchSamson.storyboard */,
+				6965DEA42E2021B200F8099A /* WNH-Info.plist */,
+				6965DEA32E20212100F8099A /* WNH.entitlements */,
 				690DF7ED2E1188E10038A671 /* GIF */,
 				6930C4F82DFF589A009FB959 /* Assets.xcassets */,
 				6930C4F92DFF589A009FB959 /* ContentView.swift */,
@@ -687,11 +738,11 @@
 				6919959A2DFC8643007FAB40 /* WhichPlace */,
 				691995992DFC8632007FAB40 /* DietType */,
 				69B066622E0C753200A954B7 /* AllergySelection */,
-				691995952DFC85C4007FAB40 /* BirthYear */,
 				691995982DFC8626007FAB40 /* TargetWeigth */,
+				691995942DFC8594007FAB40 /* BodyCurrent */,
 				691995972DFC861C007FAB40 /* Weigth */,
 				691995962DFC8610007FAB40 /* Heigth */,
-				691995942DFC8594007FAB40 /* BodyCurrent */,
+				691995952DFC85C4007FAB40 /* BirthYear */,
 				691995932DFC858F007FAB40 /* Goal */,
 				691995922DFC858A007FAB40 /* Gender */,
 			);
@@ -725,6 +776,8 @@
 		691995902DFC856C007FAB40 /* Reutilizable */ = {
 			isa = PBXGroup;
 			children = (
+				6965DEAE2E2159C200F8099A /* swansong-font */,
+				6965DEA52E21599800F8099A /* Font.swift */,
 				691996CD2DFC8F98007FAB40 /* Reutilizables.swift */,
 				690DF8162E14A3F50038A671 /* Navigation.swift */,
 				690DF81A2E14A3FB0038A671 /* Layout.swift */,
@@ -767,8 +820,8 @@
 		691995942DFC8594007FAB40 /* BodyCurrent */ = {
 			isa = PBXGroup;
 			children = (
-				691995CC2DFC889D007FAB40 /* 4BodyCurrentView.swift */,
-				691995D02DFC88AE007FAB40 /* BodyCurrentViewModel.swift */,
+				691995CC2DFC889D007FAB40 /* BMIView.swift */,
+				691995D02DFC88AE007FAB40 /* BMIViewModel.swift */,
 			);
 			path = BodyCurrent;
 			sourceTree = "<group>";
@@ -1147,6 +1200,33 @@
 			path = Service;
 			sourceTree = "<group>";
 		};
+		6965DEAB2E2159C200F8099A /* misc */ = {
+			isa = PBXGroup;
+			children = (
+				6965DEA92E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html */,
+				6965DEAA2E2159C200F8099A /* Get Commercial License-cca5.url */,
+			);
+			path = misc;
+			sourceTree = "<group>";
+		};
+		6965DEAE2E2159C200F8099A /* swansong-font */ = {
+			isa = PBXGroup;
+			children = (
+				6965DEAB2E2159C200F8099A /* misc */,
+				6965DEAC2E2159C200F8099A /* info.txt */,
+				6965DEAD2E2159C200F8099A /* Swansong-0v5gd.ttf */,
+			);
+			path = "swansong-font";
+			sourceTree = "<group>";
+		};
+		696EBA272E2802A300A296FB /* ProgressWorkout */ = {
+			isa = PBXGroup;
+			children = (
+				696EBA282E2802B300A296FB /* ProgressWorkout.swift */,
+			);
+			path = ProgressWorkout;
+			sourceTree = "<group>";
+		};
 		699A64DB2E01EEAF008D6BDA /* Component */ = {
 			isa = PBXGroup;
 			children = (
@@ -1190,6 +1270,7 @@
 		699A64E52E01EEAF008D6BDA /* Workout */ = {
 			isa = PBXGroup;
 			children = (
+				696EBA272E2802A300A296FB /* ProgressWorkout */,
 				693476B72E02EE9C00916824 /* WorkoutRepositoryProtocol */,
 				699A64DB2E01EEAF008D6BDA /* Component */,
 				699A64E12E01EEAF008D6BDA /* VideosDashBoard */,
@@ -1339,7 +1420,12 @@
 			files = (
 				6930C3E32DFF5818009FB959 /* .gitignore in Resources */,
 				6930C4FC2DFF589A009FB959 /* Preview Assets.xcassets in Resources */,
+				696EBA162E2580C200A296FB /* LaunchSamson.storyboard in Resources */,
 				6930C4FD2DFF589A009FB959 /* Assets.xcassets in Resources */,
+				6965DEAF2E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html in Resources */,
+				6965DEB02E2159C200F8099A /* Get Commercial License-cca5.url in Resources */,
+				6965DEB12E2159C200F8099A /* info.txt in Resources */,
+				6965DEB22E2159C200F8099A /* Swansong-0v5gd.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1347,6 +1433,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6965DEB72E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html in Resources */,
+				6965DEB82E2159C200F8099A /* Get Commercial License-cca5.url in Resources */,
+				6965DEB92E2159C200F8099A /* info.txt in Resources */,
+				6965DEBA2E2159C200F8099A /* Swansong-0v5gd.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1354,6 +1444,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6965DEB32E2159C200F8099A /* FSLA_NonCommercial_License-d5e8.html in Resources */,
+				6965DEB42E2159C200F8099A /* Get Commercial License-cca5.url in Resources */,
+				6965DEB52E2159C200F8099A /* info.txt in Resources */,
+				6965DEB62E2159C200F8099A /* Swansong-0v5gd.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1381,7 +1475,7 @@
 				691996052DFC8C85007FAB40 /* WorkoutLevelViewModel.swift in Sources */,
 				691996C22DFC8F74007FAB40 /* RecipesLowCarb.swift in Sources */,
 				691996872DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */,
-				691995D22DFC88AE007FAB40 /* BodyCurrentViewModel.swift in Sources */,
+				691995D22DFC88AE007FAB40 /* BMIViewModel.swift in Sources */,
 				690DF7F82E1191660038A671 /* NutritionExample.swift in Sources */,
 				691996BF2DFC8F6F007FAB40 /* RecipesKetos.swift in Sources */,
 				691996152DFC8CB4007FAB40 /* GymEquipmentView.swift in Sources */,
@@ -1404,6 +1498,7 @@
 				691995E62DFC8BFD007FAB40 /* WeightViewModel.swift in Sources */,
 				691996672DFC8DC2007FAB40 /* AnalyticsView.swift in Sources */,
 				6919961F2DFC8CF0007FAB40 /* ShowInfoViewModel.swift in Sources */,
+				6965DEA72E21599B00F8099A /* Font.swift in Sources */,
 				690DF8232E14A40A0038A671 /* Cards.swift in Sources */,
 				6919967E2DFC8E3C007FAB40 /* GroceryListView.swift in Sources */,
 				69D11C132DFCCC21004721EF /* RecipeComponent.swift in Sources */,
@@ -1413,6 +1508,7 @@
 				6919964E2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				691996B12DFC8F5A007FAB40 /* color.swift in Sources */,
 				691995FE2DFC8C74007FAB40 /* WhichPlaceView.swift in Sources */,
+				696EBA2A2E2802BA00A296FB /* ProgressWorkout.swift in Sources */,
 				6919961A2DFC8CDC007FAB40 /* showInfo.swift in Sources */,
 				691996592DFC8DA8007FAB40 /* ProfileView.swift in Sources */,
 				6919966B2DFC8DCA007FAB40 /* HealthyView.swift in Sources */,
@@ -1426,6 +1522,7 @@
 				691995E92DFC8C03007FAB40 /* 7WeightView.swift in Sources */,
 				691995C92DFC888C007FAB40 /* 3GoalView.swift in Sources */,
 				691996CB2DFC8F94007FAB40 /* ImagePicker.swift in Sources */,
+				696EBA242E26C18000A296FB /* OnboardingNext.swift in Sources */,
 				691996F02DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */,
 				690DF80F2E149CE80038A671 /* OnboardingTemplate.swift in Sources */,
 				691995DE2DFC88C4007FAB40 /* 6HeightView.swift in Sources */,
@@ -1443,14 +1540,16 @@
 				691996AA2DFC8F25007FAB40 /* WNHApp.swift in Sources */,
 				691996632DFC8DBB007FAB40 /* CoachesView.swift in Sources */,
 				691995F32DFC8C12007FAB40 /* TargetWeightViewModel.swift in Sources */,
+				696EBA212E26C17900A296FB /* OnboardingLogo.swift in Sources */,
 				691996A02DFC8EF6007FAB40 /* DashBoardViewModel.swift in Sources */,
-				691995CE2DFC889D007FAB40 /* 4BodyCurrentView.swift in Sources */,
+				691995CE2DFC889D007FAB40 /* BMIView.swift in Sources */,
 				690DF8292E14A42C0038A671 /* Buttons.swift in Sources */,
 				691995DB2DFC88BD007FAB40 /* 5BirthYearView.swift in Sources */,
 				691996FF2DFC91AF007FAB40 /* FAQView.swift in Sources */,
 				691996112DFC8CA4007FAB40 /* LevelActivityViewModel.swift in Sources */,
 				6965DE862E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				6919962D2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
+				696EBA1D2E26C17200A296FB /* OnboardingCard.swift in Sources */,
 				6919965D2DFC8DAE007FAB40 /* RateAppView.swift in Sources */,
 				691996022DFC8C7B007FAB40 /* WhichPlaceViewModel.swift in Sources */,
 				69B066782E0DF1B100A954B7 /* TrainerDetailView.swift in Sources */,
@@ -1479,6 +1578,7 @@
 				691996C72DFC8F8A007FAB40 /* UserManager.swift in Sources */,
 				691995E12DFC88CB007FAB40 /* HeightViewModel.swift in Sources */,
 				691996832DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */,
+				696EBA182E26C16C00A296FB /* OnboardingBack.swift in Sources */,
 				6901B48D2E00823700173562 /* SubscriptionManager.swift in Sources */,
 				69B0666A2E0C759C00A954B7 /* AllergySelectionViewModel.swift in Sources */,
 				691995ED2DFC8C0C007FAB40 /* 8TargetWeightView.swift in Sources */,
@@ -1530,8 +1630,9 @@
 				691995D72DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */,
 				691996172DFC8CB4007FAB40 /* GymEquipmentView.swift in Sources */,
 				6919965A2DFC8DA8007FAB40 /* ProfileView.swift in Sources */,
-				691995CF2DFC889D007FAB40 /* 4BodyCurrentView.swift in Sources */,
+				691995CF2DFC889D007FAB40 /* BMIView.swift in Sources */,
 				690DF8242E14A40A0038A671 /* Cards.swift in Sources */,
+				6965DEA62E21599B00F8099A /* Font.swift in Sources */,
 				691995EF2DFC8C0C007FAB40 /* 8TargetWeightView.swift in Sources */,
 				6919965F2DFC8DAE007FAB40 /* RateAppView.swift in Sources */,
 				691995B42DFC881F007FAB40 /* 1LoginView.swift in Sources */,
@@ -1541,6 +1642,7 @@
 				691996B32DFC8F5A007FAB40 /* color.swift in Sources */,
 				691995F92DFC8C69007FAB40 /* 9DietTypeView.swift in Sources */,
 				691995BE2DFC886C007FAB40 /* 2GenderSelectionView.swift in Sources */,
+				696EBA2B2E2802BA00A296FB /* ProgressWorkout.swift in Sources */,
 				691995D92DFC88BD007FAB40 /* 5BirthYearView.swift in Sources */,
 				6919962F2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
 				691996AE2DFC8F54007FAB40 /*  NutritionCalculator.swift in Sources */,
@@ -1554,6 +1656,7 @@
 				691996CC2DFC8F94007FAB40 /* ImagePicker.swift in Sources */,
 				691995F12DFC8C12007FAB40 /* TargetWeightViewModel.swift in Sources */,
 				691996D72DFC8FCD007FAB40 /* NotificationWater.swift in Sources */,
+				696EBA262E26C18000A296FB /* OnboardingNext.swift in Sources */,
 				690DF80E2E149CE80038A671 /* OnboardingTemplate.swift in Sources */,
 				691996F22DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */,
 				691995E72DFC8BFD007FAB40 /* WeightViewModel.swift in Sources */,
@@ -1565,12 +1668,13 @@
 				691996372DFC8D34007FAB40 /* TellAFViewModel.swift in Sources */,
 				691996432DFC8D83007FAB40 /* MeView.swift in Sources */,
 				69B066682E0C759C00A954B7 /* AllergySelectionViewModel.swift in Sources */,
-				691995D12DFC88AE007FAB40 /* BodyCurrentViewModel.swift in Sources */,
+				691995D12DFC88AE007FAB40 /* BMIViewModel.swift in Sources */,
 				6919969C2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */,
 				6901B4AC2E00905500173562 /* PaymentService.swift in Sources */,
 				691995DF2DFC88C4007FAB40 /* 6HeightView.swift in Sources */,
 				691996522DFC8D9A007FAB40 /* SubscriptionView.swift in Sources */,
 				6919961E2DFC8CF0007FAB40 /* ShowInfoViewModel.swift in Sources */,
+				696EBA222E26C17900A296FB /* OnboardingLogo.swift in Sources */,
 				6919960F2DFC8C9D007FAB40 /* 10LevelActivityView.swift in Sources */,
 				691995C52DFC8886007FAB40 /* GoalViewModel.swift in Sources */,
 				690DF8272E14A42C0038A671 /* Buttons.swift in Sources */,
@@ -1579,6 +1683,7 @@
 				6965DE872E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				691996FD2DFC91AF007FAB40 /* FAQView.swift in Sources */,
 				691996822DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */,
+				696EBA1C2E26C17200A296FB /* OnboardingCard.swift in Sources */,
 				691996A92DFC8F25007FAB40 /* WNHApp.swift in Sources */,
 				6919964F2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				6919968A2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
@@ -1606,6 +1711,7 @@
 				6919970D2DFCB412007FAB40 /* DaySelectorView.swift in Sources */,
 				691996C62DFC8F8A007FAB40 /* UserManager.swift in Sources */,
 				691996A42DFC8F04007FAB40 /* DashboardView.swift in Sources */,
+				696EBA192E26C16C00A296FB /* OnboardingBack.swift in Sources */,
 				691996712DFC8E20007FAB40 /* DietViewModel.swift in Sources */,
 				6901B48E2E00823700173562 /* SubscriptionManager.swift in Sources */,
 				691996272DFC8D16007FAB40 /* AnalyticsViewModel.swift in Sources */,
@@ -1624,6 +1730,7 @@
 				6965DE7E2E1E849400F8099A /* MockTrainerRepository.swift in Sources */,
 				691996472DFC8D8A007FAB40 /* TellAFView.swift in Sources */,
 				691997022DFC91C4007FAB40 /* FAQViewModel.swift in Sources */,
+				696EBA202E26C17900A296FB /* OnboardingLogo.swift in Sources */,
 				69D11C142DFCCC21004721EF /* RecipeComponent.swift in Sources */,
 				691996212DFC8CFC007FAB40 /* GymEquipmentViewModel.swift in Sources */,
 				691996BB2DFC8F6B007FAB40 /* RecipesCalorieDeficit.swift in Sources */,
@@ -1635,14 +1742,16 @@
 				691996072DFC8C85007FAB40 /* WorkoutLevelViewModel.swift in Sources */,
 				690DF7F92E1191660038A671 /* NutritionExample.swift in Sources */,
 				691996862DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */,
-				691995D32DFC88AE007FAB40 /* BodyCurrentViewModel.swift in Sources */,
+				691995D32DFC88AE007FAB40 /* BMIViewModel.swift in Sources */,
 				691996DD2DFC9027007FAB40 /* UserProfile.swift in Sources */,
 				6901B4892E0079E800173562 /* ViewModifiers.swift in Sources */,
 				691996162DFC8CB4007FAB40 /* GymEquipmentView.swift in Sources */,
 				699A65082E01F063008D6BDA /* ExerciseVideo.swift in Sources */,
 				6919963D2DFC8D60007FAB40 /* RateAppViewModel.swift in Sources */,
 				691996292DFC8D1A007FAB40 /* SubscriptionViewModel.swift in Sources */,
+				696EBA252E26C18000A296FB /* OnboardingNext.swift in Sources */,
 				6919968B2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
+				6965DEA82E21599B00F8099A /* Font.swift in Sources */,
 				691995BB2DFC884E007FAB40 /* LoginViewModel.swift in Sources */,
 				693476D42E0897C600916824 /* GoalViewComponent.swift in Sources */,
 				691996552DFC8DA0007FAB40 /* SettingsView.swift in Sources */,
@@ -1667,6 +1776,7 @@
 				6919964D2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				691995FF2DFC8C74007FAB40 /* WhichPlaceView.swift in Sources */,
 				6965DE882E1E866A00F8099A /* FirebaseService.swift in Sources */,
+				696EBA1A2E26C16C00A296FB /* OnboardingBack.swift in Sources */,
 				6919961B2DFC8CDC007FAB40 /* showInfo.swift in Sources */,
 				690DF80C2E149CDD0038A671 /* OnboardingComponents.swift in Sources */,
 				6965DE8C2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */,
@@ -1677,6 +1787,7 @@
 				693476BD2E02EED200916824 /* MockWorkoutRepository.swift in Sources */,
 				6919966E2DFC8E03007FAB40 /* MeViewModel.swift in Sources */,
 				691995FA2DFC8C69007FAB40 /* 9DietTypeView.swift in Sources */,
+				696EBA292E2802BA00A296FB /* ProgressWorkout.swift in Sources */,
 				6919969E2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */,
 				69B066722E0DEF4E00A954B7 /* TrainerData.swift in Sources */,
 				691995EB2DFC8C03007FAB40 /* 7WeightView.swift in Sources */,
@@ -1698,6 +1809,7 @@
 				691996F12DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */,
 				691996262DFC8D16007FAB40 /* AnalyticsViewModel.swift in Sources */,
 				69B066642E0C757900A954B7 /* AllergySelectionView.swift in Sources */,
+				696EBA1E2E26C17200A296FB /* OnboardingCard.swift in Sources */,
 				691996B22DFC8F5A007FAB40 /* color.swift in Sources */,
 				691997192DFCB482007FAB40 /* TodaysMealsViewModel.swift in Sources */,
 				691996A82DFC8F25007FAB40 /* WNHApp.swift in Sources */,
@@ -1715,7 +1827,7 @@
 				6901B4A82E0089C100173562 /* SubscriptionHeader.swift in Sources */,
 				693476C62E03141C00916824 /* SearchBarWorkoutViewModel.swift in Sources */,
 				691996A22DFC8EF6007FAB40 /* DashBoardViewModel.swift in Sources */,
-				691995CD2DFC889D007FAB40 /* 4BodyCurrentView.swift in Sources */,
+				691995CD2DFC889D007FAB40 /* BMIView.swift in Sources */,
 				691995DA2DFC88BD007FAB40 /* 5BirthYearView.swift in Sources */,
 				691996132DFC8CA4007FAB40 /* LevelActivityViewModel.swift in Sources */,
 				6919962E2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
@@ -1810,6 +1922,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -1868,6 +1981,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 18.2;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
@@ -1884,17 +1998,27 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = WNH.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = N72WWK779U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WNH-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = SAMSON;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "\"This app needs access to your health data to track your workouts and progress.\"\n";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "permitir a la app acceder a tu ubicacion para mostrarte los entrenadores cercanos a ti";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "permitir a la app acceder a tu ubicacion para mostrarte los entrenadores cercanos a ti";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1913,17 +2037,27 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				CODE_SIGN_ENTITLEMENTS = WNH.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = N72WWK779U;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "WNH-Info.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = SAMSON;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.healthcare-fitness";
+				INFOPLIST_KEY_NSHealthShareUsageDescription = "\"This app needs access to your health data to track your workouts and progress.\"\n";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "permitir a la app acceder a tu ubicacion para mostrarte los entrenadores cercanos a ti";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "permitir a la app acceder a tu ubicacion para mostrarte los entrenadores cercanos a ti";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UILaunchStoryboardName = "";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

@@ -6,6 +6,7 @@ struct CascadingAppearModifier: ViewModifier {
     let offsetY: CGFloat
     let duration: Double
     @State private var isVisible = false
+    @State private var hasAppeared = false
     
     func body(content: Content) -> some View {
         content
@@ -16,8 +17,12 @@ struct CascadingAppearModifier: ViewModifier {
                 value: isVisible
             )
             .onAppear {
+                guard !hasAppeared else { return }
+                hasAppeared = true
                 DispatchQueue.main.asyncAfter(deadline: .now() + baseDelay * Double(index)) {
-                    isVisible = true
+                    withAnimation {
+                        isVisible = true
+                    }
                 }
             }
     }

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct GoalView: View {
     @ObservedObject var viewModel: GoalViewModel
@@ -7,243 +8,295 @@ struct GoalView: View {
     @State private var navigateToBodyCurrent = false
     @State private var isButtonDisabled = false
     @State private var isLoading = false
-    @State private var showSelectionAnimation = false
-    @State private var animateIn = false
+    @State private var selectedIndex: Int = 1 // Por defecto "Get fitter" (keepFit)
+    @State private var scrollPickerDragOffset: CGFloat = 0
+    @State private var isNavigatingToPreviousScreen = false
+    
+    private let goals: [Goal] = [.loseWeight, .keepFit, .buildMuscle]
+    private let itemHeight: CGFloat = 60
     
     var body: some View {
         ZStack {
-            ScrollView {
-                VStack(spacing: 30) {
-                    progressSection.cascadingAppear(index: 0)
-                    headerSection.cascadingAppear(index: 1)
-                    goalSelectionSection.cascadingAppear(index: 2)
-                    Spacer(minLength: 100)
+            Color.white.ignoresSafeArea()
+            VStack(spacing: 0) {
+                Image("samsonWhite")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 170)
+                    .padding(.top, 5)
+                    .padding(.bottom, -10)
+                    .opacity(1.0)
+                
+                VStack(spacing: 6) {
+                    Text("WHAT'S YOUR GOAL?")
+                        .font(.system(size: 26, weight: .black, design: .default))
+                        .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
+                        .shadow(color: .white.opacity(0.7), radius: 2, x: 0, y: 1)
+                    Text("This help us create your personalized plan.")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.black.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 8)
+                        .cascadingAppear(index: 1)
                 }
-                .screenHorizontalPadding()
-                .padding(.bottom, 120)
-            }
-            if viewModel.selectedGoal != nil {
-                VStack {
+                .padding(.vertical, 16)
+                .padding(.horizontal, 18)
+                .background(Color.appYellow)
+                .cornerRadius(24)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.black, lineWidth: 3)
+                )
+                .padding(.horizontal, 24)
+                .padding(.bottom, -50)
+                
+                Spacer()
+                
+                // Nuevo Custom Picker
+                ZStack {
+                    // Líneas amarillas de selección
+                    VStack {
+                        Spacer()
+                        Rectangle()
+                            .fill(Color.appYellow)
+                            .frame(width: 280, height: 4)
+                        Spacer().frame(height: itemHeight - 6)
+                        Rectangle()
+                            .fill(Color.appYellow)
+                            .frame(width: 280, height: 4)
+                        Spacer()
+                    }
+                    .frame(height: itemHeight * 3)
+                    
+                    // Nuevo Custom Scroll Picker
+                    CustomScrollPicker(
+                        items: goals,
+                        selectedIndex: $selectedIndex,
+                        itemHeight: itemHeight,
+                        externalDragOffset: scrollPickerDragOffset
+                    ) { goal, distance in
+                        Text(goalText(for: goal))
+                            .font(.custom("Arial", size: fontSizeForDistance(distance)))
+                            .foregroundColor(colorForDistance(distance))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: itemHeight)
+                            .scaleEffect(scaleForDistance(distance))
+                            .opacity(opacityForDistance(distance))
+                    }
+                    .frame(height: itemHeight * 3)
+                }
+                .onChange(of: selectedIndex) { newIndex in
+                    let goal = goals[newIndex]
+                    viewModel.selectGoal(goal)
+                    // Haptic feedback
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                }
+                .onAppear {
+                    if let savedIndex = UserDefaults.standard.object(forKey: "selectedGoal") as? Int,
+                       savedIndex >= 0 && savedIndex < goals.count {
+                        selectedIndex = savedIndex
+                    } else {
+                        selectedIndex = 1
+                        UserDefaults.standard.set(1, forKey: "selectedGoal")
+                    }
+                }
+                
+                Spacer()
+                
+                HStack {
+                    // Botón back circular gris
+                    Button(action: {
+                        progressViewModel.decreaseProgress()
+                        isNavigatingToPreviousScreen = true
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 48, height: 48)
+                            .background(Color(white: 0.18))
+                            .clipShape(Circle())
+                    }
+                    
                     Spacer()
-                    NextButton(
-                        title: "Next",
-                        action: proceedToNext,
-                        isLoading: $isLoading,
-                        isDisabled: $isButtonDisabled
-                    )
-                    .frame(maxWidth: .infinity)
-                    .screenHorizontalPadding()
-                    .padding(.bottom, 32)
-                    .cascadingAppear(index: 3)
+                    
+                    // Botón Next igual a GenderSelectionView
+                    Button(action: {
+                        withAnimation {
+                            progressViewModel.advanceProgress()
+                        }
+                        navigateToBodyCurrent = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Text("Next")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.black)
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.black)
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(Color(red: 1.0, green: 0.827, blue: 0.0))
+                                .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
+                        )
+                    }
+                    .scaleEffect(1.0)
+                    .animation(.easeInOut(duration: 0.1), value: selectedIndex)
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 20)
+                    
                     NavigationLink(
-                        destination: BodyCurrentView(viewModel: BodyCurrentViewModel(), progressViewModel: progressViewModel),
+                        destination: BirthYearView(viewModel: BirthYearViewModel(), progressViewModel: progressViewModel),
                         isActive: $navigateToBodyCurrent
                     ) {
                         EmptyView()
                     }
                     .hidden()
+                    NavigationLink(
+                        destination: GenderSelectionView(progressViewModel: progressViewModel, viewModel: GenderSelectionViewModel()),
+                        isActive: $isNavigatingToPreviousScreen
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
                 }
-                .frame(maxWidth: .infinity)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 0)
             }
         }
-        .blackGradientBackground()
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .navigationBarItems(leading: backButton)
-        .onAppear {
-            viewModel.loadGoalFromUserDefaults()
-            viewModel.loadGenderFromUserDefaults()
-            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
-                animateIn = true
-            }
-        }
-        .overlay(
-            // Success animation overlay
-            Group {
-                if showSelectionAnimation {
-                    GoalSelectionSuccessView()
-                        .transition(.scale.combined(with: .opacity))
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    // Aplicar el gesto al picker
+                    scrollPickerDragOffset = value.translation.height
                 }
-            }
+                .onEnded { value in
+                    // Calcular nuevo índice basado en el gesto
+                    let velocity = value.predictedEndTranslation.height - value.translation.height
+                    let adjustedOffset = value.translation.height + velocity * 0.1
+                    
+                    let itemsToMove = -adjustedOffset / itemHeight
+                    let newIndex = selectedIndex + Int(round(itemsToMove))
+                    let clampedIndex = max(0, min(newIndex, goals.count - 1))
+                    
+                    // Animar al nuevo índice
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        selectedIndex = clampedIndex
+                        scrollPickerDragOffset = 0
+                    }
+                    
+                    // Guardar en UserDefaults
+                    UserDefaults.standard.set(clampedIndex, forKey: "selectedGoal")
+                }
         )
     }
-}
-
-// MARK: - Subviews
-private extension GoalView {
     
-    var backButton: some View {
-        Button(action: {
-            progressViewModel.decreaseProgress()
-            presentationMode.wrappedValue.dismiss()
-        }) {
-            Image(systemName: "chevron.left")
-                .foregroundColor(.appYellow)
-                .font(.system(size: 18))
-        }
-    }
-    
-    var progressSection: some View {
-        VStack(spacing: 5) {
-            ProgressBarWithIcons(progressViewModel: progressViewModel)
-        }
-        .padding(.top, 10)
-    }
-    
-    var headerSection: some View {
-        PageHeader(
-            icon: "target",
-            title: "What's your main goal?",
-            subtitle: nil,
-            progressViewModel: nil
-        )
-        .padding(.top, 10)
-    }
-    
-    var goalSelectionSection: some View {
-        VStack(spacing: 20) {
-            SimpleSectionHeader(title: "Choose Your Goal")
-            VStack(spacing: 16) {
-                ForEach(Goal.allCases, id: \ .self) { goal in
-                    let info = goalInfo(for: goal)
-                    ExpandableSelectionCard(
-                        isSelected: viewModel.selectedGoal == goal,
-                        color: info.color,
-                        action: { selectGoal(goal) },
-                        header: {
-                            HStack(spacing: 16) {
-                                ZStack {
-                                    Circle()
-                                        .fill(
-                                            LinearGradient(
-                                                colors: [info.color.opacity(viewModel.selectedGoal == goal ? 0.3 : 0.2), info.color.opacity(viewModel.selectedGoal == goal ? 0.1 : 0.05)],
-                                                startPoint: .topLeading,
-                                                endPoint: .bottomTrailing
-                                            )
-                                        )
-                                        .frame(width: 70, height: 70)
-                                    Image(systemName: info.icon)
-                                        .font(.system(size: 30))
-                                        .foregroundColor(info.color)
-                                }
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text(goal.rawValue)
-                                            .font(.system(size: 18, weight: .semibold))
-                                            .foregroundColor(.appWhite)
-                                        Spacer()
-                                        if viewModel.selectedGoal == goal {
-                                            Image(systemName: "checkmark.circle.fill")
-                                                .font(.system(size: 20))
-                                                .foregroundColor(.green)
-                                        } else {
-                                            Image(systemName: "circle")
-                                                .font(.system(size: 20))
-                                                .foregroundColor(.appWhite.opacity(0.3))
-                                        }
-                                    }
-                                    Text(info.description)
-                                        .font(.system(size: 14))
-                                        .foregroundColor(.appWhite.opacity(0.7))
-                                        .lineLimit(2)
-                                }
-                            }
-                        },
-                        expandedContent: {
-                            VStack(spacing: 8) {
-                                HStack {
-                                    Text("What you'll get:")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(info.color)
-                                    Spacer()
-                                }
-                                ForEach(info.benefits, id: \ .self) { benefit in
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(info.color)
-                                        Text(benefit)
-                                            .font(.system(size: 13))
-                                            .foregroundColor(.appWhite.opacity(0.8))
-                                        Spacer()
-                                    }
-                                }
-                            }
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-// MARK: - Actions
-private extension GoalView {
-    func selectGoal(_ goal: Goal) {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            viewModel.selectGoal(goal)
-        }
-        
-        // Show success animation
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            showSelectionAnimation = true
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                showSelectionAnimation = false
-            }
-        }
-        
-        // Haptic feedback
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-    }
-    
-    func proceedToNext() {
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        progressViewModel.advanceProgress()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.navigateToBodyCurrent = true
-        }
-    }
-}
-
-// Helper para info de cada goal
-private extension GoalView {
-    func goalInfo(for goal: Goal) -> (color: Color, icon: String, description: String, benefits: [String]) {
+    private func goalText(for goal: Goal) -> String {
         switch goal {
-        case .loseWeight:
-            return (.red, "flame.fill", "Focus on burning calories and fat loss", [
-                "High-intensity cardio workouts",
-                "Calorie tracking and nutrition guidance",
-                "Fat-burning exercise routines"
-            ])
-        case .buildMuscle:
-            return (.blue, "dumbbell.fill", "Build strength and increase muscle mass", [
-                "Progressive strength training",
-                "Muscle-building nutrition plans",
-                "Recovery and growth optimization"
-            ])
-        case .keepFit:
-            return (.green, "heart.fill", "Maintain fitness and overall health", [
-                "Balanced cardio and strength mix",
-                "Flexibility and mobility focus",
-                "Sustainable healthy habits"
-            ])
+        case .buildMuscle: return "Gain Weight"
+        case .loseWeight: return "Lose weight"
+        case .keepFit: return "Get fitter"
+        }
+    }
+    
+    private func fontSizeForDistance(_ distance: Int) -> CGFloat {
+        switch abs(distance) {
+        case 0: return 40
+        case 1: return 32
+        default: return 26
+        }
+    }
+    
+    private func colorForDistance(_ distance: Int) -> Color {
+        switch abs(distance) {
+        case 0: return .black
+        case 1: return Color.black.opacity(0.7)
+        default: return Color.black.opacity(0.4)
+        }
+    }
+    
+    private func scaleForDistance(_ distance: Int) -> CGFloat {
+        switch abs(distance) {
+        case 0: return 1.0
+        case 1: return 0.9
+        default: return 0.8
+        }
+    }
+    
+    private func opacityForDistance(_ distance: Int) -> Double {
+        switch abs(distance) {
+        case 0: return 1.0
+        case 1: return 0.8
+        default: return 0.5
         }
     }
 }
 
-// MARK: - Preview
+// MARK: - Custom Scroll Picker desde cero
+struct CustomScrollPicker<Item: Hashable, Content: View>: View {
+    let items: [Item]
+    @Binding var selectedIndex: Int
+    let itemHeight: CGFloat
+    let externalDragOffset: CGFloat
+    let content: (Item, Int) -> Content
+    
+    @State private var currentOffset: CGFloat = 0
+    
+    var body: some View {
+        GeometryReader { geometry in
+            let totalHeight = geometry.size.height
+            let centerY = totalHeight / 2
+            let padding = centerY - itemHeight / 2
+            
+            VStack(spacing: 0) {
+                // Top padding
+                Color.clear.frame(height: padding)
+                
+                // Items
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    let distance = index - selectedIndex
+                    content(item, distance)
+                        .frame(height: itemHeight)
+                        .animation(.easeInOut(duration: 0.2), value: selectedIndex)
+                }
+                
+                // Bottom padding
+                Color.clear.frame(height: padding)
+            }
+            .offset(y: currentOffset + externalDragOffset)
+            .onAppear {
+                currentOffset = -CGFloat(selectedIndex) * itemHeight
+            }
+            .onChange(of: selectedIndex) { newIndex in
+                // Sincronizar currentOffset cuando selectedIndex cambie externamente
+                let targetOffset = -CGFloat(newIndex) * itemHeight
+                let offsetDifference = abs(currentOffset - targetOffset)
+                
+                if offsetDifference > 1 {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                        currentOffset = targetOffset
+                    }
+                }
+            }
+        }
+        .clipped()
+    }
+}
+
+#if DEBUG
 struct GoalView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
-            GoalView(
-                viewModel: GoalViewModel(),
-                progressViewModel: ProgressViewModel()
-            )
-        }
-        .preferredColorScheme(.dark)
+        GoalView(
+            viewModel: GoalViewModel(),
+            progressViewModel: ProgressViewModel()
+        )
     }
 }
+#endif

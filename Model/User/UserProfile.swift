@@ -53,7 +53,6 @@ struct UserProfile {
     let selectedEquipmentType: String
     
     // Body Image References
-    let bodyCurrentImage: String
     let desiredBodyImage: String
     
     // Legacy/Additional Equipment Reference
@@ -113,7 +112,6 @@ struct UserProfile {
         selectedEquipmentType = defaults.string(forKey: "selectedEquipmentType") ?? "Not Set"
         
         // Body Image References
-        bodyCurrentImage = defaults.string(forKey: "bodyCurrentImage") ?? "Not Set"
         desiredBodyImage = defaults.string(forKey: "desiredBodyImage") ?? "Not Set"
         
         // Legacy/Additional Equipment Reference
@@ -303,5 +301,15 @@ struct UserProfile {
         } else {
             return "Free Plan"
         }
+    }
+
+    // NUEVO: Guardar y exponer BMI y kilos a bajar/subir
+    static var currentBMI: Double? {
+        get { UserDefaults.standard.object(forKey: "currentBMI") as? Double }
+        set { UserDefaults.standard.set(newValue, forKey: "currentBMI") }
+    }
+    static var kilosToLose: Double? {
+        get { UserDefaults.standard.object(forKey: "kilosToLose") as? Double }
+        set { UserDefaults.standard.set(newValue, forKey: "kilosToLose") }
     }
 }

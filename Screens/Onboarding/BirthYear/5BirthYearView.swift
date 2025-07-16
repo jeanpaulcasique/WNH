@@ -1,749 +1,316 @@
 import SwiftUI
-import UIKit
-import Combine
 
 struct BirthYearView: View {
     @StateObject var viewModel: BirthYearViewModel
     @ObservedObject var progressViewModel: ProgressViewModel
     @Environment(\.presentationMode) var presentationMode
     @State private var isNavigatingToNextScreen = false
-    @State private var isLoading = false
-    @State private var isDisabled = false
-    @State private var showSelectionAnimation = false
-    @State private var selectedDecade: Int = 1990
-    @State private var showDecadeSelector = false
-    @State private var showCategorySheet = false
-    @State private var animateIn = false
+    @State private var isNavigatingToPreviousScreen = false
+    @State private var selectedIndex: Int = 17 // Default a edad 33 (33 - 16 = 17)
+    @State private var scrollPickerDragOffset: CGFloat = 0
     
+    // Configuración visual
+    private let minAge = 16
+    private let maxAge = 80
+    private let itemHeight: CGFloat = 60
+    private var currentYear: Int { Calendar.current.component(.year, from: Date()) }
+    private var ageRange: [Int] { Array(minAge...maxAge) }
+
     var body: some View {
         ZStack {
-            // Gradient background matching other screens
-            LinearGradient(
-                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            .opacity(animateIn ? 1 : 0)
-            .animation(.easeOut(duration: 0.5), value: animateIn)
+            Color.white.ignoresSafeArea()
             
-            ScrollView {
-                VStack(spacing: 30) {
-                    progressSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.05), value: animateIn)
-                    headerSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.15), value: animateIn)
-                    ageDisplaySection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.25), value: animateIn)
-                    yearSelectionSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.35), value: animateIn)
-                    motivationalSection
-                        .opacity(animateIn ? 1 : 0)
-                        .offset(y: animateIn ? 0 : 40)
-                        .animation(.easeOut(duration: 0.5).delay(0.45), value: animateIn)
+            VStack(spacing: 0) {
+                // Imagen de samson centrada arriba
+                Image("samsonWhite")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 170)
+                    .padding(.top, 5)
+                    .padding(.bottom, -10)
+                    .opacity(1.0)
+
+                // Card amarillo con borde negro, título y subtítulo
+                VStack(spacing: 8) {
+                    Text("HOW OLD ARE YOU?")
+                        .font(.system(size: 26, weight: .black, design: .default))
+                        .foregroundColor(.black)
+                        .multilineTextAlignment(.center)
+                        .shadow(color: .white.opacity(0.7), radius: 2, x: 0, y: 1)
+                    Text("This helps us create your personalized plan")
+                        .font(.system(size: 17, weight: .medium))
+                        .foregroundColor(.black.opacity(0.9))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 8)
+                        .cascadingAppear(index: 1)
+                }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 18)
+                .background(Color.appYellow)
+                .cornerRadius(24)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(Color.black, lineWidth: 3)
+                )
+                .padding(.horizontal, 24)
+                .padding(.bottom, -50)
+
+                Spacer()
+                
+                // Picker visual con 5 elementos (2 arriba, 1 centro, 2 abajo)
+                ZStack {
+                    // Líneas amarillas de selección
+                    VStack {
+                        Spacer()
+                        Rectangle()
+                            .fill(Color.appYellow)
+                            .frame(width: 120, height: 4)
+                        Spacer().frame(height: itemHeight - 6)
+                        Rectangle()
+                            .fill(Color.appYellow)
+                            .frame(width: 120, height: 4)
+                        Spacer()
+                    }
+                    .frame(height: itemHeight * 5)
+
+                    // Custom Scroll Picker sin animaciones
+                    CustomScrollPickerNoAnimation(
+                        items: ageRange,
+                        selectedIndex: $selectedIndex,
+                        itemHeight: itemHeight,
+                        externalDragOffset: scrollPickerDragOffset
+                    ) { age, distance in
+                        Text("\(age)")
+                            .font(.system(size: fontSizeForDistance(distance) + 16, weight: fontWeightForDistance(distance)))
+                            .foregroundColor(colorForDistance(distance))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: itemHeight)
+                            .scaleEffect(scaleForDistance(distance))
+                            .opacity(opacityForDistance(distance))
+                    }
+                    .frame(height: itemHeight * 5)
+                }
+                .onChange(of: selectedIndex) { newIndex in
+                    let age = ageRange[newIndex]
+                    viewModel.selectedYear = currentYear - age
+                    // Haptic feedback
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                    impactFeedback.impactOccurred()
+                }
+                .onAppear {
+                    // Cargar selección guardada o default
+                    let savedAge = UserDefaults.standard.integer(forKey: "selectedAge")
+                    if savedAge >= minAge && savedAge <= maxAge {
+                        selectedIndex = savedAge - minAge
+                    } else {
+                        selectedIndex = 17 // Default a edad 33
+                    }
                     
-                    Spacer(minLength: 100)
+                    // Sincronizar con el ViewModel SIN animación
+                    let age = ageRange[selectedIndex]
+                    viewModel.selectedYear = currentYear - age
+                }
+                
+                Spacer()
+                
+                // Botones abajo
+                HStack {
+                    // Botón Back
+                    Button(action: {
+                        progressViewModel.decreaseProgress()
+                        isNavigatingToPreviousScreen = true
+                    }) {
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 20, weight: .medium))
+                            .foregroundColor(.white)
+                            .frame(width: 48, height: 48)
+                            .background(Color(white: 0.18))
+                            .clipShape(Circle())
+                    }
+                    
+                    Spacer()
+                    
+                    // Botón Next
+                    Button(action: {
+                        // Removido withAnimation para evitar animaciones
+                        progressViewModel.advanceProgress()
+                        isNavigatingToNextScreen = true
+                    }) {
+                        HStack(spacing: 8) {
+                            Text("Next")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.black)
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.black)
+                        }
+                        .padding(.horizontal, 32)
+                        .padding(.vertical, 16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 30)
+                                .fill(Color(red: 1.0, green: 0.827, blue: 0.0))
+                                .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 4)
+                        )
+                    }
+                    .scaleEffect(1.0)
+                    .padding(.trailing, 20)
+                    .padding(.bottom, 20)
+                    
+                    NavigationLink(
+                        destination: HeightView(viewModel: HeightViewModel(), progressViewModel: progressViewModel),
+                        isActive: $isNavigatingToNextScreen
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
+                    NavigationLink(
+                        destination: GoalView(viewModel: GoalViewModel(), progressViewModel: progressViewModel),
+                        isActive: $isNavigatingToPreviousScreen
+                    ) {
+                        EmptyView()
+                    }
+                    .hidden()
                 }
                 .padding(.horizontal, 20)
-                .padding(.bottom, 120)
-            }
-            
-            // Next button overlay
-            VStack {
-                Spacer()
-                nextButtonSection
-                    .opacity(animateIn ? 1 : 0)
-                    .offset(y: animateIn ? 0 : 40)
-                    .animation(.easeOut(duration: 0.5).delay(0.55), value: animateIn)
-                    .padding(.horizontal, 0)
-                    .padding(.bottom, 0)
+                .padding(.bottom, 0)
             }
         }
-    
-        .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
-        .navigationBarItems(leading: backButton)
-        .onAppear {
-            viewModel.selectedYear = UserDefaults.standard.integer(forKey: "selectedBirthYear")
-            selectedDecade = (viewModel.selectedYear / 10) * 10
-            withAnimation(.spring(response: 0.7, dampingFraction: 0.9)) {
-                animateIn = true
-            }
-        }
-        .sheet(isPresented: $showCategorySheet) {
-            CategoryExplanationSheet(
-                userCategory: viewModel.fitnessCategory,
-                userAge: viewModel.calculatedAge
-            )
-        }
-        .overlay(
-            // Success animation overlay
-            Group {
-                if showSelectionAnimation {
-                    BirthYearSelectionSuccessView(age: viewModel.calculatedAge)
-                        .transition(.scale.combined(with: .opacity))
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    // Aplicar el gesto al picker
+                    scrollPickerDragOffset = value.translation.height
                 }
-            }
+                .onEnded { value in
+                    // Calcular nuevo índice basado en el gesto
+                    let velocity = value.predictedEndTranslation.height - value.translation.height
+                    let adjustedOffset = value.translation.height + velocity * 0.1
+                    
+                    let itemsToMove = -adjustedOffset / itemHeight
+                    let newIndex = selectedIndex + Int(round(itemsToMove))
+                    let clampedIndex = max(0, min(newIndex, ageRange.count - 1))
+                    
+                    // Fijar el nuevo índice SIN animación
+                    selectedIndex = clampedIndex
+                    scrollPickerDragOffset = 0
+                    
+                    // Guardar en UserDefaults
+                    let age = ageRange[clampedIndex]
+                    UserDefaults.standard.set(age, forKey: "selectedAge")
+                }
         )
     }
-}
-
-// MARK: - Subviews
-private extension BirthYearView {
     
-    var backButton: some View {
-        Button(action: {
-            progressViewModel.decreaseProgress()
-            presentationMode.wrappedValue.dismiss()
-        }) {
-            Image(systemName: "chevron.left")
-                .foregroundColor(.appYellow)
-                .font(.system(size: 18))
-        }
-    }
-    var progressSection: some View {
-        VStack(spacing: 5) {
-            ProgressBarWithIcons(progressViewModel: progressViewModel)
-        }
-        .padding(.top, 10)
-    }
-    
-    var headerSection: some View {
-        VStack(spacing: 20) {
-            // Animated calendar icon
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 120, height: 120)
-                
-                Image(systemName: "calendar.badge.clock")
-                    .font(.system(size: 50))
-                    .foregroundColor(.appYellow)
-                    .scaleEffect(1.0)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.selectedYear)
-            }
-            
-            VStack(spacing: 12) {
-                Text("What's your birth year?")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.appYellow)
-                    .multilineTextAlignment(.center)
-                
-                Text("We'll customize your fitness plan based on your age and experience level")
-                    .font(.system(size: 16))
-                    .foregroundColor(.appWhite.opacity(0.8))
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(4)
-            }
-        }
-        .padding(.top, 10)
-    }
-    
-    var ageDisplaySection: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Your Information")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.appYellow)
-                Spacer()
-            }
-            
-            HStack(spacing: 20) {
-                AgeInfoCard(
-                    title: "Birth Year",
-                    value: "\(viewModel.selectedYear)",
-                    subtitle: "Selected",
-                    color: .blue
-                )
-                
-                AgeInfoCard(
-                    title: "Current Age",
-                    value: "\(viewModel.calculatedAge)",
-                    subtitle: "years old",
-                    color: .green
-                )
-                
-                TappableAgeInfoCard(
-                    title: "Fitness Level",
-                    value: viewModel.fitnessCategory,
-                    subtitle: "category",
-                    color: .purple
-                ) {
-                    showCategorySheet = true
-                }
-            }
+    // MARK: - Visual Effects Functions
+    private func fontSizeForDistance(_ distance: Int) -> CGFloat {
+        switch abs(distance) {
+        case 0: return 44      // Elemento central
+        case 1: return 32      // Elementos adyacentes
+        case 2: return 26      // Elementos extremos
+        default: return 20     // Elementos fuera del rango visible
         }
     }
     
-    var yearSelectionSection: some View {
-        VStack(spacing: 20) {
-            HStack {
-                Text("Select Your Birth Year")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.appYellow)
-                
-                Spacer()
-                
-                Button(action: {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        showDecadeSelector.toggle()
-                    }
-                }) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "calendar.badge.minus")
-                            .font(.system(size: 14))
-                        Text("Jump to decade")
-                            .font(.system(size: 12, weight: .medium))
-                    }
-                    .foregroundColor(.appYellow.opacity(0.8))
-                }
-            }
-            
-            VStack(spacing: 16) {
-                if showDecadeSelector {
-                    DecadeSelectorView(selectedDecade: $selectedDecade) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            showDecadeSelector = false
-                            viewModel.selectedYear = selectedDecade
-                        }
-                    }
-                    .transition(.opacity.combined(with: .slide))
-                }
-                
-                // Enhanced year picker
-                yearPickerSection
-            }
-            .padding(20)
-            .background(
-                RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.gray.opacity(0.1))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.appYellow.opacity(0.3), lineWidth: 1)
-                    )
-            )
+    private func fontWeightForDistance(_ distance: Int) -> Font.Weight {
+        switch abs(distance) {
+        case 0: return .bold
+        case 1: return .semibold
+        case 2: return .medium
+        default: return .regular
         }
     }
     
-    var yearPickerSection: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Fine-tune your year")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.appWhite.opacity(0.8))
-                Spacer()
-                Text("\(viewModel.selectedYear)")
-                    .font(.system(size: 24, weight: .bold, design: .monospaced))
-                    .foregroundColor(.appYellow)
-            }
-            
-            Picker("Birth Year", selection: $viewModel.selectedYear) {
-                ForEach(viewModel.birthYearRange, id: \.self) { year in
-                    Text(String(year))
-                        .font(.system(size: 20, weight: .semibold, design: .monospaced))
-                        .foregroundColor(.appWhite)
-                        .tag(year)
-                }
-            }
-            .pickerStyle(WheelPickerStyle())
-            .frame(height: 150)
-            .onChange(of: viewModel.selectedYear) { _ in
-                generateHapticFeedback()
-                showSelectionFeedback()
-            }
+    private func colorForDistance(_ distance: Int) -> Color {
+        switch abs(distance) {
+        case 0: return .black
+        case 1: return Color.black.opacity(0.7)
+        case 2: return Color.black.opacity(0.4)
+        default: return Color.black.opacity(0.2)
         }
     }
     
-    var motivationalSection: some View {
-        VStack(spacing: 16) {
-            HStack {
-                Text("Age-Specific Benefits")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.appYellow)
-                Spacer()
-            }
-            
-            VStack(spacing: 12) {
-                AgeBenefitCard(
-                    icon: "heart.fill",
-                    title: "Personalized Intensity",
-                    description: "Workouts adapted to your age and recovery needs",
-                    color: .red
-                )
-                
-                AgeBenefitCard(
-                    icon: "figure.strengthtraining.traditional",
-                    title: "Safe Progression",
-                    description: "Exercise recommendations based on your life stage",
-                    color: .blue
-                )
-                
-                AgeBenefitCard(
-                    icon: "brain.head.profile",
-                    title: "Experience Matching",
-                    description: "Training complexity suited to your fitness journey",
-                    color: .purple
-                )
-            }
+    private func scaleForDistance(_ distance: Int) -> CGFloat {
+        switch abs(distance) {
+        case 0: return 1.0
+        case 1: return 0.9
+        case 2: return 0.8
+        default: return 0.7
         }
     }
     
-    var nextButtonSection: some View {
-        VStack {
-            NextButton(
-                title: "Next",
-                action: proceedToNext,
-                isLoading: $isLoading,
-                isDisabled: $isDisabled
-            )
-            
-            NavigationLink(
-                destination: HeightView(viewModel: HeightViewModel(), progressViewModel: progressViewModel),
-                isActive: $isNavigatingToNextScreen
-            ) {
-                EmptyView()
-            }
-            .hidden()
-        }
-    }
-    
-    // MARK: - Actions
-    func proceedToNext() {
-        withAnimation {
-            progressViewModel.advanceProgress()
-        }
-        generateHapticFeedback()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            self.isNavigatingToNextScreen = true
-        }
-    }
-    
-    func generateHapticFeedback() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.impactOccurred()
-    }
-    
-    func showSelectionFeedback() {
-        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-            showSelectionAnimation = true
-        }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                showSelectionAnimation = false
-            }
+    private func opacityForDistance(_ distance: Int) -> Double {
+        switch abs(distance) {
+        case 0: return 1.0
+        case 1: return 0.8
+        case 2: return 0.5
+        default: return 0.3
         }
     }
 }
 
-// MARK: - Supporting Views
-struct AgeInfoCard: View {
-    let title: String
-    let value: String
-    let subtitle: String
-    let color: Color
+// MARK: - Custom Scroll Picker SIN ANIMACIONES
+struct CustomScrollPickerNoAnimation<Item: Hashable, Content: View>: View {
+    let items: [Item]
+    @Binding var selectedIndex: Int
+    let itemHeight: CGFloat
+    let externalDragOffset: CGFloat
+    let content: (Item, Int) -> Content
     
+    @State private var currentOffset: CGFloat = 0
+
     var body: some View {
-        VStack(spacing: 8) {
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.appWhite.opacity(0.7))
+        GeometryReader { geometry in
+            let totalHeight = geometry.size.height
+            let centerY = totalHeight / 2
+            let padding = centerY - itemHeight / 2
             
-            Text(value)
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(color)
-                .minimumScaleFactor(0.8)
-                .lineLimit(1)
-            
-            Text(subtitle)
-                .font(.system(size: 10))
-                .foregroundColor(.appWhite.opacity(0.6))
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
-    }
-}
-
-struct TappableAgeInfoCard: View {
-    let title: String
-    let value: String
-    let subtitle: String
-    let color: Color
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: {
-            action()
-            let generator = UIImpactFeedbackGenerator(style: .light)
-            generator.impactOccurred()
-        }) {
-            VStack(spacing: 8) {
-                Text(title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.appWhite.opacity(0.7))
+            VStack(spacing: 0) {
+                // Top padding
+                Color.clear.frame(height: padding)
                 
-                Text(value)
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(color)
-                    .minimumScaleFactor(0.8)
-                    .lineLimit(1)
-                
-                Text(subtitle)
-                    .font(.system(size: 10))
-                    .foregroundColor(.appWhite.opacity(0.6))
-                
-                HStack(spacing: 4) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(color.opacity(0.8))
-                    Text("Tap to learn")
-                        .font(.system(size: 8, weight: .medium))
-                        .foregroundColor(color.opacity(0.8))
+                // Items
+                ForEach(Array(items.enumerated()), id: \.offset) { index, item in
+                    let distance = index - selectedIndex
+                    content(item, distance)
+                        .frame(height: itemHeight)
                 }
-                .padding(.top, 2)
+                
+                // Bottom padding
+                Color.clear.frame(height: padding)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.gray.opacity(0.05))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(color.opacity(0.4), lineWidth: 1)
-                    )
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct DecadeSelectorView: View {
-    @Binding var selectedDecade: Int
-    let onSelect: () -> Void
-    
-    let decades = [1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2020]
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            Text("Jump to decade")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.appWhite.opacity(0.8))
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 12) {
-                ForEach(decades, id: \.self) { decade in
-                    Button(action: {
-                        selectedDecade = decade
-                        onSelect()
-                    }) {
-                        VStack(spacing: 4) {
-                            Text("\(decade)s")
-                                .font(.system(size: 16, weight: .semibold))
-                                .foregroundColor(selectedDecade >= decade && selectedDecade < decade + 10 ? .appBlack : .appWhite)
-                            
-                            Text("\(decade)-\(decade + 9)")
-                                .font(.system(size: 10))
-                                .foregroundColor(selectedDecade >= decade && selectedDecade < decade + 10 ? .appBlack.opacity(0.7) : .appWhite.opacity(0.6))
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            selectedDecade >= decade && selectedDecade < decade + 10 ?
-                            Color.appYellow : Color.gray.opacity(0.2)
-                        )
-                        .cornerRadius(10)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+            .offset(y: currentOffset + externalDragOffset)
+            .onAppear {
+                // Posicionar inicialmente SIN animación usando Transaction
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    currentOffset = -CGFloat(selectedIndex) * itemHeight
+                }
+            }
+            .onChange(of: selectedIndex) { newIndex in
+                // Actualizar offset SIN animación usando Transaction
+                var transaction = Transaction()
+                transaction.disablesAnimations = true
+                withTransaction(transaction) {
+                    currentOffset = -CGFloat(newIndex) * itemHeight
                 }
             }
         }
-    }
-}
-
-struct AgeBenefitCard: View {
-    let icon: String
-    let title: String
-    let description: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.2))
-                    .frame(width: 50, height: 50)
-                
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundColor(color)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.appWhite)
-                
-                Text(description)
-                    .font(.system(size: 14))
-                    .foregroundColor(.appWhite.opacity(0.7))
-                    .lineLimit(2)
-            }
-            
-            Spacer()
-        }
-        .padding(16)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
-    }
-}
-
-struct BirthYearSelectionSuccessView: View {
-    let age: Int
-    
-    var body: some View {
-        VStack {
-            Spacer()
-            
-            VStack(spacing: 8) {
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.green)
-                    
-                    Text("Age \(age) - Perfect!")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.appWhite)
-                }
-                
-                Text("Fitness plan optimized for your age group")
-                    .font(.system(size: 11))
-                    .foregroundColor(.appWhite.opacity(0.7))
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 12)
-            .background(Color.gray.opacity(0.9))
-            .cornerRadius(25)
-            .padding(.bottom, 60)
-        }
-    }
-}
-
-// MARK: - Category Sheet
-struct CategoryExplanationSheet: View {
-    let userCategory: String
-    let userAge: Int
-    
-    @Environment(\.presentationMode) var presentationMode
-    
-    private var categoryColor: Color {
-        switch userCategory {
-        case "Youth": return .green
-        case "Peak": return .red
-        case "Prime": return .purple
-        case "Mature": return .blue
-        default: return .orange
-        }
-    }
-    
-    private var categoryIcon: String {
-        switch userCategory {
-        case "Youth": return "figure.run"
-        case "Peak": return "flame.fill"
-        case "Prime": return "star.fill"
-        case "Mature": return "brain.head.profile"
-        default: return "crown.fill"
-        }
-    }
-    
-    private var categoryExplanation: String {
-        switch userCategory {
-        case "Youth":
-            return "Your body is incredibly adaptable and recovers quickly. Perfect time to build healthy habits and develop a strong foundation for lifelong fitness."
-        case "Peak":
-            return "You're at peak physical potential with maximum strength, endurance, and recovery. Ideal for high-intensity training and serious muscle building."
-        case "Prime":
-            return "You have the perfect balance of experience, discipline, and physical capability. Your body is still highly responsive to smart training."
-        case "Mature":
-            return "Your experience and consistency are valuable assets. Focus on strategic training emphasizing mobility, strength maintenance, and injury prevention."
-        default:
-            return "Your dedication to fitness is inspiring. Workouts focus on maintaining independence, mobility, and quality of life with sustainable strength."
-        }
-    }
-    
-    private var categoryAdvantages: [String] {
-        switch userCategory {
-        case "Youth":
-            return ["Lightning-fast recovery", "Peak adaptability", "Habit formation", "Natural growth hormones"]
-        case "Peak":
-            return ["Maximum muscle potential", "Peak cardiovascular power", "Optimal hormone levels", "Superior recovery"]
-        case "Prime":
-            return ["Experience + strength", "Mental discipline", "Body awareness", "Strategic training"]
-        case "Mature":
-            return ["Life experience wisdom", "Quality over quantity", "Stress management", "Injury prevention focus"]
-        default:
-            return ["Inspiring dedication", "Functional focus", "Mobility emphasis", "Age ≠ limits"]
-        }
-    }
-    
-    var body: some View {
-        NavigationView {
-            ZStack {
-                LinearGradient(
-                    colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                
-                ScrollView {
-                    VStack(spacing: 30) {
-                        // Header
-                        VStack(spacing: 20) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        RadialGradient(
-                                            colors: [categoryColor.opacity(0.3), categoryColor.opacity(0.1)],
-                                            center: .center,
-                                            startRadius: 40,
-                                            endRadius: 80
-                                        )
-                                    )
-                                    .frame(width: 120, height: 120)
-                                
-                                Image(systemName: categoryIcon)
-                                    .font(.system(size: 50))
-                                    .foregroundColor(categoryColor)
-                            }
-                            
-                            VStack(spacing: 12) {
-                                Text("\(userCategory) Category")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(.appYellow)
-                                
-                                Text("Age \(userAge) - Your Fitness Journey")
-                                    .font(.system(size: 16))
-                                    .foregroundColor(.appWhite.opacity(0.8))
-                            }
-                        }
-                        
-                        // Explanation
-                        VStack(spacing: 16) {
-                            HStack {
-                                Text("What This Means")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(.appYellow)
-                                Spacer()
-                            }
-                            
-                            Text(categoryExplanation)
-                                .font(.system(size: 16))
-                                .foregroundColor(.appWhite.opacity(0.9))
-                                .lineSpacing(6)
-                                .padding(20)
-                                .background(Color.gray.opacity(0.1))
-                                .cornerRadius(16)
-                        }
-                        
-                        // Advantages
-                        VStack(spacing: 16) {
-                            HStack {
-                                Text("Your Superpowers")
-                                    .font(.system(size: 20, weight: .semibold))
-                                    .foregroundColor(.appYellow)
-                                Spacer()
-                            }
-                            
-                            VStack(spacing: 12) {
-                                ForEach(categoryAdvantages, id: \.self) { advantage in
-                                    HStack(spacing: 12) {
-                                        ZStack {
-                                            Circle()
-                                                .fill(categoryColor.opacity(0.2))
-                                                .frame(width: 32, height: 32)
-                                            
-                                            Image(systemName: "star.fill")
-                                                .font(.system(size: 14))
-                                                .foregroundColor(categoryColor)
-                                        }
-                                        
-                                        Text(advantage)
-                                            .font(.system(size: 16, weight: .medium))
-                                            .foregroundColor(.appWhite)
-                                        
-                                        Spacer()
-                                    }
-                                    .padding(16)
-                                    .background(Color.gray.opacity(0.05))
-                                    .cornerRadius(12)
-                                }
-                            }
-                        }
-                        
-                        // Action
-                        Button(action: {
-                            presentationMode.wrappedValue.dismiss()
-                        }) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 18))
-                                
-                                Text("Ready to Continue!")
-                                    .font(.system(size: 18, weight: .semibold))
-                            }
-                            .foregroundColor(.appBlack)
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 56)
-                            .background(
-                                LinearGradient(
-                                    colors: [categoryColor, categoryColor.opacity(0.8)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                            .cornerRadius(28)
-                        }
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 40)
-                }
-            }
-            .navigationTitle("Your Category")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarItems(
-                trailing: Button("Done") {
-                    presentationMode.wrappedValue.dismiss()
-                }
-                .foregroundColor(.appYellow)
-            )
-        }
+        .clipped()
     }
 }
 
 // MARK: - Preview
 struct BirthYearView_Previews: PreviewProvider {
     static var previews: some View {
-        NavigationView {
-            BirthYearView(
-                viewModel: BirthYearViewModel(),
-                progressViewModel: ProgressViewModel()
-            )
-        }
-        .preferredColorScheme(.dark)
+        BirthYearView(
+            viewModel: BirthYearViewModel(),
+            progressViewModel: ProgressViewModel()
+        )
+        .previewDevice("iPhone 16 Pro")
+        .previewDisplayName("iPhone 16 Pro")
     }
 }

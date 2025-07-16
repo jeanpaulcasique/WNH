@@ -133,3 +133,51 @@ struct PrimaryButton: View {
         .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isEnabled)
     }
 } 
+
+// MARK: - Unit Selector Button (reutilizable)
+public struct UnitSelectorButton: View {
+    let title: String
+    let subtitle: String
+    let isSelected: Bool
+    let color: Color
+    let action: () -> Void
+    
+    public init(title: String, subtitle: String, isSelected: Bool, color: Color, action: @escaping () -> Void) {
+        self.title = title
+        self.subtitle = subtitle
+        self.isSelected = isSelected
+        self.color = color
+        self.action = action
+    }
+    
+    public var body: some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 24))
+                    .foregroundColor(isSelected ? color : Color.black.opacity(0.2))
+                
+                Text(title)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(isSelected ? .black : .black.opacity(0.7))
+                
+                Text(subtitle)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(isSelected ? color : Color.black.opacity(0.5))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.gray.opacity(isSelected ? 0.15 : 0.05))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(isSelected ? color.opacity(0.6) : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+                    )
+            )
+            .scaleEffect(isSelected ? 1.02 : 1.0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isSelected)
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+} 

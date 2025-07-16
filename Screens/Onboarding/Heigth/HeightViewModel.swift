@@ -1,6 +1,4 @@
 import SwiftUI
-
-// MARK: - HeightViewModel
 class HeightViewModel: ObservableObject {
     @Published var selectedHeightCm: Int = 175
     @Published var selectedHeightFt: Int = 5
@@ -8,7 +6,6 @@ class HeightViewModel: ObservableObject {
     @Published var isCmSelected: Bool = true
     @Published var isLoading: Bool = false
     @Published var isButtonDisabled: Bool = false
-
 
     // MARK: - Unit Toggle
     func toggleUnit(toCm: Bool) {
@@ -75,6 +72,7 @@ class HeightViewModel: ObservableObject {
         }
     }
 }
+
 // MARK: - HeightViewModel Extensions
 extension HeightViewModel {
     func getCurrentHeightString() -> String {

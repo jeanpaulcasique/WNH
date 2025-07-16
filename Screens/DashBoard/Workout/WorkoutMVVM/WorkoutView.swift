@@ -31,6 +31,10 @@ struct WorkoutView: View {
     @State private var isRotating = false
     // Estado global para el rebote de Cardio
     @State private var cardioBounce = false
+    // Peso simulado generado solo una vez
+    @State private var simulatedWeight: Double = Double.random(in: 60...90)
+    // Peso del usuario leído de UserDefaults
+    @State private var userWeight: Double = UserDefaults.standard.object(forKey: "selectedWeightKg") as? Double ?? 70.0
     
     var body: some View {
         NavigationStack(path: $path) {
@@ -110,11 +114,27 @@ struct WorkoutView: View {
                 .zIndex(1)
                 .overlay(
                     GeometryReader { geo in
-                        HeartRateIndicatorSim(
+                     
+                        HeartRateIndicator(
+                            bpm: viewModel.heartRate,
                             isAuthorized: viewModel.healthKitAuthorized,
                             onRequestAuthorization: { viewModel.requestHealthKitAuthorization() }
                         )
                         .position(x: geo.size.width * 0.16, y: 260)
+                        // Peso simulado en la parte superior derecha
+                        HStack {
+                            Spacer()
+                            HStack(spacing: 6) {
+                                Image(systemName: "scalemass")
+                                    .foregroundColor(.yellow)
+                                Text("\(String(format: "%.1f", userWeight)) kg")
+                                    .foregroundColor(.white)
+                                    .font(.system(size: 20, weight: .bold))
+                            }
+                            .padding(.top, 240)
+                            .padding(.trailing, 40)
+                        }
+                        .frame(width: geo.size.width)
                     }
                 )
 
@@ -130,7 +150,10 @@ struct WorkoutView: View {
                     onBack: { path = [] }
                 )
             }
-            .onAppear { setupView() }
+            .onAppear {
+                setupView()
+                viewModel.startHeartRateTimerIfNeeded()
+            }
             .onChange(of: viewModel.selectedMuscle) { _, newMuscle in
                 if let muscle = newMuscle {
                     path = [muscle.name]
