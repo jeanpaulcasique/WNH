@@ -1,138 +1,298 @@
-// MARK: - DietTypeView.swift - ARCHIVO COMPLETO
 import SwiftUI
 import Combine
 
-// MARK: - DietTypeView
+// MARK: - Enhanced DietTypeView with Visual Improvements
 struct DietTypeView: View {
     @StateObject private var viewModel = DietTypeViewModel()
     @ObservedObject var progressViewModel: ProgressViewModel
     @State private var navigateToNextView = false
+    @State private var showComparisonView = false
+    @State private var dragOffset: CGSize = .zero
+    @State private var selectedCardScale: CGFloat = 1.0
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            // Dynamic background with gradient animation
+            DynamicBackground()
+            
             VStack(spacing: 0) {
-                OnboardingLogo()
-                OnboardingCard(backgroundColor: Color.yellow) {
-                    VStack(spacing: 6) {
-                        Text("WHICH DIET SUITS YOU BEST?")
-                            .font(.system(size: 26, weight: .black, design: .default))
-                            .foregroundColor(.black)
-                .multilineTextAlignment(.center)
-                Text("Choose your transformation path")
-                            .font(.system(size: 17, weight: .medium))
-                            .foregroundColor(.black.opacity(0.9))
-                            .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
-    }
-                }
-                .padding(.top, 10)
-                .padding(.bottom, 10)
+                // Enhanced header with animated elements
+                EnhancedHeader()
+                
+                // Main content with improved animations
                 ScrollView {
-        VStack(spacing: 20) {
-            ForEach(0..<viewModel.imageCount, id: \.self) { index in
-                DietCard(
-                    diet: viewModel.getDietDetails(for: index),
-                    index: index,
-                    isSelected: index == viewModel.currentIndex,
-                    isRecommended: index == viewModel.getRecommendedDietIndex(),
-                                animationPhase: .cards,
-                    onTap: {
-                        viewModel.selectDiet(index)
-                    }
-                )
+                    LazyVStack(spacing: 16) {
+                        ForEach(0..<viewModel.imageCount, id: \.self) { index in
+                            EnhancedDietCard(
+                                diet: viewModel.getDietDetails(for: index),
+                                index: index,
+                                isSelected: index == viewModel.currentIndex,
+                                isRecommended: index == viewModel.getRecommendedDietIndex(),
+                                onTap: {
+                                    withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
+                                        viewModel.selectDiet(index)
+                                    }
+                                    
+                                    // Enhanced haptic feedback
+                                    let impactFeedback = UIImpactFeedbackGenerator(style: .medium)
+                                    impactFeedback.impactOccurred()
+                                }
+                            )
+                            .scaleEffect(index == viewModel.currentIndex ? 1.02 : 1.0)
+                            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: viewModel.currentIndex)
                         }
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
-                    .padding(.bottom, 80)
+                    .padding(.bottom, 120)
                 }
-                .overlay(
-                    Group {
-                        if viewModel.hasValidSelection {
-                            HStack {
-                                OnboardingBack {
-                                    progressViewModel.decreaseProgress()
-                                    presentationMode.wrappedValue.dismiss()
-                                }
-                                Spacer()
-                                OnboardingNext {
-                                    proceedToNext()
-                                }
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.bottom, 0)
-                        }
-                    },
-                    alignment: .bottom
+                
+                Spacer()
+            }
+            
+            // Enhanced floating action buttons
+            VStack {
+                Spacer()
+                EnhancedActionButtons()
+            }
+            
+            // Comparison modal
+            if showComparisonView {
+                ComparisonModal(
+                    diets: (0..<viewModel.imageCount).map { viewModel.getDietDetails(for: $0) },
+                    selectedIndex: viewModel.currentIndex,
+                    onClose: { showComparisonView = false },
+                    onSelect: { index in
+                        viewModel.selectDiet(index)
+                        showComparisonView = false
+                    }
                 )
-                Spacer(minLength: 0)
+                .transition(.opacity.combined(with: .scale))
+                .zIndex(1000)
             }
-            // NavigationLink oculto
-            NavigationLink(
-                destination: LevelActivityView(progressViewModel: progressViewModel),
-                isActive: $navigateToNextView
-            ) {
-                EmptyView()
-            }
-            .hidden()
         }
-        .navigationBarTitleDisplayMode(.inline)
-        .navigationBarBackButtonHidden(true)
+        .navigationBarHidden(true)
+        .onAppear {
+            startInitialAnimations()
+        }
+    }
+    
+    // MARK: - Enhanced Header
+    @ViewBuilder
+    private func EnhancedHeader() -> some View {
+        VStack(spacing: 12) {
+            // Animated logo with particles
+            ZStack {
+                // Particle effect behind logo
+                ParticleSystem()
+                    .frame(height: 100)
+                
+                OnboardingLogo()
+                    .scaleEffect(1.1)
+                    .shadow(color: .yellow.opacity(0.3), radius: 10, x: 0, y: 5)
+            }
+            
+            // Enhanced title card
+            VStack(spacing: 8) {
+                Text("WHICH DIET SUITS YOU BEST?")
+                    .font(.system(size: 28, weight: .black, design: .rounded))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .shadow(color: .yellow.opacity(0.3), radius: 2, x: 0, y: 2)
+                
+                Text("Choose your transformation path")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(.black.opacity(0.8))
+                    .multilineTextAlignment(.center)
+                
+                // Add comparison button
+                Button(action: { showComparisonView = true }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "chart.bar.fill")
+                        Text("Compare All")
+                    }
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 8)
+                    .background(
+                        Capsule()
+                            .stroke(Color.black, lineWidth: 2)
+                            .background(Capsule().fill(Color.white.opacity(0.9)))
+                    )
+                }
+            }
+            .padding(.horizontal, 24)
+            .padding(.vertical, 20)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.yellow)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.black, lineWidth: 4)
+                    )
+                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+            )
+            .padding(.horizontal, 20)
+        }
+        .padding(.top, 10)
+    }
+    
+    // MARK: - Enhanced Action Buttons
+    @ViewBuilder
+    private func EnhancedActionButtons() -> some View {
+        HStack(spacing: 16) {
+            // Back button igual que en WhichPlaceView
+            Button(action: {
+                let impactFeedback = UIImpactFeedbackGenerator(style: .light)
+                impactFeedback.impactOccurred()
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    progressViewModel.decreaseProgress()
+                }
+                presentationMode.wrappedValue.dismiss()
+            }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 16, weight: .bold))
+                    Text("Back")
+                        .font(.system(size: 16, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 24)
+                .padding(.vertical, 14)
+                .background(
+                    Capsule()
+                        .fill(Color.black)
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.yellow, lineWidth: 2)
+                        )
+                )
+            }
+
+            if viewModel.hasValidSelection {
+                // Next button igual que en WhichPlaceView
+                Button(action: {
+                    let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
+                    impactFeedback.impactOccurred()
+                    viewModel.disableNextButtonTemporarily()
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        progressViewModel.advanceProgress()
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        navigateToNextView = true
+                    }
+                }) {
+                    HStack(spacing: 8) {
+                        if viewModel.isLoading {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .black))
+                                .scaleEffect(0.8)
+                        } else {
+                            Text("Continue")
+                                .font(.system(size: 16, weight: .bold))
+                            Image(systemName: "arrow.right")
+                                .font(.system(size: 16, weight: .bold))
+                        }
+                    }
+                    .foregroundColor(.black)
+                    .padding(.horizontal, 32)
+                    .padding(.vertical, 14)
+                    .background(
+                        Capsule()
+                            .fill(Color.yellow)
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.black, lineWidth: 3)
+                            )
+                    )
+                    .scaleEffect(viewModel.isLoading ? 0.95 : 1.0)
+                    .animation(.spring(response: 0.3, dampingFraction: 0.6), value: viewModel.isLoading)
+                }
+                .disabled(viewModel.isNextButtonDisabled)
+                .transition(.asymmetric(
+                    insertion: .move(edge: .trailing).combined(with: .opacity),
+                    removal: .move(edge: .bottom).combined(with: .opacity)
+                ))
+            }
+        }
+        .padding(.bottom, 24)
+        // NavigationLink a WhichPlaceView
+        NavigationLink(
+            destination: WhichPlaceView(progressViewModel: progressViewModel),
+            isActive: $navigateToNextView
+        ) {
+            EmptyView()
+        }
+        .hidden()
+    }
+    
+    private func startInitialAnimations() {
+        // Staggered entrance animations
+        withAnimation(.spring(response: 0.8, dampingFraction: 0.7).delay(0.1)) {
+            viewModel.animationPhase = .header
+        }
+        
+        withAnimation(.spring(response: 0.6, dampingFraction: 0.8).delay(0.3)) {
+            viewModel.animationPhase = .cards
+        }
     }
     
     private func proceedToNext() {
         viewModel.disableNextButtonTemporarily()
+        
         withAnimation(.easeInOut(duration: 0.5)) {
             progressViewModel.advanceProgress()
         }
+        
         let impactFeedback = UIImpactFeedbackGenerator(style: .heavy)
         impactFeedback.impactOccurred()
+        
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             navigateToNextView = true
         }
     }
 }
 
-// MARK: - Diet Card Component
-struct DietCard: View {
+// MARK: - Enhanced Diet Card with Advanced Animations
+struct EnhancedDietCard: View {
     let diet: DietTypeDetails
     let index: Int
     let isSelected: Bool
     let isRecommended: Bool
-    let animationPhase: AnimationPhase
     let onTap: () -> Void
+    
+    @State private var isPressed = false
+    @State private var hoverOffset: CGSize = .zero
+    @State private var sparkleAnimation = false
     
     var body: some View {
         Button(action: onTap) {
             VStack(spacing: 0) {
-                ZStack(alignment: .topTrailing) {
+                ZStack {
                     cardContent
+                        .background(cardBackground)
+                    
+                    // Sparkle effect for recommended
                     if isRecommended {
-                        Text("RECOMMENDED")
-                            .font(.system(size: 11, weight: .bold))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
-                            .background(
-                                Capsule()
-                                    .fill(Color.black)
-                                    .shadow(color: Color.yellow.opacity(0.4), radius: 6, x: 0, y: 3)
-                            )
-                            .foregroundColor(.white)
-                            .offset(x: -3, y: 1)
-                            .scaleEffect(0.95)
-                            .animation(
-                                Animation.easeInOut(duration: 1.5)
-                                    .repeatForever(autoreverses: true)
-                                    .speed(0.7),
-                                value: UUID()
-                            )
+                        SparkleEffect(isAnimating: $sparkleAnimation)
+                    }
+                    
+                    // Recommendation badge
+                    if isRecommended {
+                        VStack {
+                            HStack {
+                                Spacer()
+                                RecommendationBadge()
+                            }
+                            Spacer()
+                        }
+                        .padding(.top, 8)
+                        .padding(.trailing, 8)
                     }
                 }
-                .padding(.top, 10)
-                .padding(.trailing, 5)
+                
                 if isSelected {
                     expandedContent
                         .transition(.asymmetric(
@@ -141,42 +301,64 @@ struct DietCard: View {
                         ))
                 }
             }
-            .background(cardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 24))
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
                     .stroke(
-                        isSelected ? Color.appYellow : Color.gray.opacity(0.3),
-                        lineWidth: isSelected ? 2 : 1
+                        isSelected ? Color.yellow : Color.gray.opacity(0.3),
+                        lineWidth: isSelected ? 3 : 1
                     )
+                    .shadow(color: isSelected ? Color.yellow.opacity(0.5) : Color.clear, radius: 8)
             )
+            .scaleEffect(isPressed ? 0.98 : 1.0)
             .shadow(
-                color: isSelected ? Color.appYellow.opacity(0.15) : Color.clear,
-                radius: isSelected ? 20 : 0,
+                color: isSelected ? Color.yellow.opacity(0.25) : Color.black.opacity(0.1),
+                radius: isSelected ? 15 : 5,
                 x: 0,
-                y: isSelected ? 8 : 0
+                y: isSelected ? 8 : 2
             )
-            .scaleEffect(isSelected ? 1.02 : 1.0)
-            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSelected)
+            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSelected)
+            .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPressed)
         }
         .buttonStyle(PlainButtonStyle())
+        .onLongPressGesture(minimumDuration: 0, maximumDistance: .infinity, pressing: { pressing in
+            isPressed = pressing
+        }, perform: {})
+        .onAppear {
+            if isRecommended {
+                sparkleAnimation = true
+            }
+        }
     }
     
     private var cardBackground: some View {
-        Color.yellow
+        RoundedRectangle(cornerRadius: 24)
+            .fill(
+                LinearGradient(
+                    colors: [
+                        Color.yellow,
+                        Color.yellow.opacity(0.9)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
-                    .stroke(Color.black, lineWidth: 5)
-        )
+                    .stroke(Color.black, lineWidth: 4)
+            )
     }
     
     private var cardContent: some View {
         HStack(spacing: 20) {
-            iconSection
+            EnhancedIconSection()
             
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
                 titleSection
                 highlightsPills
+                if isSelected {
+                    quickStats
+                }
             }
             
             Spacer()
@@ -184,54 +366,56 @@ struct DietCard: View {
         .padding(24)
     }
     
-    private var iconSection: some View {
+    @ViewBuilder
+    private func EnhancedIconSection() -> some View {
         ZStack {
+            // Animated background
             RoundedRectangle(cornerRadius: 16)
-                .fill(isSelected ? Color.appYellow : Color.appSurface.opacity(0.6))
-                .frame(width: 60, height: 60)
-                .shadow(
-                    color: isSelected ? Color.appYellow.opacity(0.3) : Color.clear,
-                    radius: isSelected ? 8 : 0
-                )
-            
-            if isSelected {
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.white.opacity(0.2), Color.clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                .fill(
+                    RadialGradient(
+                        colors: [
+                            Color.white.opacity(0.9),
+                            Color.white.opacity(0.7)
+                        ],
+                        center: .topLeading,
+                        startRadius: 0,
+                        endRadius: 50
                     )
-                    .frame(width: 60, height: 60)
-            }
+                )
+                .frame(width: 70, height: 70)
+                .scaleEffect(isSelected ? 1.1 : 1.0)
+                .animation(.spring(response: 0.5, dampingFraction: 0.8), value: isSelected)
             
+            // Icon with enhanced styling
             Image(systemName: diet.icon)
-                .font(.system(size: 28, weight: .medium))
-                .foregroundColor(isSelected ? .black : .appYellow)
+                .font(.system(size: 32, weight: .medium))
+                .foregroundColor(isSelected ? .black : Color.black.opacity(0.8))
+                .scaleEffect(isSelected ? 1.2 : 1.0)
+                .animation(.spring(response: 0.6, dampingFraction: 0.7), value: isSelected)
         }
     }
     
     private var titleSection: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(diet.title)
-                .font(.system(size: 25, weight: .bold))
+                .font(.system(size: 24, weight: .bold, design: .rounded))
                 .foregroundColor(.black)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
+            
             Text(diet.subtitle)
-                .font(.system(size: 14))
-                .foregroundColor(.black.opacity(0.8))
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(.black.opacity(0.7))
         }
     }
     
     private var highlightsPills: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
             ForEach(Array(diet.highlights.prefix(2).enumerated()), id: \.offset) { index, highlight in
                 Text(highlight)
-                    .font(.system(size: 10, weight: .medium))
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .font(.system(size: 11, weight: .semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
                     .background(
                         Capsule()
                             .fill(Color.black)
@@ -241,191 +425,444 @@ struct DietCard: View {
                             )
                     )
                     .foregroundColor(.white)
-                    .scaleEffect(isSelected ? 1.0 : 0.95)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.8).delay(Double(index) * 0.05), value: isSelected)
+                    .scaleEffect(isSelected ? 1.05 : 1.0)
+                    .animation(.spring(response: 0.4, dampingFraction: 0.8).delay(Double(index) * 0.1), value: isSelected)
             }
         }
+    }
+    
+    private var quickStats: some View {
+        HStack(spacing: 12) {
+            QuickStat(title: diet.difficulty, icon: "speedometer")
+            QuickStat(title: diet.timeToResults, icon: "clock")
+        }
+        .transition(.opacity.combined(with: .move(edge: .leading)))
     }
     
     private var expandedContent: some View {
         VStack(spacing: 20) {
             Divider()
-                .background(Color.appWhite.opacity(0.2))
+                .background(Color.black.opacity(0.3))
                 .padding(.horizontal, 24)
             
-            VStack(spacing: 16) {
+            VStack(spacing: 20) {
                 descriptionSection
-                successRateSection
-                macroVisualization
-                statsGrid
+                AnimatedMacroBreakdown(diet: diet)
+                benefitsSection
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 20)
+            .padding(.bottom, 24)
         }
     }
     
     private var descriptionSection: some View {
         Text(diet.description)
-            .font(.system(size: 14))
-            .foregroundColor(.black.opacity(0.9))
+            .font(.system(size: 15, weight: .medium))
+            .foregroundColor(.black.opacity(0.8))
             .lineLimit(nil)
             .multilineTextAlignment(.leading)
+            .lineSpacing(2)
     }
     
-    private var successRateSection: some View {
-        HStack {
-            HStack(spacing: 8) {
-                Circle()
-                    .fill(Color.green)
-                    .frame(width: 12, height: 12)
-                    .scaleEffect(1.2)
-                    .animation(.easeInOut(duration: 1).repeatForever(), value: UUID())
-                
-                Text("Success Rate")
-                    .font(.system(size: 14))
-                    .foregroundColor(.black.opacity(0.8))
-            }
-            
-            Spacer()
-            
-            Text(diet.successRate)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.green)
-        }
-    }
-    
-    private var macroVisualization: some View {
+    private var benefitsSection: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Macro Breakdown")
-                    .font(.system(size: 14, weight: .semibold))
+                Text("Key Benefits")
+                    .font(.system(size: 16, weight: .bold))
                     .foregroundColor(.black)
                 Spacer()
             }
             
-            HStack(spacing: 24) {
-                MacroCircle(percentage: diet.macroBreakdown.fat, color: .orange, label: "Fat")
-                MacroCircle(percentage: diet.macroBreakdown.protein, color: .green, label: "Protein")
-                MacroCircle(percentage: diet.macroBreakdown.carbs, color: .blue, label: "Carbs")
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 1), spacing: 8) {
+                ForEach(Array(diet.benefits.prefix(3).enumerated()), id: \.offset) { index, benefit in
+                    HStack {
+                        Text(benefit)
+                            .font(.system(size: 14))
+                            .foregroundColor(.black.opacity(0.8))
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
+                }
             }
-        }
-    }
-    
-    private var statsGrid: some View {
-        HStack(spacing: 12) {
-            StatCardDietType(title: diet.difficulty, subtitle: "Difficulty", textColor: .white)
-            StatCardDietType(title: diet.timeToResults, subtitle: "Results", textColor: .white)
         }
     }
 }
 
-// MARK: - Macro Circle Component
-struct MacroCircle: View {
-    let percentage: Double
-    let color: Color
-    let label: String
-    @State private var animatedPercentage: Double = 0
+// MARK: - Supporting Components
+
+struct RecommendationBadge: View {
+    @State private var pulse = false
     
     var body: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .stroke(Color.appBlack.opacity(0.2), lineWidth: 4)
-                    .frame(width: 50, height: 50)
-                
-                Circle()
-                    .trim(from: 0, to: animatedPercentage / 100)
-                    .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                    .frame(width: 50, height: 50)
-                    .rotationEffect(.degrees(-90))
-                
-                Text("\(Int(percentage))%")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.appBlack)
+        Text("RECOMMENDED")
+            .font(.system(size: 10, weight: .bold))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                Capsule()
+                    .fill(Color.black)
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.yellow, lineWidth: 2)
+                    )
+            )
+            .foregroundColor(.white)
+            .scaleEffect(pulse ? 1.05 : 1.0)
+            .animation(.easeInOut(duration: 1.5).repeatForever(autoreverses: true), value: pulse)
+            .onAppear {
+                pulse = true
             }
-            
-            Text(label)
-                .font(.system(size: 10))
-                .foregroundColor(.appBlack.opacity(0.7))
-        }
-        .onAppear {
-            withAnimation(.easeOut(duration: 1).delay(0.2)) {
-                animatedPercentage = percentage
-            }
-        }
     }
 }
 
-// MARK: - Stat Card Component
-struct StatCardDietType: View {
+struct QuickStat: View {
     let title: String
-    let subtitle: String
-    var textColor: Color = .white
+    let icon: String
     
     var body: some View {
-        VStack(spacing: 4) {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundColor(.black.opacity(0.7))
             Text(title)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(textColor)
-            Text(subtitle.uppercased())
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(textColor.opacity(0.7))
-                .tracking(1)
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.black.opacity(0.8))
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.black)
+            Capsule()
+                .fill(Color.white.opacity(0.8))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.yellow, lineWidth: 1)
+                    Capsule()
+                        .stroke(Color.black.opacity(0.2), lineWidth: 1)
                 )
         )
     }
 }
 
-// MARK: - Floating Particles Component
-struct FloatingParticles: View {
-    @State private var particles: [ParticleData] = []
+struct AnimatedMacroBreakdown: View {
+    let diet: DietTypeDetails
+    @State private var animateChart = false
     
-    struct ParticleData: Identifiable {
+    var body: some View {
+        VStack(spacing: 16) {
+            HStack {
+                Text("Macro Breakdown")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.black)
+                Spacer()
+                Text(diet.successRate)
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.green)
+            }
+            
+            HStack(spacing: 20) {
+                AnimatedMacroCircle(percentage: diet.macroBreakdown.fat, color: .orange, label: "Fat", animate: animateChart)
+                AnimatedMacroCircle(percentage: diet.macroBreakdown.protein, color: .green, label: "Protein", animate: animateChart)
+                AnimatedMacroCircle(percentage: diet.macroBreakdown.carbs, color: .blue, label: "Carbs", animate: animateChart)
+            }
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 1.2).delay(0.3)) {
+                animateChart = true
+            }
+        }
+    }
+}
+
+struct AnimatedMacroCircle: View {
+    let percentage: Double
+    let color: Color
+    let label: String
+    let animate: Bool
+    
+    var body: some View {
+        VStack(spacing: 8) {
+            ZStack {
+                Circle()
+                    .stroke(Color.black.opacity(0.1), lineWidth: 6)
+                    .frame(width: 60, height: 60)
+                
+                Circle()
+                    .trim(from: 0, to: animate ? percentage / 100 : 0)
+                    .stroke(color, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                    .frame(width: 60, height: 60)
+                    .rotationEffect(.degrees(-90))
+                    .animation(.easeOut(duration: 1.5), value: animate)
+                
+                Text("\(Int(percentage))%")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.black)
+            }
+            
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.black.opacity(0.7))
+        }
+    }
+}
+
+struct SparkleEffect: View {
+    @Binding var isAnimating: Bool
+    @State private var sparkles: [SparkleData] = []
+    
+    struct SparkleData: Identifiable {
         let id = UUID()
         let x: CGFloat
         let y: CGFloat
-        let size: CGFloat
+        let delay: Double
         let duration: Double
     }
     
     var body: some View {
         ZStack {
-            ForEach(particles) { particle in
-                Circle()
-                    .fill(Color.appYellow.opacity(0.3))
-                    .frame(width: particle.size, height: particle.size)
-                    .position(x: particle.x, y: particle.y)
-                    .opacity(0.6)
+            ForEach(sparkles) { sparkle in
+                Image(systemName: "sparkle")
+                    .font(.system(size: 12))
+                    .foregroundColor(.yellow)
+                    .position(x: sparkle.x, y: sparkle.y)
+                    .opacity(isAnimating ? 1.0 : 0.0)
+                    .scaleEffect(isAnimating ? 1.2 : 0.5)
                     .animation(
-                        .easeInOut(duration: particle.duration)
-                            .repeatForever(autoreverses: true),
-                        value: UUID()
+                        .easeInOut(duration: sparkle.duration)
+                            .repeatForever(autoreverses: true)
+                            .delay(sparkle.delay),
+                        value: isAnimating
                     )
             }
         }
         .onAppear {
+            generateSparkles()
+        }
+    }
+    
+    private func generateSparkles() {
+        sparkles = (0..<6).map { i in
+            SparkleData(
+                x: CGFloat.random(in: 20...300),
+                y: CGFloat.random(in: 20...100),
+                delay: Double(i) * 0.2,
+                duration: Double.random(in: 1.5...2.5)
+            )
+        }
+    }
+}
+
+struct DynamicBackground: View {
+    @State private var animateGradient = false
+    
+    var body: some View {
+        LinearGradient(
+            colors: [
+                Color.white,
+                Color.yellow.opacity(0.1),
+                Color.white
+            ],
+            startPoint: animateGradient ? .topLeading : .bottomTrailing,
+            endPoint: animateGradient ? .bottomTrailing : .topLeading
+        )
+        .ignoresSafeArea()
+        .onAppear {
+            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
+                animateGradient = true
+            }
+        }
+    }
+}
+
+struct ParticleSystem: View {
+    @State private var particles: [ParticleData] = []
+    
+    struct ParticleData: Identifiable {
+        let id = UUID()
+        var x: CGFloat
+        var y: CGFloat
+        let size: CGFloat
+        let speed: CGFloat
+        let opacity: Double
+    }
+    
+    var body: some View {
+        Canvas { context, size in
+            for particle in particles {
+                let rect = CGRect(
+                    x: particle.x,
+                    y: particle.y,
+                    width: particle.size,
+                    height: particle.size
+                )
+                
+                context.fill(
+                    Path(ellipseIn: rect),
+                    with: .color(.yellow.opacity(particle.opacity))
+                )
+            }
+        }
+        .onAppear {
             generateParticles()
+            startAnimation()
         }
     }
     
     private func generateParticles() {
-        particles = (0..<8).map { _ in
+        particles = (0..<20).map { _ in
             ParticleData(
                 x: CGFloat.random(in: 0...UIScreen.main.bounds.width),
-                y: CGFloat.random(in: 0...UIScreen.main.bounds.height),
-                size: CGFloat.random(in: 2...4),
-                duration: Double.random(in: 2...4)
+                y: CGFloat.random(in: 0...100),
+                size: CGFloat.random(in: 2...6),
+                speed: CGFloat.random(in: 0.5...2.0),
+                opacity: Double.random(in: 0.3...0.7)
             )
         }
+    }
+    
+    private func startAnimation() {
+        Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { _ in
+            for i in particles.indices {
+                particles[i].x += particles[i].speed
+                particles[i].y += sin(particles[i].x * 0.01) * 0.5
+                
+                if particles[i].x > UIScreen.main.bounds.width + 10 {
+                    particles[i].x = -10
+                    particles[i].y = CGFloat.random(in: 0...100)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Comparison Modal
+struct ComparisonModal: View {
+    let diets: [DietTypeDetails]
+    let selectedIndex: Int
+    let onClose: () -> Void
+    let onSelect: (Int) -> Void
+    
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.7)
+                .ignoresSafeArea()
+                .onTapGesture { onClose() }
+            
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Text("Compare Diets")
+                        .font(.system(size: 24, weight: .bold))
+                        .foregroundColor(.black)
+                    
+                    Spacer()
+                    
+                    Button(action: onClose) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.black)
+                    }
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 20)
+                .background(Color.yellow)
+                
+                // Comparison content
+                ScrollView {
+                    LazyVStack(spacing: 16) {
+                        ForEach(Array(diets.enumerated()), id: \.offset) { index, diet in
+                            ComparisonRow(
+                                diet: diet,
+                                isSelected: index == selectedIndex,
+                                onSelect: { onSelect(index) }
+                            )
+                        }
+                    }
+                    .padding(20)
+                }
+                .background(Color.white)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 24))
+            .frame(maxWidth: .infinity, maxHeight: 600)
+            .padding(.horizontal, 20)
+        }
+    }
+}
+
+struct ComparisonRow: View {
+    let diet: DietTypeDetails
+    let isSelected: Bool
+    let onSelect: () -> Void
+    
+    var body: some View {
+        Button(action: onSelect) {
+            VStack(spacing: 16) {
+                HStack {
+                    Image(systemName: diet.icon)
+                        .font(.system(size: 24))
+                        .foregroundColor(isSelected ? .yellow : .black)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(diet.title)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.black)
+                        
+                        Text(diet.subtitle)
+                            .font(.system(size: 14))
+                            .foregroundColor(.black.opacity(0.7))
+                    }
+                    
+                    Spacer()
+                    
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundColor(.green)
+                    }
+                }
+                
+                // Mini stats
+                HStack(spacing: 20) {
+                    StatPill(title: diet.difficulty, subtitle: "Difficulty")
+                    StatPill(title: diet.timeToResults, subtitle: "Results")
+                    StatPill(title: diet.successRate, subtitle: "Success")
+                }
+            }
+            .padding(20)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(isSelected ? Color.yellow.opacity(0.3) : Color.gray.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(isSelected ? Color.yellow : Color.clear, lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+}
+
+struct StatPill: View {
+    let title: String
+    let subtitle: String
+    
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(title)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(.black)
+            
+            Text(subtitle)
+                .font(.system(size: 10))
+                .foregroundColor(.black.opacity(0.6))
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            Capsule()
+                .fill(Color.white)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.black.opacity(0.2), lineWidth: 1)
+                )
+        )
     }
 }
 
@@ -435,7 +872,5 @@ struct DietTypeView_Previews: PreviewProvider {
         NavigationView {
             DietTypeView(progressViewModel: ProgressViewModel())
         }
-        .preferredColorScheme(.dark)
     }
 }
-

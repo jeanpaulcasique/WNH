@@ -1,4 +1,6 @@
 import Foundation
+import SwiftUI
+
 /// Gestiona el estado de sesión del usuario y el progreso de onboarding usando UserDefaults.
 /// Métodos públicos: login(), logout(), completeOnboarding(), resetUserData()
 final class UserSessionManager: ObservableObject {
@@ -112,5 +114,300 @@ final class UserSessionManager: ObservableObject {
         print("shouldShowOnboarding: \(shouldShowOnboarding)")
         print("isUserSetupComplete: \(isUserSetupComplete)")
         print("================================")
+    }
+}
+
+/// Manager centralizado para manejar toda la lógica dependiente del género del usuario
+class UserManager: ObservableObject {
+    
+    // MARK: - Published Properties
+    @Published var userProfile: UserProfile
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    // MARK: - Private Properties
+    private let userDefaults = UserDefaults.standard
+    
+    // MARK: - Initialization
+    init() {
+        self.userProfile = UserProfile()
+        loadUserProfile()
+    }
+    
+    // MARK: - Gender-Based Computed Properties
+    
+    /// Mensaje de bienvenida personalizado según género
+    var welcomeMessage: String {
+        switch userProfile.genderEnum {
+        case .female:
+            return "Welcome, athlete! Your fitness journey is tailored specifically for women."
+        case .male:
+            return "Welcome, athlete! Your fitness journey is tailored specifically for men."
+        case .other:
+            return "Welcome! Your fitness journey is personalized for you."
+        case .notSet:
+            return "Welcome! Let's personalize your fitness journey."
+        }
+    }
+    
+    /// Calorías recomendadas según género, edad y actividad
+    var recommendedCalories: Int {
+        let baseCalories: Int
+        switch userProfile.genderEnum {
+        case .female:
+            baseCalories = 1800
+        case .male:
+            baseCalories = 2200
+        case .other:
+            baseCalories = 2000
+        case .notSet:
+            baseCalories = 2000
+        }
+        
+        // Ajustar por edad
+        let ageAdjustment = ageAdjustmentFactor
+        let activityAdjustment = activityLevelAdjustmentFactor
+        
+        return Int(Double(baseCalories) * ageAdjustment * activityAdjustment)
+    }
+    
+    /// Factor de ajuste por edad según género
+    private var ageAdjustmentFactor: Double {
+        guard let age = userProfile.age else { return 1.0 }
+        
+        switch userProfile.genderEnum {
+        case .female:
+            switch age {
+            case 18..<30: return 1.0
+            case 30..<45: return 0.95
+            case 45..<60: return 0.9
+            case 60...: return 0.85
+            default: return 1.0
+            }
+        case .male:
+            switch age {
+            case 18..<30: return 1.05
+            case 30..<45: return 1.0
+            case 45..<60: return 0.95
+            case 60...: return 0.9
+            default: return 1.0
+            }
+        case .other, .notSet:
+            return 1.0
+        }
+    }
+    
+    /// Factor de ajuste por nivel de actividad según género
+    private var activityLevelAdjustmentFactor: Double {
+        switch userProfile.genderEnum {
+        case .female:
+            switch userProfile.activityLevelEnum {
+            case .sedentary: return 0.9
+            case .lightlyActive: return 1.0
+            case .active: return 1.1
+            case .veryActive: return 1.2
+            case .notSet: return 1.0
+            }
+        case .male:
+            switch userProfile.activityLevelEnum {
+            case .sedentary: return 0.95
+            case .lightlyActive: return 1.0
+            case .active: return 1.15
+            case .veryActive: return 1.25
+            case .notSet: return 1.0
+            }
+        case .other, .notSet:
+            return 1.0
+        }
+    }
+    
+    /// Peso ideal según género y altura
+    var idealWeight: Double {
+        let heightInMeters = Double(userProfile.resolvedHeightCm) / 100.0
+        let baseWeight = 22.0 * heightInMeters * heightInMeters
+        
+        switch userProfile.genderEnum {
+        case .female:
+            return baseWeight * 0.95
+        case .male:
+            return baseWeight * 1.05
+        case .other, .notSet:
+            return baseWeight
+        }
+    }
+    
+    /// Mensaje de motivación personalizado según género
+    var motivationMessage: String {
+        switch userProfile.genderEnum {
+        case .female:
+            return "You're building strength and confidence! Every workout brings you closer to your goals."
+        case .male:
+            return "You're building power and endurance! Every workout makes you stronger."
+        case .other:
+            return "You're building your best self! Every workout is progress."
+        case .notSet:
+            return "You're on your way to greatness! Every workout counts."
+        }
+    }
+    
+    /// Recomendaciones de entrenamiento según género
+    var workoutRecommendations: [String] {
+        switch userProfile.genderEnum {
+        case .female:
+            return [
+                "Focus on strength training 2-3 times per week",
+                "Include cardio for heart health",
+                "Don't skip flexibility exercises",
+                "Listen to your body's recovery needs"
+            ]
+        case .male:
+            return [
+                "Balance strength and cardio training",
+                "Include mobility work to prevent injury",
+                "Focus on compound movements",
+                "Prioritize recovery and sleep"
+            ]
+        case .other, .notSet:
+            return [
+                "Find activities you enjoy",
+                "Build a consistent routine",
+                "Focus on overall health",
+                "Celebrate your progress"
+            ]
+        }
+    }
+    
+    /// Navegación condicional según género
+    func getNextScreen() -> String {
+        switch userProfile.genderEnum {
+        case .female:
+            return "FemaleWorkoutFlow"
+        case .male:
+            return "MaleWorkoutFlow"
+        case .other, .notSet:
+            return "GeneralWorkoutFlow"
+        }
+    }
+    
+    /// Configuración de notificaciones según género
+    var notificationSettings: [String: Bool] {
+        switch userProfile.genderEnum {
+        case .female:
+            return [
+                "workout_reminders": true,
+                "nutrition_tips": true,
+                "recovery_reminders": true,
+                "progress_updates": true
+            ]
+        case .male:
+            return [
+                "workout_reminders": true,
+                "strength_progress": true,
+                "performance_metrics": true,
+                "goal_achievements": true
+            ]
+        case .other, .notSet:
+            return [
+                "workout_reminders": true,
+                "general_tips": true,
+                "progress_updates": true
+            ]
+        }
+    }
+    
+    // MARK: - Profile Management
+    
+    /// Actualiza el perfil del usuario
+    func updateProfile(_ newProfile: UserProfile) {
+        userProfile = newProfile
+        saveUserProfile()
+    }
+    
+    /// Actualiza el género del usuario
+    func updateGender(_ gender: Gender) {
+        // Aquí necesitarías hacer el género mutable en UserProfile
+        // Por ahora, esto es conceptual
+        saveUserProfile()
+    }
+    
+    /// Verifica si el perfil está completo
+    var isProfileComplete: Bool {
+        return userProfile.genderEnum != .notSet &&
+               userProfile.weightKg > 0 &&
+               userProfile.resolvedHeightCm > 0 &&
+               userProfile.age != nil
+    }
+    
+    /// Obtiene el progreso de completitud del perfil
+    var profileCompletionPercentage: Double {
+        var completedFields = 0
+        let totalFields = 5
+        
+        if userProfile.genderEnum != .notSet { completedFields += 1 }
+        if userProfile.weightKg > 0 { completedFields += 1 }
+        if userProfile.resolvedHeightCm > 0 { completedFields += 1 }
+        if userProfile.age != nil { completedFields += 1 }
+        if userProfile.goal != "Not Set" { completedFields += 1 }
+        
+        return Double(completedFields) / Double(totalFields)
+    }
+    
+    // MARK: - Private Methods
+    
+    private func loadUserProfile() {
+        userProfile = UserProfile()
+    }
+    
+    private func saveUserProfile() {
+        // Aquí implementarías la lógica de guardado
+        // Por ahora es conceptual
+    }
+    
+    // MARK: - Static Methods
+    
+    /// Carga el perfil desde UserDefaults
+    static func loadFromUserDefaults() -> UserProfile {
+        return UserProfile()
+    }
+}
+
+// MARK: - Extensions for Gender-Specific Logic
+
+extension UserManager {
+    
+    /// Obtiene el color de tema según género
+    var themeColor: Color {
+        switch userProfile.genderEnum {
+        case .female:
+            return .pink
+        case .male:
+            return .blue
+        case .other, .notSet:
+            return .purple
+        }
+    }
+    
+    /// Obtiene el icono de avatar según género
+    var avatarIcon: String {
+        switch userProfile.genderEnum {
+        case .female:
+            return "person.fill"
+        case .male:
+            return "person.fill"
+        case .other, .notSet:
+            return "person.circle.fill"
+        }
+    }
+    
+    /// Obtiene el mensaje de logro según género
+    func getAchievementMessage(for achievement: String) -> String {
+        switch userProfile.genderEnum {
+        case .female:
+            return "Amazing! You've achieved \(achievement). You're unstoppable! 💪"
+        case .male:
+            return "Incredible! You've achieved \(achievement). Keep pushing! 🔥"
+        case .other, .notSet:
+            return "Fantastic! You've achieved \(achievement). You're doing great! ⭐"
+        }
     }
 }

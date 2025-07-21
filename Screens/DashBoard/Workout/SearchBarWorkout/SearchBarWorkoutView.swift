@@ -8,14 +8,15 @@ struct SearchBarWorkoutView: View {
     @Binding var showSearchResults: Bool
     
     var body: some View {
-        HStack(spacing: 0) {
-            HStack(spacing: 8) {
+        HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
                     .foregroundColor(.gray)
                 TextField("Search exercise...", text: $viewModel.searchText, onEditingChanged: { editing in
                     withAnimation {
                         showSearchResults = editing || !viewModel.searchText.isEmpty
                     }
+                    onFilterChanged(viewModel.searchText.isEmpty ? nil : viewModel.searchText)
                 })
                 .foregroundColor(.white)
                 .autocapitalization(.none)
@@ -24,24 +25,29 @@ struct SearchBarWorkoutView: View {
                     Button(action: {
                         viewModel.searchText = ""
                         withAnimation { showSearchResults = false }
+                        onFilterChanged(nil)
                     }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundColor(.gray)
                     }
                 }
             }
-            .padding(10)
-            .background(.ultraThinMaterial)
+            .padding(.vertical, 10)
+            .padding(.leading, 10)
+            .background(Color.white.opacity(0.08))
             .cornerRadius(12)
-            Spacer(minLength: 8)
+            // Sin padding horizontal extra
             Button(action: onLocationTapped) {
                 Image(systemName: "location.fill")
                     .font(.title2)
                     .foregroundColor(.yellow)
+                    .padding(8)
+                    .background(Color.black.opacity(0.7))
+                    .clipShape(Circle())
             }
+            .padding(.leading, 4)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 4)
+        
         // Resultados de búsqueda
         if showSearchResults && !viewModel.filteredExercises.isEmpty {
             ScrollView {
@@ -51,6 +57,7 @@ struct SearchBarWorkoutView: View {
                             onExerciseSelected(exercise)
                             showSearchResults = false
                             viewModel.searchText = ""
+                            onFilterChanged(nil)
                         }) {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {

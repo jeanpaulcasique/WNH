@@ -2,7 +2,7 @@ import SwiftUI
 import Combine
 
 // MARK: - WorkoutLevel Model
-struct WorkoutLevel {
+struct WorkoutLevelModel {
     let id: Int
     let title: String
     let subtitle: String
@@ -26,7 +26,7 @@ class WorkoutLevelViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     
     let workoutLevels = [
-        WorkoutLevel(
+        WorkoutLevelModel(
             id: 0,
             title: "Beginner",
             subtitle: "Easy to start",
@@ -34,11 +34,11 @@ class WorkoutLevelViewModel: ObservableObject {
             duration: "15-25 min",
             frequency: "3-4 days/week",
             icon: "figure.walk",
-            color: .green,
+            color: Color.green,
             intensity: "Low Impact",
             benefits: ["Build foundation", "Create healthy habits", "Low injury risk"]
         ),
-        WorkoutLevel(
+        WorkoutLevelModel(
             id: 1,
             title: "Intermediate",
             subtitle: "Break a light sweat",
@@ -46,11 +46,11 @@ class WorkoutLevelViewModel: ObservableObject {
             duration: "25-35 min",
             frequency: "4-5 days/week",
             icon: "figure.run",
-            color: .orange,
+            color: Color.orange,
             intensity: "Moderate",
             benefits: ["Improve strength", "Boost endurance", "Visible progress"]
         ),
-        WorkoutLevel(
+        WorkoutLevelModel(
             id: 2,
             title: "Advanced",
             subtitle: "A bit challenging",
@@ -58,13 +58,13 @@ class WorkoutLevelViewModel: ObservableObject {
             duration: "35-50 min",
             frequency: "5-6 days/week",
             icon: "figure.strengthtraining.traditional",
-            color: .red,
+            color: Color.red,
             intensity: "High Impact",
             benefits: ["Maximum results", "Peak performance", "Elite conditioning"]
         )
     ]
     
-    var selectedLevel: WorkoutLevel? {
+    var selectedLevel: WorkoutLevelModel? {
         guard let index = selectedIndex else { return nil }
         return workoutLevels[index]
     }

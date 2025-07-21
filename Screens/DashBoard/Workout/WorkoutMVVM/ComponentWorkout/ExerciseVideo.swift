@@ -21,8 +21,4 @@ enum ExerciseDifficulty: String, CaseIterable {
     case advanced = "Advanced"
 }
 
-enum WorkoutLocation: String, CaseIterable {
-    case atHome = "At Home"
-    case atGym = "At Gym"
-    case outdoors = "Outdoors"
-} 
+ 

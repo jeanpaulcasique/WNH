@@ -1,10 +1,19 @@
 import Foundation
 
-struct UserProfile {
-    enum Gender: String {
-        case male, female, other, notSet
-    }
-    
+// MARK: - Global Enums
+enum Gender: String, CaseIterable, Codable {
+    case male = "male"
+    case female = "female"
+    case other = "other"
+    case notSet = "notSet"
+}
+
+// MARK: - Unidad de peso
+enum WeightUnit: String, Codable, CaseIterable {
+    case kg, lb
+}
+
+struct UserProfile: Codable {
     enum ActivityLevel: String {
         case sedentary, lightlyActive, active, veryActive, notSet
     }
@@ -36,6 +45,7 @@ struct UserProfile {
     let heightFt: Int?
     let heightInch: Int?
     let weightKg: Double
+    let unitPreference: WeightUnit
     let targetWeightKg: Double
     let birthYear: String
     
@@ -86,6 +96,23 @@ struct UserProfile {
         EquipmentType(rawValue: selectedEquipmentType) ?? .notSet
     }
 
+    // Conversión de unidades
+    var weightInPreferredUnit: Double {
+        switch unitPreference {
+        case .kg:
+            return weightKg
+        case .lb:
+            return weightKg / 0.453592
+        }
+    }
+    
+    static func kgToLbs(_ kg: Double) -> Double {
+        return kg / 0.453592
+    }
+    static func lbsToKg(_ lbs: Double) -> Double {
+        return lbs * 0.453592
+    }
+
     init() {
         let defaults = UserDefaults.standard
         
@@ -95,6 +122,7 @@ struct UserProfile {
         heightFt = defaults.value(forKey: "selectedHeightFt") as? Int
         heightInch = defaults.value(forKey: "selectedHeightInch") as? Int
         weightKg = defaults.object(forKey: "selectedWeightKg") as? Double ?? 70.0
+        unitPreference = WeightUnit(rawValue: defaults.string(forKey: "weightUnitPreference") ?? "kg") ?? .kg
         targetWeightKg = defaults.object(forKey: "selectedTargetWeight") as? Double ?? 65.0
         birthYear = defaults.string(forKey: "selectedBirthYear") ?? "Not Set"
         
@@ -254,9 +282,235 @@ struct UserProfile {
             return "Obese"
         }
     }
-
+    
+    /// Returns a summary of the user's profile
+    var profileSummary: String {
+        let ageText = age != nil ? "\(age!) years old" : "Age not set"
+        let heightText = resolvedHeightCm > 0 ? "\(resolvedHeightCm)cm" : "Height not set"
+        let weightText = weightKg > 0 ? "\(Int(weightKg))kg" : "Weight not set"
+        
+        return "\(ageText), \(heightText), \(weightText)"
+    }
+    
+    /// Returns a formatted string for the user's goal
+    var goalSummary: String {
+        return "Goal: \(goal) • Target: \(target)"
+    }
+    
+    /// Returns a formatted string for the user's activity level
+    var activitySummary: String {
+        return "Activity: \(levelActivity) • Workout Level: \(workoutLevel)"
+    }
+    
+    /// Returns a formatted string for the user's workout preferences
+    var workoutSummary: String {
+        return "Location: \(workoutLocation) • Equipment: \(selectedEquipmentType)"
+    }
+    
+    /// Returns a formatted string for the user's diet preferences
+    var dietSummary: String {
+        return "Diet Type: \(dietType)"
+    }
+    
+    /// Returns a formatted string for the user's subscription status
+    var subscriptionSummary: String {
+        if isSubscriptionActive {
+            return "Active \(subscriptionPlan) subscription"
+        } else {
+            return "Free plan"
+        }
+    }
+    
+    /// Returns a complete profile summary
+    var completeSummary: String {
+        return """
+        Profile: \(profileSummary)
+        \(goalSummary)
+        \(activitySummary)
+        \(workoutSummary)
+        \(dietSummary)
+        \(subscriptionSummary)
+        """
+    }
+    
+    /// Returns a short profile summary for display
+    var shortSummary: String {
+        let ageText = age != nil ? "\(age!)y" : "N/A"
+        let heightText = resolvedHeightCm > 0 ? "\(resolvedHeightCm)cm" : "N/A"
+        let weightText = weightKg > 0 ? "\(Int(weightKg))kg" : "N/A"
+        
+        return "\(ageText) • \(heightText) • \(weightText) • \(goal)"
+    }
+    
+    /// Returns a formatted string for the user's target weight
+    var targetWeightSummary: String {
+        let currentWeight = weightKg > 0 ? "\(Int(weightKg))kg" : "N/A"
+        let targetWeight = targetWeightKg > 0 ? "\(Int(targetWeightKg))kg" : "N/A"
+        
+        return "Current: \(currentWeight) → Target: \(targetWeight)"
+    }
+    
+    /// Returns a formatted string for the user's height
+    var heightSummary: String {
+        if let cm = heightCm, cm > 0 {
+            return "\(cm)cm"
+        } else if let ft = heightFt, let inch = heightInch {
+            return "\(ft)'\(inch)\""
+        } else {
+            return "Not set"
+        }
+    }
+    
+    /// Returns a formatted string for the user's weight
+    var weightSummary: String {
+        return weightKg > 0 ? "\(Int(weightKg))kg" : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's age
+    var ageSummary: String {
+        return age != nil ? "\(age!) years" : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's gender
+    var genderSummary: String {
+        return genderEnum.rawValue.capitalized
+    }
+    
+    /// Returns a formatted string for the user's birth year
+    var birthYearSummary: String {
+        return birthYear != "Not Set" ? birthYear : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's goal
+    var goalSummaryShort: String {
+        return goal != "Not Set" ? goal : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's target
+    var targetSummaryShort: String {
+        return target != "Not Set" ? target : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's diet type
+    var dietTypeSummary: String {
+        return dietType != "Not Set" ? dietType : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's activity level
+    var activityLevelSummary: String {
+        return levelActivity != "Not Set" ? levelActivity : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's workout level
+    var workoutLevelSummary: String {
+        return workoutLevel != "Not Set" ? workoutLevel : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's workout location
+    var workoutLocationSummary: String {
+        return workoutLocation != "Not Set" ? workoutLocation : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's equipment type
+    var equipmentTypeSummary: String {
+        return selectedEquipmentType != "Not Set" ? selectedEquipmentType : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's desired body image
+    var desiredBodyImageSummary: String {
+        return desiredBodyImage != "Not Set" ? desiredBodyImage : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's equipment preference
+    var equipmentPreferenceSummary: String {
+        return equipmentPreference != "Not Set" ? equipmentPreference : "Not set"
+    }
+    
+    /// Returns a formatted string for the user's subscription plan
+    var subscriptionPlanSummary: String {
+        return subscriptionPlan != "Free" ? subscriptionPlan : "Free"
+    }
+    
+    /// Returns a formatted string for the user's subscription expiration date
+    var subscriptionExpirationSummary: String {
+        if let expirationDate = subscriptionExpirationDate {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            return formatter.string(from: expirationDate)
+        } else {
+            return "No expiration date"
+        }
+    }
+    
+    /// Returns a formatted string for the user's subscription status
+    var subscriptionStatusSummary: String {
+        return isSubscriptionActive ? "Active" : "Inactive"
+    }
+    
+    /// Returns a formatted string for the user's subscription details
+    var subscriptionDetailsSummary: String {
+        return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary)"
+    }
+    
+    /// Returns a formatted string for the user's subscription details with expiration
+    var subscriptionDetailsWithExpirationSummary: String {
+        if isSubscriptionActive {
+            return "\(subscriptionPlanSummary) • Expires: \(subscriptionExpirationSummary)"
+        } else {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary)"
+        }
+    }
+    
+    /// Returns a formatted string for the user's subscription details with expiration
+    var subscriptionDetailsWithExpirationSummaryShort: String {
+        if isSubscriptionActive {
+            return "\(subscriptionPlanSummary) • \(subscriptionExpirationSummary)"
+        } else {
+            return "\(subscriptionPlanSummary)"
+        }
+    }
+    
+    /// Returns a formatted string for the user's subscription details with expiration
+    var subscriptionDetailsWithExpirationSummaryLong: String {
+        if isSubscriptionActive {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • Expires: \(subscriptionExpirationSummary)"
+        } else {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary)"
+        }
+    }
+    
+    /// Returns a formatted string for the user's subscription details with expiration
+    var subscriptionDetailsWithExpirationSummaryFull: String {
+        if isSubscriptionActive {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • Expires: \(subscriptionExpirationSummary)"
+        } else {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • No expiration date"
+        }
+    }
+    
+    /// Returns a formatted string for the user's subscription details with expiration
+    var subscriptionDetailsWithExpirationSummaryComplete: String {
+        if isSubscriptionActive {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • Expires: \(subscriptionExpirationSummary)"
+        } else {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • No expiration date • Free plan"
+        }
+    }
+    
+    /// Returns a formatted string for the user's subscription details with expiration
+    var subscriptionDetailsWithExpirationSummaryFinal: String {
+        if isSubscriptionActive {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • Expires: \(subscriptionExpirationSummary)"
+        } else {
+            return "\(subscriptionPlanSummary) • \(subscriptionStatusSummary) • No expiration date • Free plan • No active subscription"
+        }
+    }
+    
+    // MARK: - Static Methods
+    
+    /// Carga el perfil de usuario desde UserDefaults
     static func loadFromUserDefaults() -> UserProfile {
-        UserProfile()
+        return UserProfile()
     }
     
     // MARK: - Debug Helper
@@ -302,7 +556,7 @@ struct UserProfile {
             return "Free Plan"
         }
     }
-
+    
     // NUEVO: Guardar y exponer BMI y kilos a bajar/subir
     static var currentBMI: Double? {
         get { UserDefaults.standard.object(forKey: "currentBMI") as? Double }

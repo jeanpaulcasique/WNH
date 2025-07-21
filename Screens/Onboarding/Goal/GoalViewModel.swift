@@ -59,6 +59,12 @@ class GoalViewModel: ObservableObject {
             case .buildMuscle: return "buildWomen"
             case .keepFit: return "keepWomen"
             }
+        case .other, .notSet:
+            switch goal {
+            case .loseWeight: return "lossGeneral"
+            case .buildMuscle: return "buildGeneral"
+            case .keepFit: return "keepGeneral"
+            }
         }
     }
 }

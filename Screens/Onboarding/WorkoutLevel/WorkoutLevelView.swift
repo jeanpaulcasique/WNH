@@ -192,121 +192,17 @@ private extension WorkoutLevelView {
 
 // MARK: - Enhanced Level Card
 struct EnhancedLevelCard: View {
-    let level: WorkoutLevel
+    let level: WorkoutLevelModel
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
             VStack(spacing: 0) {
-                // Main card content
-                HStack(spacing: 16) {
-                    // Level icon with intensity indicator
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [
-                                        level.color.opacity(isSelected ? 0.4 : 0.2),
-                                        level.color.opacity(isSelected ? 0.1 : 0.05)
-                                    ],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 70, height: 70)
-                        
-                        VStack(spacing: 4) {
-                            Image(systemName: level.icon)
-                                .font(.system(size: 24, weight: .semibold))
-                                .foregroundColor(level.color)
-                            
-                            // Intensity dots
-                            HStack(spacing: 2) {
-                                ForEach(0..<3) { index in
-                                    Circle()
-                                        .fill(index <= level.id ? level.color : level.color.opacity(0.3))
-                                        .frame(width: 4, height: 4)
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Level info
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(level.title)
-                                    .font(.system(size: 18, weight: .bold))
-                                    .foregroundColor(.white)
-                                
-                                Text(level.subtitle)
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(level.color)
-                            }
-                            
-                            Spacer()
-                            
-                            // Selection indicator
-                            if isSelected {
-                                Image(systemName: "checkmark.circle.fill")
-                                    .font(.system(size: 22))
-                                    .foregroundColor(.green)
-                            } else {
-                                Image(systemName: "circle")
-                                    .font(.system(size: 22))
-                                    .foregroundColor(.white.opacity(0.3))
-                            }
-                        }
-                        
-                        // Quick stats
-                        HStack(spacing: 20) {
-                            StatPill(icon: "clock", text: level.duration, color: level.color)
-                            StatPill(icon: "calendar", text: level.frequency, color: level.color)
-                        }
-                        
-                        Text(level.description)
-                            .font(.system(size: 13))
-                            .foregroundColor(.white.opacity(0.7))
-                            .lineLimit(2)
-                    }
-                }
-                .padding(20)
-                
-                // Expandable benefits section (only when selected)
+                mainCardContent
                 if isSelected {
-                    VStack(spacing: 12) {
-                        Divider()
-                            .background(level.color.opacity(0.3))
-                        
-                        VStack(spacing: 8) {
-                            HStack {
-                                Text("What you'll achieve:")
-                                    .font(.system(size: 14, weight: .medium))
-                                    .foregroundColor(level.color)
-                                Spacer()
-                            }
-                            
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 1), spacing: 6) {
-                                ForEach(level.benefits, id: \.self) { benefit in
-                                    HStack(spacing: 8) {
-                                        Image(systemName: "checkmark.circle.fill")
-                                            .font(.system(size: 12))
-                                            .foregroundColor(level.color)
-                                        
-                                        Text(benefit)
-                                            .font(.system(size: 13))
-                                            .foregroundColor(.white.opacity(0.8))
-                                        
-                                        Spacer()
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 16)
-                    }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    expandableBenefitsSection
+                        .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .background(
@@ -331,28 +227,100 @@ struct EnhancedLevelCard: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-}
-
-// MARK: - Support Components
-struct StatPill: View {
-    let icon: String
-    let text: String
-    let color: Color
     
-    var body: some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 10))
-                .foregroundColor(color)
-            
-            Text(text)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.white.opacity(0.8))
+    @ViewBuilder
+    private var mainCardContent: some View {
+        HStack(spacing: 16) {
+            // Level icon with intensity indicator
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                level.color.opacity(isSelected ? 0.4 : 0.2),
+                                level.color.opacity(isSelected ? 0.1 : 0.05)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 70, height: 70)
+                VStack(spacing: 4) {
+                    Image(systemName: level.icon)
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundColor(level.color)
+                    HStack(spacing: 2) {
+                        ForEach(0..<3) { index in
+                            Circle()
+                                .fill(index <= level.id ? level.color : level.color.opacity(0.3))
+                                .frame(width: 4, height: 4)
+                        }
+                    }
+                }
+            }
+            VStack(alignment: .leading, spacing: 8) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(level.title)
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(.white)
+                        Text(level.subtitle)
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(level.color)
+                    }
+                    Spacer()
+                    if isSelected {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(.green)
+                    } else {
+                        Image(systemName: "circle")
+                            .font(.system(size: 22))
+                            .foregroundColor(.white.opacity(0.3))
+                    }
+                }
+                HStack(spacing: 20) {
+                    StatPill(title: level.duration, subtitle: "Duración")
+                    StatPill(title: level.frequency, subtitle: "Frecuencia")
+                }
+                Text(level.description)
+                    .font(.system(size: 13))
+                    .foregroundColor(.white.opacity(0.7))
+                    .lineLimit(2)
+            }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(color.opacity(0.2))
-        .cornerRadius(8)
+        .padding(20)
+    }
+    
+    @ViewBuilder
+    private var expandableBenefitsSection: some View {
+        VStack(spacing: 12) {
+            Divider()
+                .background(level.color.opacity(0.3))
+            VStack(spacing: 8) {
+                HStack {
+                    Text("What you'll achieve:")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(level.color)
+                    Spacer()
+                }
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .leading), count: 1), spacing: 6) {
+                    ForEach(level.benefits, id: \.self) { benefit in
+                        HStack(spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 12))
+                                .foregroundColor(level.color)
+                            Text(benefit)
+                                .font(.system(size: 13))
+                                .foregroundColor(.white.opacity(0.8))
+                            Spacer()
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.bottom, 16)
+        }
     }
 }
 

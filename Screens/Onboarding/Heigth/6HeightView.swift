@@ -142,8 +142,8 @@ struct HeightView: View {
                             .background(Color(white: 0.18))
                             .clipShape(Circle())
                     }
-                    
-                    Spacer()
+                                
+                                Spacer()
                     
                     // Botón Next
                     Button(action: {

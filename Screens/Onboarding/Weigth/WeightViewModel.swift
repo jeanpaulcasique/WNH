@@ -309,27 +309,27 @@ class WeightViewModel: ObservableObject {
     }
     
     // MARK: - BMI Categories for Sheet
-    func getBMICategories(userCategory: String) -> [BMICategory] {
+    func getBMICategories(userCategory: String) -> [BMICategoryData] {
         return [
-            BMICategory(
+            BMICategoryData(
                 range: "< 18.5",
                 category: "Underweight",
                 color: .cyan,
                 isUserCategory: userCategory == "Underweight"
             ),
-            BMICategory(
+            BMICategoryData(
                 range: "18.5 - 24.9",
                 category: "Normal",
                 color: .green,
                 isUserCategory: userCategory == "Normal"
             ),
-            BMICategory(
+            BMICategoryData(
                 range: "25.0 - 29.9",
                 category: "Overweight",
                 color: .orange,
                 isUserCategory: userCategory == "Overweight"
             ),
-            BMICategory(
+            BMICategoryData(
                 range: "30.0+",
                 category: "Obese",
                 color: .red,
@@ -368,7 +368,9 @@ struct WeightBenefit {
     let color: Color
 }
 
-struct BMICategory {
+
+
+struct BMICategoryData {
     let range: String
     let category: String
     let color: Color

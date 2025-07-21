@@ -1,7 +1,37 @@
 import Foundation
+import Combine
 
 
 class MockWorkoutRepository: WorkoutRepositoryProtocol {
+    @Published private(set) var exercises: [Exercise] = []
+    @Published private(set) var muscleGroups: [MuscleGroup] = []
+    
+    var exercisesPublisher: Published<[Exercise]>.Publisher { $exercises }
+    var muscleGroupsPublisher: Published<[MuscleGroup]>.Publisher { $muscleGroups }
+    
+    func loadExercises() {
+        // Simula la carga de todos los ejercicios para todos los grupos
+        Task {
+            var all: [Exercise] = []
+            let groups = try? await getMuscleGroups()
+            for group in groups ?? [] {
+                let exs = try? await getExercises(for: group.name)
+                all.append(contentsOf: exs ?? [])
+            }
+            DispatchQueue.main.async {
+                self.exercises = all
+            }
+        }
+    }
+    
+    func loadMuscleGroups() {
+        Task {
+            let groups = try? await getMuscleGroups()
+            DispatchQueue.main.async {
+                self.muscleGroups = groups ?? []
+            }
+        }
+    }
     
     func getMuscleGroups() async throws -> [MuscleGroup] {
         // Simular delay de red - reducido para respuesta más rápida
@@ -44,43 +74,43 @@ class MockWorkoutRepository: WorkoutRepositoryProtocol {
         switch muscleGroup.lowercased() {
         case "chest":
             return [
-                Exercise(name: "Push-ups", duration: "15 reps", difficulty: "Medium", videoURL: nil),
-                Exercise(name: "Bench Press", duration: "12 reps", difficulty: "High", videoURL: nil)
+                Exercise(name: "Push-ups", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Chest"], equipment: "Bodyweight"),
+                Exercise(name: "Bench Press", duration: "12 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Chest"], equipment: "Barbell")
             ]
         case "biceps":
             return [
-                Exercise(name: "Bicep Curls", duration: "12 reps", difficulty: "Medium", videoURL: nil),
-                Exercise(name: "Hammer Curls", duration: "15 reps", difficulty: "Low", videoURL: nil)
+                Exercise(name: "Bicep Curls", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Biceps"], equipment: "Dumbbell"),
+                Exercise(name: "Hammer Curls", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Biceps"], equipment: "Dumbbell")
             ]
         case "lats":
             return [
-                Exercise(name: "Pull-ups", duration: "10 reps", difficulty: "High", videoURL: nil),
-                Exercise(name: "Lat Pulldowns", duration: "12 reps", difficulty: "Medium", videoURL: nil)
+                Exercise(name: "Pull-ups", duration: "10 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Lats"], equipment: "Bodyweight"),
+                Exercise(name: "Lat Pulldowns", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Lats"], equipment: "Machine")
             ]
         case "upper back":
             return [
-                Exercise(name: "Rows", duration: "12 reps", difficulty: "Medium", videoURL: nil),
-                Exercise(name: "Face Pulls", duration: "15 reps", difficulty: "Low", videoURL: nil)
+                Exercise(name: "Rows", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Upper Back"], equipment: "Barbell"),
+                Exercise(name: "Face Pulls", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Upper Back"], equipment: "Cable")
             ]
         case "triceps":
             return [
-                Exercise(name: "Tricep Dips", duration: "12 reps", difficulty: "Medium", videoURL: nil),
-                Exercise(name: "Overhead Extensions", duration: "15 reps", difficulty: "Low", videoURL: nil)
+                Exercise(name: "Tricep Dips", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Triceps"], equipment: "Bodyweight"),
+                Exercise(name: "Overhead Extensions", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Triceps"], equipment: "Dumbbell")
             ]
         case "glutes":
             return [
-                Exercise(name: "Squats", duration: "15 reps", difficulty: "Medium", videoURL: nil),
-                Exercise(name: "Hip Thrusts", duration: "12 reps", difficulty: "Medium", videoURL: nil)
+                Exercise(name: "Squats", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Glutes"], equipment: "Barbell"),
+                Exercise(name: "Hip Thrusts", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Glutes"], equipment: "Barbell")
             ]
         case "hamstrings":
             return [
-                Exercise(name: "Deadlifts", duration: "10 reps", difficulty: "High", videoURL: nil),
-                Exercise(name: "Leg Curls", duration: "15 reps", difficulty: "Medium", videoURL: nil)
+                Exercise(name: "Deadlifts", duration: "10 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Hamstrings"], equipment: "Barbell"),
+                Exercise(name: "Leg Curls", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Hamstrings"], equipment: "Machine")
             ]
         case "calves":
             return [
-                Exercise(name: "Calf Raises", duration: "20 reps", difficulty: "Low", videoURL: nil),
-                Exercise(name: "Jump Rope", duration: "5 min", difficulty: "Medium", videoURL: nil)
+                Exercise(name: "Calf Raises", duration: "20 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Calves"], equipment: "Bodyweight"),
+                Exercise(name: "Jump Rope", duration: "5 min", difficulty: "Medium", videoURL: nil, muscleGroups: ["Calves"], equipment: "Rope")
             ]
         default:
             return []
