@@ -417,6 +417,9 @@
 		696EBAB22E2C3E9C00A296FB /* WorkoutProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBAB12E2C3E9C00A296FB /* WorkoutProgressManager.swift */; };
 		696EBAB32E2C3E9C00A296FB /* WorkoutProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBAB12E2C3E9C00A296FB /* WorkoutProgressManager.swift */; };
 		696EBAB42E2C3E9C00A296FB /* WorkoutProgressManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBAB12E2C3E9C00A296FB /* WorkoutProgressManager.swift */; };
+		696EBAB62E2FDAF400A296FB /* MuscleCategoryCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBAB52E2FDAF400A296FB /* MuscleCategoryCards.swift */; };
+		696EBAB72E2FDAF400A296FB /* MuscleCategoryCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBAB52E2FDAF400A296FB /* MuscleCategoryCards.swift */; };
+		696EBAB82E2FDAF400A296FB /* MuscleCategoryCards.swift in Sources */ = {isa = PBXBuildFile; fileRef = 696EBAB52E2FDAF400A296FB /* MuscleCategoryCards.swift */; };
 		699A64B42E01DC49008D6BDA /* FirebaseAI in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B32E01DC49008D6BDA /* FirebaseAI */; };
 		699A64B62E01DC49008D6BDA /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B52E01DC49008D6BDA /* FirebaseAnalytics */; };
 		699A64B82E01DC49008D6BDA /* FirebaseAnalyticsCore in Frameworks */ = {isa = PBXBuildFile; productRef = 699A64B72E01DC49008D6BDA /* FirebaseAnalyticsCore */; };
@@ -631,6 +634,7 @@
 		696EBA962E286FBA00A296FB /* HeartRateIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartRateIndicator.swift; sourceTree = "<group>"; };
 		696EBA9A2E286FD100A296FB /* MuscleGroupButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleGroupButton.swift; sourceTree = "<group>"; };
 		696EBAB12E2C3E9C00A296FB /* WorkoutProgressManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutProgressManager.swift; sourceTree = "<group>"; };
+		696EBAB52E2FDAF400A296FB /* MuscleCategoryCards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MuscleCategoryCards.swift; sourceTree = "<group>"; };
 		699A64DC2E01EEAF008D6BDA /* VideoMuscleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleView.swift; sourceTree = "<group>"; };
 		699A64DD2E01EEAF008D6BDA /* VideoMuscleViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoMuscleViewModel.swift; sourceTree = "<group>"; };
 		699A64DF2E01EEAF008D6BDA /* VideosDashBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideosDashBoardView.swift; sourceTree = "<group>"; };
@@ -1305,6 +1309,7 @@
 				696EBA922E286FB100A296FB /* ExerciseVideo.swift */,
 				696EBA962E286FBA00A296FB /* HeartRateIndicator.swift */,
 				696EBA9A2E286FD100A296FB /* MuscleGroupButton.swift */,
+				696EBAB52E2FDAF400A296FB /* MuscleCategoryCards.swift */,
 			);
 			path = ComponentWorkout;
 			sourceTree = "<group>";
@@ -1704,6 +1709,7 @@
 				699A65022E01EEAF008D6BDA /* VideosDashBoardView.swift in Sources */,
 				699A65032E01EEAF008D6BDA /* VideoMuscleView.swift in Sources */,
 				699A65042E01EEAF008D6BDA /* WorkoutView.swift in Sources */,
+				696EBAB82E2FDAF400A296FB /* MuscleCategoryCards.swift in Sources */,
 				696EBA722E286ABD00A296FB /* UserPreferencesService.swift in Sources */,
 				699A65052E01EEAF008D6BDA /* WorkoutViewModel.swift in Sources */,
 				690DF81F2E14A4020038A671 /* Headers.swift in Sources */,
@@ -1796,6 +1802,7 @@
 				691995F12DFC8C12007FAB40 /* TargetWeightViewModel.swift in Sources */,
 				696EBA622E286A6900A296FB /* WorkoutTip.swift in Sources */,
 				691996D72DFC8FCD007FAB40 /* NotificationWater.swift in Sources */,
+				696EBAB62E2FDAF400A296FB /* MuscleCategoryCards.swift in Sources */,
 				696EBA262E26C18000A296FB /* OnboardingNext.swift in Sources */,
 				690DF80E2E149CE80038A671 /* OnboardingTemplate.swift in Sources */,
 				691996F22DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */,
@@ -1991,6 +1998,7 @@
 				690DF8212E14A4020038A671 /* Headers.swift in Sources */,
 				69B066792E0DF1B100A954B7 /* TrainerDetailView.swift in Sources */,
 				6901B4A62E0089C100173562 /* SubscriptionPlansSection.swift in Sources */,
+				696EBAB72E2FDAF400A296FB /* MuscleCategoryCards.swift in Sources */,
 				6901B4A72E0089C100173562 /* FeaturesSection.swift in Sources */,
 				6901B4A82E0089C100173562 /* SubscriptionHeader.swift in Sources */,
 				691996A22DFC8EF6007FAB40 /* DashBoardViewModel.swift in Sources */,

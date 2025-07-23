@@ -52,7 +52,7 @@ class WorkoutIntegrationTests: XCTestCase {
     func testWorkoutServiceAndProgressServiceIntegration() {
         // Given
         let testDate = Date()
-        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         
         // When
         workoutService.selectMuscle(muscle)
@@ -113,7 +113,7 @@ class WorkoutIntegrationTests: XCTestCase {
     
     func testViewModelAndServicesIntegration() {
         // Given
-        let muscle = MuscleGroup(name: "Back", exercises: [], position: CGPoint(x: 0.3, y: 0.3))
+        let muscle = MuscleGroup(name: "Back", exercises: [], position: CGPoint(x: 0.3, y: 0.3), isLeftSide: true)
         let testDate = Date()
         
         // When
@@ -274,7 +274,7 @@ class WorkoutIntegrationTests: XCTestCase {
     
     func testCompleteWorkoutWorkflow() {
         // Given
-        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         let testDate = Date()
         
         // When - Complete workflow

@@ -9,21 +9,21 @@ class VideosDashBoardViewModel: ObservableObject {
     
     // Lista de grupos musculares (puedes cargarla de WorkoutViewModel o definirla aquí)
     let muscleGroups: [MuscleGroup] = [
-        MuscleGroup(name: "Cardio", exercises: [], position: .zero),
-        MuscleGroup(name: "Shoulders", exercises: [], position: .zero),
-        MuscleGroup(name: "Chest", exercises: [], position: .zero),
-        MuscleGroup(name: "Biceps", exercises: [], position: .zero),
-        MuscleGroup(name: "Forearms", exercises: [], position: .zero),
-        MuscleGroup(name: "Abs", exercises: [], position: .zero),
-        MuscleGroup(name: "Obliques", exercises: [], position: .zero),
-        MuscleGroup(name: "Quads", exercises: [], position: .zero),
-        MuscleGroup(name: "Adductors", exercises: [], position: .zero),
-        MuscleGroup(name: "Traps", exercises: [], position: .zero),
-        MuscleGroup(name: "Lats", exercises: [], position: .zero),
-        MuscleGroup(name: "Triceps", exercises: [], position: .zero),
-        MuscleGroup(name: "Lower Back", exercises: [], position: .zero),
-        MuscleGroup(name: "Glutes", exercises: [], position: .zero),
-        MuscleGroup(name: "Hamstrings", exercises: [], position: .zero),
-        MuscleGroup(name: "Calves", exercises: [], position: .zero)
+        MuscleGroup(name: "Cardio", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Shoulders", exercises: [], position: .zero, isLeftSide: true),
+        MuscleGroup(name: "Chest", exercises: [], position: .zero, isLeftSide: true),
+        MuscleGroup(name: "Biceps", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Forearms", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Abs", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Obliques", exercises: [], position: .zero, isLeftSide: true),
+        MuscleGroup(name: "Quads", exercises: [], position: .zero, isLeftSide: true),
+        MuscleGroup(name: "Adductors", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Traps", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Lats", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Triceps", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Lower Back", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Glutes", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Hamstrings", exercises: [], position: .zero, isLeftSide: false),
+        MuscleGroup(name: "Calves", exercises: [], position: .zero, isLeftSide: false)
     ]
 } 

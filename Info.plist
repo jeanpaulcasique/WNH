@@ -38,5 +38,9 @@
     </array>
     <key>UILaunchStoryboardName</key>
     <string>LaunchSamson</string>
+    <key>NSHealthShareUsageDescription</key>
+    <string>WNH needs access to your health data to display your heart rate and workout information.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>WNH needs permission to save your workout data and heart rate information to HealthKit.</string>
 </dict>
 </plist>

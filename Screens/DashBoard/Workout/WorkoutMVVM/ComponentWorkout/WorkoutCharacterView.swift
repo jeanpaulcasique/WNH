@@ -7,32 +7,42 @@ struct WorkoutCharacterView: View {
 
     var body: some View {
         ZStack {
-            // Fondo negro-gris sólido para toda la pantalla
-            Color(red: 0.10, green: 0.10, blue: 0.12)
-                .ignoresSafeArea()
-
             // Imagen del personaje
             Group {
                 if isShowingBack {
                     Image("human_back")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        // EDITA AQUÍ: Cambia el tamaño de la imagen
-                        .frame(width: 220, height: 320)
-                        // EDITA AQUÍ: Cambia la posición de la imagen
-                        .offset(x: 0, y: 0)
+                        // ===== EDITA AQUÍ EL TAMAÑO DE LA IMAGEN =====
+                        // Cambia estos valores para hacer la imagen más grande o más pequeña
+                        // width: ancho de la imagen
+                        // height: alto de la imagen
+                        .frame(maxWidth: 780, maxHeight: 780) // ← Aumentado para compensar personaje más pequeño
+                        .scaleEffect(1.45) // ← Hace la imagen 40% más grande para compensar
+                        // ===== EDITA AQUÍ LA POSICIÓN DE LA IMAGEN =====
+                        // offset(x, y) - x: horizontal, y: vertical
+                        // x: negativo = izquierda, positivo = derecha
+                        // y: negativo = arriba, positivo = abajo
+                        // .offset(x: 9, y: 110) // ← EDITA ESTOS VALORES
                 } else {
                     Image("human_front")
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        // EDITA AQUÍ: Cambia el tamaño de la imagen
-                        .frame(width: 220, height: 320)
-                        // EDITA AQUÍ: Cambia la posición de la imagen
-                        .offset(x: 0, y: 0)
+                        // ===== EDITA AQUÍ EL TAMAÑO DE LA IMAGEN =====
+                        // Cambia estos valores para hacer la imagen más grande o más pequeña
+                        // width: ancho de la imagen
+                        // height: alto de la imagen
+                        .frame(maxWidth: 540, maxHeight: 540) // ← Aumentado para dar más espacio
+                        .scaleEffect(1.07) // ← Hace la imagen 20% más grande
+                        // ===== EDITA AQUÍ LA POSICIÓN DE LA IMAGEN =====
+                        // offset(x, y) - x: horizontal, y: vertical
+                        // x: negativo = izquierda, positivo = derecha
+                        // y: negativo = arriba, positivo = abajo
+                        // .offset(x: 9, y: 110) // ← EDITA ESTOS VALORES
                 }
             }
         }
-        .frame(height: 340)
+        .clipped() // ← Limita el tamaño para no expandir el contenedor
         // (No hay gesto de tap)
     }
 }
@@ -42,7 +52,7 @@ struct WorkoutCharacterView: View {
         isShowingBack: false,
         onToggle: {}
     )
-    .frame(height: 340)
+    .frame(height: 450)
 } 
 
 

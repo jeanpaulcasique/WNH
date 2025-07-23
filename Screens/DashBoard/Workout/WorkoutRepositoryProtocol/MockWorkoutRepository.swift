@@ -38,15 +38,15 @@ class MockWorkoutRepository: WorkoutRepositoryProtocol {
         try await Task.sleep(nanoseconds: 100_000_000) // 0.1 segundos
         
         return [
-            MuscleGroup(name: "Cardio", exercises: [], position: CGPoint(x: 0.9, y: 0.01)),
-            MuscleGroup(name: "Shoulders", exercises: [], position: CGPoint(x: 0.34, y: 0.07)),   // Centro de hombros
-            MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.59, y: 0.14)),       // Centro del pecho
-            MuscleGroup(name: "Biceps", exercises: [], position: CGPoint(x: 0.70, y: 0.2)),      // Entre hombro y codo
-            MuscleGroup(name: "Forearms", exercises: [], position: CGPoint(x: 0.77, y: 0.33)),    // Entre codo y muñeca
-            MuscleGroup(name: "Abs", exercises: [], position: CGPoint(x: 0.49, y: 0.29)),         // Centro del abdomen
-            MuscleGroup(name: "Obliques", exercises: [], position: CGPoint(x: 0.40, y: 0.33)),    // Lado izquierdo del abdomen
-            MuscleGroup(name: "Quads", exercises: [], position: CGPoint(x: 0.39, y: 0.70)),       // Centro de los muslos
-            MuscleGroup(name: "Adductors", exercises: [], position: CGPoint(x: 0.58, y: 0.66))    // Centro bajo entre muslos
+            MuscleGroup(name: "Cardio", exercises: [], position: CGPoint(x: 0.9, y: 0.01), isLeftSide: false),
+            MuscleGroup(name: "Shoulders", exercises: [], position: CGPoint(x: 0.34, y: 0.07), isLeftSide: true),   // Centro de hombros
+            MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.59, y: 0.14), isLeftSide: true),       // Centro del pecho
+            MuscleGroup(name: "Biceps", exercises: [], position: CGPoint(x: 0.70, y: 0.2), isLeftSide: false),      // Entre hombro y codo
+            MuscleGroup(name: "Forearms", exercises: [], position: CGPoint(x: 0.77, y: 0.33), isLeftSide: false),    // Entre codo y muñeca
+            MuscleGroup(name: "Abs", exercises: [], position: CGPoint(x: 0.49, y: 0.29), isLeftSide: false),         // Centro del abdomen
+            MuscleGroup(name: "Obliques", exercises: [], position: CGPoint(x: 0.40, y: 0.33), isLeftSide: true),    // Lado izquierdo del abdomen
+            MuscleGroup(name: "Quads", exercises: [], position: CGPoint(x: 0.39, y: 0.70), isLeftSide: true),       // Centro de los muslos
+            MuscleGroup(name: "Adductors", exercises: [], position: CGPoint(x: 0.58, y: 0.66), isLeftSide: false)    // Centro bajo entre muslos
         ]
     }
     
@@ -56,14 +56,14 @@ class MockWorkoutRepository: WorkoutRepositoryProtocol {
         
         return [
          
-            MuscleGroup(name: "Traps", exercises: [], position: CGPoint(x: 0.55, y: 0.01)),
-            MuscleGroup(name: "Upper Back", exercises: [], position: CGPoint(x: 0.43, y: 0.04)),
-            MuscleGroup(name: "Lats", exercises: [], position: CGPoint(x: 0.54, y: 0.25)),
-            MuscleGroup(name: "Lower Back", exercises: [], position: CGPoint(x: 0.48, y: 0.32)),
-            MuscleGroup(name: "Triceps", exercises: [], position: CGPoint(x: 0.66, y: 0.16)),
-            MuscleGroup(name: "Glutes", exercises: [], position: CGPoint(x: 0.53, y: 0.50)),
-            MuscleGroup(name: "Hamstrings", exercises: [], position: CGPoint(x: 0.40, y: 0.67)),
-            MuscleGroup(name: "Calves", exercises: [], position: CGPoint(x: 0.27, y: 0.90))
+            MuscleGroup(name: "Traps", exercises: [], position: CGPoint(x: 0.55, y: 0.01), isLeftSide: false),
+            MuscleGroup(name: "Upper Back", exercises: [], position: CGPoint(x: 0.43, y: 0.04), isLeftSide: false),
+            MuscleGroup(name: "Lats", exercises: [], position: CGPoint(x: 0.54, y: 0.25), isLeftSide: false),
+            MuscleGroup(name: "Lower Back", exercises: [], position: CGPoint(x: 0.48, y: 0.32), isLeftSide: false),
+            MuscleGroup(name: "Triceps", exercises: [], position: CGPoint(x: 0.66, y: 0.16), isLeftSide: false),
+            MuscleGroup(name: "Glutes", exercises: [], position: CGPoint(x: 0.53, y: 0.50), isLeftSide: false),
+            MuscleGroup(name: "Hamstrings", exercises: [], position: CGPoint(x: 0.40, y: 0.67), isLeftSide: false),
+            MuscleGroup(name: "Calves", exercises: [], position: CGPoint(x: 0.27, y: 0.90), isLeftSide: false)
         ]
     }
     

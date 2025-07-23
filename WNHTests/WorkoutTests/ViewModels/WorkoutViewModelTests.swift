@@ -43,7 +43,7 @@ class WorkoutViewModelTests: XCTestCase {
     
     func testSelectMuscle() {
         // Given
-        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         
         // When
         viewModel.selectMuscle(muscle)
@@ -269,7 +269,7 @@ class WorkoutViewModelTests: XCTestCase {
             }
             .store(in: &cancellables)
         
-        let testMuscle = MuscleGroup(name: "Test", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let testMuscle = MuscleGroup(name: "Test", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         viewModel.selectMuscle(testMuscle)
         
         // Then
@@ -280,7 +280,7 @@ class WorkoutViewModelTests: XCTestCase {
     
     func testIntegrationWithServices() {
         // Given
-        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         
         // When
         viewModel.selectMuscle(muscle)

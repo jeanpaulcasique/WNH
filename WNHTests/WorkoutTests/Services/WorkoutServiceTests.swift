@@ -33,7 +33,7 @@ class WorkoutServiceTests: XCTestCase {
     
     func testSelectMuscle() {
         // Given
-        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let muscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         
         // When
         workoutService.selectMuscle(muscle)
@@ -44,7 +44,7 @@ class WorkoutServiceTests: XCTestCase {
     
     func testSelectMuscleUpdatesUserDefaults() {
         // Given
-        let muscle = MuscleGroup(name: "Back", exercises: [], position: CGPoint(x: 0.3, y: 0.3))
+        let muscle = MuscleGroup(name: "Back", exercises: [], position: CGPoint(x: 0.3, y: 0.3), isLeftSide: false)
         
         // When
         workoutService.selectMuscle(muscle)
@@ -80,7 +80,7 @@ class WorkoutServiceTests: XCTestCase {
     
     func testGetExercisesForMuscle() {
         // Given
-        let chestMuscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let chestMuscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         let chestExercise = Exercise(
             name: "Push-ups",
             duration: "10 min",
@@ -142,7 +142,7 @@ class WorkoutServiceTests: XCTestCase {
     
     func testGetFilteredExercises() {
         // Given
-        let chestMuscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let chestMuscle = MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true)
         let chestHomeExercise = Exercise(
             name: "Push-ups",
             duration: "10 min",
@@ -306,8 +306,8 @@ class WorkoutServiceTests: XCTestCase {
         
         workoutService.allExercises = [exercise1, exercise2]
         workoutService.muscleGroups = [
-            MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5)),
-            MuscleGroup(name: "Back", exercises: [], position: CGPoint(x: 0.3, y: 0.3))
+            MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: true),
+            MuscleGroup(name: "Back", exercises: [], position: CGPoint(x: 0.3, y: 0.3), isLeftSide: false)
         ]
         
         // When
@@ -335,7 +335,7 @@ class WorkoutServiceTests: XCTestCase {
             }
             .store(in: &cancellables)
         
-        let testMuscle = MuscleGroup(name: "Test", exercises: [], position: CGPoint(x: 0.5, y: 0.5))
+        let testMuscle = MuscleGroup(name: "Test", exercises: [], position: CGPoint(x: 0.5, y: 0.5), isLeftSide: false)
         workoutService.selectMuscle(testMuscle)
         
         // Then

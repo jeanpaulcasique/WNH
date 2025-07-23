@@ -42,7 +42,8 @@ struct VideosDashBoardView: View {
         _currentMuscle = State(initialValue: MuscleGroup(
             name: selectedMuscleGroup,
             exercises: [],
-            position: .zero
+            position: .zero,
+            isLeftSide: false
         ))
     }
     

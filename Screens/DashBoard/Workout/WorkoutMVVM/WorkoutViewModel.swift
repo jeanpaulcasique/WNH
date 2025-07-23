@@ -2,12 +2,61 @@ import SwiftUI
 import Combine
 import HealthKit
 
+// MARK: - Configuración de Posiciones de Botones de Músculos
+struct MuscleButtonPositions {
+    
+    // MARK: - Posiciones de Músculos Delanteros
+    static let frontMuscles: [MusclePosition] = [
+        MusclePosition(name: "Cardio", x: 0.80, y: 0.42, isLeftSide: false),
+        MusclePosition(name: "Shoulders", x: 0.36, y: 0.51, isLeftSide: true),
+        MusclePosition(name: "Chest", x: 0.55, y: 0.53, isLeftSide: false),
+        MusclePosition(name: "Biceps", x: 0.65, y: 0.56, isLeftSide: false),
+        MusclePosition(name: "Forearms", x: 0.70, y: 0.62, isLeftSide: false),
+        MusclePosition(name: "Abs", x: 0.46, y: 0.60, isLeftSide: false),
+        MusclePosition(name: "Obliques", x: 0.40, y: 0.62, isLeftSide: true),
+        MusclePosition(name: "Quads", x: 0.40, y: 0.77, isLeftSide: true),
+        MusclePosition(name: "Adductors", x: 0.55, y: 0.74, isLeftSide: false)
+    ]
+    
+    // MARK: - Posiciones de Músculos Traseros
+    static let backMuscles: [MusclePosition] = [
+        MusclePosition(name: "Traps", x: 0.55, y: 0.01, isLeftSide: false),
+        MusclePosition(name: "Upper Back", x: 0.43, y: 0.04, isLeftSide: false),
+        MusclePosition(name: "Lats", x: 0.54, y: 0.25, isLeftSide: false),
+        MusclePosition(name: "Lower Back", x: 0.48, y: 0.32, isLeftSide: false),
+        MusclePosition(name: "Triceps", x: 0.66, y: 0.16, isLeftSide: false),
+        MusclePosition(name: "Glutes", x: 0.53, y: 0.50, isLeftSide: false),
+        MusclePosition(name: "Hamstrings", x: 0.40, y: 0.67, isLeftSide: false),
+        MusclePosition(name: "Calves", x: 0.27, y: 0.90, isLeftSide: false)
+    ]
+    
+    // MARK: - Configuración de Líneas de Texto
+    struct LineConfig {
+        static let lineLength: CGFloat = 60
+        static let lineOffset: CGFloat = 30
+        static let textOffset: CGFloat = 80
+    }
+}
+
+// MARK: - Modelo de Posición de Músculo
+struct MusclePosition {
+    let name: String
+    let x: CGFloat
+    let y: CGFloat
+    let isLeftSide: Bool
+    
+    var position: CGPoint {
+        return CGPoint(x: x, y: y)
+    }
+}
+
 // MARK: - Models
 struct MuscleGroup: Identifiable, Equatable {
     let id = UUID()
     let name: String
     let exercises: [Exercise]
     let position: CGPoint // Posición relativa en la imagen (0-1)
+    let isLeftSide: Bool // Indica si el músculo está en el lado izquierdo
     
     static func == (lhs: MuscleGroup, rhs: MuscleGroup) -> Bool {
         return lhs.id == rhs.id
@@ -41,6 +90,10 @@ class WorkoutViewModel: ObservableObject {
     @Published var heartRate: Double? = nil
     @Published var userWeight: Double? = nil
     @Published var healthKitAuthorized: Bool = false
+    
+    // MARK: - Posiciones dinámicas para debugging
+    @Published var debugPositions: Bool = false
+    @Published var forceReload: Bool = false
     
     // MARK: - Gender-Based Properties
     @Published var userManager: UserManager
@@ -137,6 +190,8 @@ class WorkoutViewModel: ObservableObject {
             healthKitService.startHeartRateMonitoring()
         }
     }
+    
+
     
     /// Obtiene el progreso para una fecha específica
     func progressForDate(_ date: Date) -> Double {
@@ -426,6 +481,19 @@ class WorkoutViewModel: ObservableObject {
         
         // Configurar búsqueda
         setupSearch()
+        
+        // Observer para recargar posiciones
+        $forceReload
+            .filter { $0 }
+            .sink { [weak self] _ in
+                Task {
+                    await self?.loadAllMuscleGroups()
+                    await MainActor.run {
+                        self?.forceReload = false
+                    }
+                }
+            }
+            .store(in: &cancellables)
     }
     
     @MainActor
@@ -445,30 +513,25 @@ class WorkoutViewModel: ObservableObject {
     
     private func loadMuscleGroupsForView(isBack: Bool) async throws -> [MuscleGroup] {
         if isBack {
-            // Músculos traseros
-            return [
-                MuscleGroup(name: "Traps", exercises: [], position: CGPoint(x: 0.55, y: 0.01)),
-                MuscleGroup(name: "Upper Back", exercises: [], position: CGPoint(x: 0.43, y: 0.04)),
-                MuscleGroup(name: "Lats", exercises: [], position: CGPoint(x: 0.54, y: 0.25)),
-                MuscleGroup(name: "Lower Back", exercises: [], position: CGPoint(x: 0.48, y: 0.32)),
-                MuscleGroup(name: "Triceps", exercises: [], position: CGPoint(x: 0.66, y: 0.16)),
-                MuscleGroup(name: "Glutes", exercises: [], position: CGPoint(x: 0.53, y: 0.50)),
-                MuscleGroup(name: "Hamstrings", exercises: [], position: CGPoint(x: 0.40, y: 0.67)),
-                MuscleGroup(name: "Calves", exercises: [], position: CGPoint(x: 0.27, y: 0.90))
-            ]
+            // Músculos traseros - usando el nuevo sistema de posiciones
+            return MuscleButtonPositions.backMuscles.map { musclePos in
+                MuscleGroup(
+                    name: musclePos.name,
+                    exercises: [],
+                    position: musclePos.position,
+                    isLeftSide: musclePos.isLeftSide
+                )
+            }
         } else {
-            // Músculos delanteros
-            return [
-                MuscleGroup(name: "Cardio", exercises: [], position: CGPoint(x: 0.9, y: 0.01)),
-                MuscleGroup(name: "Shoulders", exercises: [], position: CGPoint(x: 0.34, y: 0.07)),
-                MuscleGroup(name: "Chest", exercises: [], position: CGPoint(x: 0.59, y: 0.14)),
-                MuscleGroup(name: "Biceps", exercises: [], position: CGPoint(x: 0.70, y: 0.2)),
-                MuscleGroup(name: "Forearms", exercises: [], position: CGPoint(x: 0.77, y: 0.33)),
-                MuscleGroup(name: "Abs", exercises: [], position: CGPoint(x: 0.49, y: 0.29)),
-                MuscleGroup(name: "Obliques", exercises: [], position: CGPoint(x: 0.40, y: 0.33)),
-                MuscleGroup(name: "Quads", exercises: [], position: CGPoint(x: 0.39, y: 0.70)),
-                MuscleGroup(name: "Adductors", exercises: [], position: CGPoint(x: 0.58, y: 0.66))
-            ]
+            // Músculos delanteros - usando el nuevo sistema de posiciones
+            return MuscleButtonPositions.frontMuscles.map { musclePos in
+                MuscleGroup(
+                    name: musclePos.name,
+                    exercises: [],
+                    position: musclePos.position,
+                    isLeftSide: musclePos.isLeftSide
+                )
+            }
         }
     }
     
