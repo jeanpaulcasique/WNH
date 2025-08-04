@@ -14,20 +14,17 @@ struct OnboardingBackground: View {
 
 // MARK: - Onboarding Layout
 struct OnboardingLayout<Content: View>: View {
-    let progressViewModel: ProgressViewModel
     let header: PageHeader
     let showBackButton: Bool
     let onBack: (() -> Void)?
     let content: Content
     
     init(
-        progressViewModel: ProgressViewModel,
         header: PageHeader,
         showBackButton: Bool = true,
         onBack: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content
     ) {
-        self.progressViewModel = progressViewModel
         self.header = header
         self.showBackButton = showBackButton
         self.onBack = onBack
@@ -84,14 +81,12 @@ struct OnboardingNavigationWithNext: View {
     }
 }
 
-// MARK: - Back Button with Progress
+// MARK: - Back Button
 struct OnboardingBackButton: View {
-    let progressViewModel: ProgressViewModel
     let presentationMode: DismissAction
     
     var body: some View {
         Button(action: {
-            progressViewModel.decreaseProgress()
             presentationMode()
         }) {
             Image(systemName: "chevron.left")

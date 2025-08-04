@@ -20,26 +20,20 @@ struct PageHeader: View {
     let icon: String
     let title: String
     let subtitle: String?
-    let progressViewModel: ProgressViewModel?
+
     
     init(
         icon: String,
         title: String,
-        subtitle: String? = nil,
-        progressViewModel: ProgressViewModel? = nil
+        subtitle: String? = nil
     ) {
         self.icon = icon
         self.title = title
         self.subtitle = subtitle
-        self.progressViewModel = progressViewModel
     }
     
     var body: some View {
         VStack(spacing: 20) {
-            if let progressViewModel = progressViewModel {
-                ProgressBarWithIcons(progressViewModel: progressViewModel)
-                    .padding(.top, 10)
-            }
             
             VStack(spacing: 16) {
                 Image(systemName: icon)

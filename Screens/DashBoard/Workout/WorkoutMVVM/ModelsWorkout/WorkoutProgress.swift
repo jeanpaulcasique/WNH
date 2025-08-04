@@ -74,11 +74,4 @@ struct MonthlyStats {
     let completionRate: Double
 }
 
-/// Estadísticas de HealthKit
-struct WorkoutHealthStats {
-    let totalWorkouts: Int
-    let totalCalories: Double
-    let totalDuration: TimeInterval
-    let averageHeartRate: Double?
-    let maxHeartRate: Double?
-} 
+ 

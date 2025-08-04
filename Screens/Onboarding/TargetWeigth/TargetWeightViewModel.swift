@@ -38,6 +38,16 @@ class TargetWeightViewModel: ObservableObject {
         isKgSelected = toKg
         UserDefaults.standard.set(toKg, forKey: "isKgSelected")
     }
+    
+    func selectKgUnit() {
+        isKgSelected = true
+        UserDefaults.standard.set(true, forKey: "isKgSelected")
+    }
+    
+    func selectLbUnit() {
+        isKgSelected = false
+        UserDefaults.standard.set(false, forKey: "isKgSelected")
+    }
 
     func updateHealthBenefitMessage() {
         let weightLossPercentage = ((85.0 - selectedWeightKg) / 85.0) * 100

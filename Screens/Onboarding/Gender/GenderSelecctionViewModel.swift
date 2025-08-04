@@ -20,7 +20,7 @@ class GenderSelectionViewModel: ObservableObject {
         selectedGender = gender
     }
 
-    func onNextTapped(progressViewModel: ProgressViewModel) {
+    func onNextTapped() {
         guard selectedGender != nil && !isButtonDisabled && !isLoading else { return }
 
         isButtonDisabled = true
@@ -28,7 +28,6 @@ class GenderSelectionViewModel: ObservableObject {
         progressUpdating = true
 
         HapticManager.shared.impact(style: .medium)
-        progressViewModel.advanceProgress()
 
         // Guardar género seleccionado solo al avanzar
         if let gender = selectedGender {

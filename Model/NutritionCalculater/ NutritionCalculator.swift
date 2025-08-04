@@ -398,37 +398,65 @@ final class NutritionCalculator: NutritionCalculatorProtocol {
         return (baseWater * activityMultiplier) + trainingBonus
     }
     
-    // ✅ NUEVO: Método síncrono para calcular agua con fórmula mejorada
+    // ✅ MEJORADO: Método síncrono para calcular agua con factor de edad
     func calculateWaterNeedsSynchronously(for profile: UserProfile) -> String {
         let weight = profile.weightKg
-        let age: Int = {
-            let currentYear = Calendar.current.component(.year, from: Date())
-            return currentYear - (Int(profile.birthYear) ?? (currentYear - 30))
-        }()
-        let gender = profile.gender.lowercased()
-        let height = Double(profile.resolvedHeightCm)
-
+        
         guard weight > 0 else { return "Set your weight to get recommendation" }
         
-        var liters = weight * 0.033 // Base: 33ml por kg
+        // ✅ USAR LA MISMA FÓRMULA QUE EL MÉTODO ASÍNCRONO
+        var liters = weight * 0.035 // Base: 35ml por kg (consistente con método async)
         
-        // Ajustes por características físicas
-        if height > 180 { liters *= 1.05 }
-        else if height < 160 { liters *= 0.95 }
-        if age < 14 { liters *= 0.8 }
-        if gender.contains("male") { liters *= 1.1 }
-
-        // Ajuste por nivel de actividad
-        switch profile.levelActivity.lowercased() {
-        case "high", "active", "very active":
-            liters *= 1.2
-        case "moderate", "moderately active":
-            liters *= 1.1
-        default:
-            break
+        // ✅ NUEVO: Ajuste por edad
+        let age = calculateAge(from: profile.birthYear)
+        let ageMultiplier = getAgeMultiplier(for: age)
+        liters *= ageMultiplier
+        
+        // Ajuste por nivel de actividad (consistente con método async)
+        let activity = profile.levelActivity.lowercased()
+        let activityMultiplier: Double
+        
+        if activity.contains("sedentario") || activity.contains("sedentary") {
+            activityMultiplier = 1.0
+        } else if activity.contains("ligero") || activity.contains("lightly") {
+            activityMultiplier = 1.1
+        } else if activity.contains("moderado") || activity.contains("moderate") {
+            activityMultiplier = 1.2
+        } else {
+            activityMultiplier = 1.3
         }
         
+        liters *= activityMultiplier
+        
+        // Bonus por intensidad de entrenamiento (consistente con método async)
+        let workoutIntensity = determineWorkoutIntensity(profile.workoutLevel)
+        let trainingBonus = workoutIntensity == .intense ? 0.5 : 0.3
+        
+        liters += trainingBonus
+        
         return String(format: "%.1f L", liters)
+    }
+    
+    // ✅ NUEVO: Calcular edad desde birthYear
+    private func calculateAge(from birthYear: String) -> Int {
+        let currentYear = Calendar.current.component(.year, from: Date())
+        return currentYear - (Int(birthYear) ?? (currentYear - 30))
+    }
+    
+    // ✅ NUEVO: Multiplicador por edad basado en recomendaciones médicas
+    private func getAgeMultiplier(for age: Int) -> Double {
+        switch age {
+        case 18...30:
+            return 1.0 // Adultos jóvenes: base
+        case 31...45:
+            return 0.95 // Adultos maduros: ligera reducción
+        case 46...60:
+            return 0.9 // Adultos mayores: reducción moderada
+        case 61...75:
+            return 0.85 // Seniors: reducción significativa
+        default:
+            return 0.8 // Adultos mayores: reducción máxima
+        }
     }
     
     func calculateMealDistribution(for profile: UserProfile) async throws -> [MealType: Double] {

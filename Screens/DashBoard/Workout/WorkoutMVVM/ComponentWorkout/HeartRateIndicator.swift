@@ -3,12 +3,12 @@ import SwiftUI
 struct HeartRateIndicator: View {
     var bpm: Double?
     var isAuthorized: Bool
+    var isLoading: Bool = false
     var onRequestAuthorization: () -> Void
     @State private var bpmScale: CGFloat = 1.0
     @State private var heartScale: CGFloat = 1.0
     @State private var showAuthDialog = false
     var body: some View {
-        let bpmInt = bpm != nil ? Int(bpm!) : 0
         ZStack {
             Circle()
                 .fill(
@@ -20,11 +20,19 @@ struct HeartRateIndicator: View {
                 Text("BPM")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(.yellow.opacity(0.7))
-                Text(bpm != nil ? "\(bpmInt)" : "--")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                    .scaleEffect(bpmScale)
-                    .animation(.spring(response: 0.4, dampingFraction: 0.5), value: bpmScale)
+                
+                if isLoading {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                        .scaleEffect(0.8)
+                } else {
+                    Text(getBPMDisplayValue())
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundColor(.white)
+                        .scaleEffect(bpmScale)
+                        .animation(.spring(response: 0.4, dampingFraction: 0.5), value: bpmScale)
+                }
+                
                 Image(systemName: "heart")
                     .resizable()
                     .aspectRatio(contentMode: .fit)
@@ -40,8 +48,17 @@ struct HeartRateIndicator: View {
                 heartScale = 1.18
             }
         }
-        .onChange(of: bpmInt) { old, new in
-            if old != new {
+        .onChange(of: bpm) { old, new in
+            if old != new && bpm != nil && !isLoading {
+                bpmScale = 1.25
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                    bpmScale = 1.0
+                }
+            }
+        }
+        .onChange(of: isLoading) { old, new in
+            // Cuando termina de cargar y tenemos datos, animar
+            if !new && bpm != nil && bpm! > 0 {
                 bpmScale = 1.25
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
                     bpmScale = 1.0
@@ -61,5 +78,18 @@ struct HeartRateIndicator: View {
                 secondaryButton: .cancel()
             )
         }
+    }
+    
+    private func getBPMDisplayValue() -> String {
+        // Si está cargando, no mostrar valor aún
+        if isLoading {
+            return "--"
+        }
+        
+        // Si no está cargando y tenemos un valor válido, mostrarlo
+        guard let bpmValue = bpm, bpmValue > 0 else {
+            return "--"
+        }
+        return "\(Int(bpmValue))"
     }
 }

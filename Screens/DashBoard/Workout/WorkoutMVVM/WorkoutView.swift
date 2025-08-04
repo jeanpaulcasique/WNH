@@ -1,14 +1,15 @@
 import SwiftUI
 import Combine
 
+// MARK: - Importaciones de Componentes
+// Los componentes están en el mismo módulo, por lo que no necesitan importación adicional
+
 /// Vista principal de Workout que coordina todos los subcomponentes
 struct WorkoutView: View {
     // MARK: - ViewModels
     @StateObject private var headerVM = WorkoutHeaderViewModel()
     @StateObject private var searchBarVM = SearchBarWorkoutViewModel()
     @StateObject private var viewModel = WorkoutViewModel()
-    // Otros ViewModels comentados hasta que se usen
-    // @StateObject private var characterVM = WorkoutCharacterViewModel()
     
     // MARK: - State
     @State private var showSearchResults: Bool = false
@@ -46,7 +47,7 @@ struct WorkoutView: View {
                         .padding(.top, 12)
                         .padding(.horizontal, 20)
                     // Card de progreso de días
-                    WorkoutCalendarView()
+                    WorkoutCalendarView(workoutViewModel: viewModel)
                         .padding(.horizontal, 20)
                     // Search bar de ejercicios
                     SearchBarWorkoutView(
@@ -60,7 +61,7 @@ struct WorkoutView: View {
                     
                     // Tira de categorías de músculos
                     MuscleCategoryCards(
-                        muscleGroups: viewModel.muscleGroups,
+                        muscleGroups: isShowingBack ? viewModel.getBackMuscleGroups() : viewModel.getFrontMuscleGroups(),
                         selectedMuscle: viewModel.selectedMuscle,
                         onMuscleSelected: { group in
                             selectedMuscleForVideos = group
@@ -87,7 +88,7 @@ struct WorkoutView: View {
                 if !isShowingBack {
                     GeometryReader { geometry in
                         ZStack {
-                            ForEach(viewModel.muscleGroups) { muscleGroup in
+                            ForEach(viewModel.getFrontMuscleGroups()) { muscleGroup in
                                 MuscleGroupButton(
                                     muscleGroup: muscleGroup,
                                     action: {
@@ -106,7 +107,30 @@ struct WorkoutView: View {
                     .allowsHitTesting(true)
                 }
                 
-                // Indicador de ritmo cardíaco como overlay flotante
+                // Botones de músculos traseros como overlay de toda la pantalla (solo cuando se muestra la vista trasera)
+                if isShowingBack {
+                    GeometryReader { geometry in
+                        ZStack {
+                            ForEach(viewModel.getBackMuscleGroups()) { muscleGroup in
+                                MuscleGroupButton(
+                                    muscleGroup: muscleGroup,
+                                    action: {
+                                        // Navegar a videos del músculo seleccionado
+                                        selectedMuscleForVideos = muscleGroup
+                                    }
+                                )
+                                .position(
+                                    x: muscleGroup.position.x * geometry.size.width,
+                                    y: muscleGroup.position.y * geometry.size.height
+                                )
+                            }
+                        }
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .allowsHitTesting(true)
+                }
+                
+                // Indicadores de ritmo cardíaco y pasos como overlay flotante
                 VStack {
                     Spacer()
                         .frame(height: 280) // ← 30 puntos más abajo (250 + 30)
@@ -114,12 +138,22 @@ struct WorkoutView: View {
                         HeartRateIndicator(
                             bpm: viewModel.heartRate,
                             isAuthorized: viewModel.healthKitAuthorized,
+                            isLoading: viewModel.isLoadingHeartRate,
                             onRequestAuthorization: {
                                 viewModel.requestHealthKitAuthorization()
                             }
                         )
                         .padding(.leading, 20)
                         Spacer()
+                        StepsIndicator(
+                            workoutViewModel: viewModel,
+                            isAuthorized: viewModel.stepsAuthorized,
+                            isLoading: viewModel.isLoadingSteps,
+                            onRequestAuthorization: {
+                                viewModel.requestStepsAuthorization()
+                            }
+                        )
+                        .padding(.trailing, 20)
                     }
                     Spacer()
                 }
@@ -184,6 +218,10 @@ struct WorkoutView: View {
                     exercises: viewModel.allExercises,
                     muscleGroups: viewModel.muscleGroups
                 )
+                // Iniciar monitoreo de pasos
+                if viewModel.stepsAuthorized {
+                    viewModel.stepsService.startStepsMonitoring()
+                }
             }
         }
     }

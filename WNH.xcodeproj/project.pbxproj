@@ -215,12 +215,6 @@
 		691996812DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996802DFC8E53007FAB40 /* GroceryListViewModel.swift */; };
 		691996822DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996802DFC8E53007FAB40 /* GroceryListViewModel.swift */; };
 		691996832DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996802DFC8E53007FAB40 /* GroceryListViewModel.swift */; };
-		691996862DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996852DFC8E6C007FAB40 /* ProgressViewModel.swift */; };
-		691996872DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996852DFC8E6C007FAB40 /* ProgressViewModel.swift */; };
-		691996882DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996852DFC8E6C007FAB40 /* ProgressViewModel.swift */; };
-		6919968A2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996892DFC8E7C007FAB40 /* ProgressBarView.swift */; };
-		6919968B2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996892DFC8E7C007FAB40 /* ProgressBarView.swift */; };
-		6919968C2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 691996892DFC8E7C007FAB40 /* ProgressBarView.swift */; };
 		6919969C2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */; };
 		6919969D2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */; };
 		6919969E2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */; };
@@ -296,6 +290,42 @@
 		693476D42E0897C600916824 /* GoalViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476D32E0897BC00916824 /* GoalViewComponent.swift */; };
 		693476D52E0897C600916824 /* GoalViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476D32E0897BC00916824 /* GoalViewComponent.swift */; };
 		693476D62E0897C600916824 /* GoalViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 693476D32E0897BC00916824 /* GoalViewComponent.swift */; };
+		695C95DB2E33AE87003E22C1 /* StepsIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95DA2E33AE87003E22C1 /* StepsIndicator.swift */; };
+		695C95DC2E33AE87003E22C1 /* StepsIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95DA2E33AE87003E22C1 /* StepsIndicator.swift */; };
+		695C95DD2E33AE87003E22C1 /* StepsIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95DA2E33AE87003E22C1 /* StepsIndicator.swift */; };
+		695C95DF2E33AEB8003E22C1 /* DayProgressDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95DE2E33AEB8003E22C1 /* DayProgressDetailSheet.swift */; };
+		695C95E02E33AEB8003E22C1 /* DayProgressDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95DE2E33AEB8003E22C1 /* DayProgressDetailSheet.swift */; };
+		695C95E12E33AEB8003E22C1 /* DayProgressDetailSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95DE2E33AEB8003E22C1 /* DayProgressDetailSheet.swift */; };
+		695C95E32E33AEC3003E22C1 /* DailySteps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95E22E33AEC3003E22C1 /* DailySteps.swift */; };
+		695C95E42E33AEC3003E22C1 /* DailySteps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95E22E33AEC3003E22C1 /* DailySteps.swift */; };
+		695C95E52E33AEC3003E22C1 /* DailySteps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95E22E33AEC3003E22C1 /* DailySteps.swift */; };
+		695C95E72E33AED2003E22C1 /* DailyStepsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95E62E33AED2003E22C1 /* DailyStepsStorageService.swift */; };
+		695C95E82E33AED2003E22C1 /* DailyStepsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95E62E33AED2003E22C1 /* DailyStepsStorageService.swift */; };
+		695C95E92E33AED2003E22C1 /* DailyStepsStorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95E62E33AED2003E22C1 /* DailyStepsStorageService.swift */; };
+		695C95EB2E33AEDB003E22C1 /* HealthKitCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95EA2E33AEDB003E22C1 /* HealthKitCoordinator.swift */; };
+		695C95EC2E33AEDB003E22C1 /* HealthKitCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95EA2E33AEDB003E22C1 /* HealthKitCoordinator.swift */; };
+		695C95ED2E33AEDB003E22C1 /* HealthKitCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95EA2E33AEDB003E22C1 /* HealthKitCoordinator.swift */; };
+		695C95EF2E33AEFA003E22C1 /* HealthKitPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95EE2E33AEFA003E22C1 /* HealthKitPersistenceService.swift */; };
+		695C95F02E33AEFA003E22C1 /* HealthKitPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95EE2E33AEFA003E22C1 /* HealthKitPersistenceService.swift */; };
+		695C95F12E33AEFA003E22C1 /* HealthKitPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95EE2E33AEFA003E22C1 /* HealthKitPersistenceService.swift */; };
+		695C95F32E33AF04003E22C1 /* MusclePositionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95F22E33AF04003E22C1 /* MusclePositionManager.swift */; };
+		695C95F42E33AF04003E22C1 /* MusclePositionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95F22E33AF04003E22C1 /* MusclePositionManager.swift */; };
+		695C95F52E33AF04003E22C1 /* MusclePositionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95F22E33AF04003E22C1 /* MusclePositionManager.swift */; };
+		695C95F72E33AF15003E22C1 /* StepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95F62E33AF15003E22C1 /* StepsService.swift */; };
+		695C95F82E33AF15003E22C1 /* StepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95F62E33AF15003E22C1 /* StepsService.swift */; };
+		695C95F92E33AF15003E22C1 /* StepsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95F62E33AF15003E22C1 /* StepsService.swift */; };
+		695C95FB2E33AF23003E22C1 /* WorkoutGenderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95FA2E33AF23003E22C1 /* WorkoutGenderManager.swift */; };
+		695C95FC2E33AF23003E22C1 /* WorkoutGenderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95FA2E33AF23003E22C1 /* WorkoutGenderManager.swift */; };
+		695C95FD2E33AF23003E22C1 /* WorkoutGenderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95FA2E33AF23003E22C1 /* WorkoutGenderManager.swift */; };
+		695C95FF2E33AF27003E22C1 /* WorkoutSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95FE2E33AF27003E22C1 /* WorkoutSearchManager.swift */; };
+		695C96002E33AF27003E22C1 /* WorkoutSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95FE2E33AF27003E22C1 /* WorkoutSearchManager.swift */; };
+		695C96012E33AF27003E22C1 /* WorkoutSearchManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C95FE2E33AF27003E22C1 /* WorkoutSearchManager.swift */; };
+		695C96032E411D43003E22C1 /* DailyProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C96022E411D43003E22C1 /* DailyProgress.swift */; };
+		695C96042E411D43003E22C1 /* DailyProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C96022E411D43003E22C1 /* DailyProgress.swift */; };
+		695C96052E411D43003E22C1 /* DailyProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C96022E411D43003E22C1 /* DailyProgress.swift */; };
+		695C96072E411D92003E22C1 /* DailyProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C96062E411D92003E22C1 /* DailyProgressService.swift */; };
+		695C96082E411D92003E22C1 /* DailyProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C96062E411D92003E22C1 /* DailyProgressService.swift */; };
+		695C96092E411D92003E22C1 /* DailyProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 695C96062E411D92003E22C1 /* DailyProgressService.swift */; };
 		6965DE6F2E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */; };
 		6965DE702E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */; };
 		6965DE712E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */; };
@@ -562,8 +592,6 @@
 		691996782DFC8E34007FAB40 /* DietView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DietView.swift; sourceTree = "<group>"; };
 		6919967C2DFC8E3C007FAB40 /* GroceryListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListView.swift; sourceTree = "<group>"; };
 		691996802DFC8E53007FAB40 /* GroceryListViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroceryListViewModel.swift; sourceTree = "<group>"; };
-		691996852DFC8E6C007FAB40 /* ProgressViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressViewModel.swift; sourceTree = "<group>"; };
-		691996892DFC8E7C007FAB40 /* ProgressBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressBarView.swift; sourceTree = "<group>"; };
 		6919969B2DFC8EDF007FAB40 /* AIAssistantView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIAssistantView.swift; sourceTree = "<group>"; };
 		6919969F2DFC8EF6007FAB40 /* DashBoardViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashBoardViewModel.swift; sourceTree = "<group>"; };
 		691996A32DFC8F04007FAB40 /* DashboardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DashboardView.swift; sourceTree = "<group>"; };
@@ -591,6 +619,18 @@
 		693476B82E02EEBC00916824 /* WorkoutRepositoryProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutRepositoryProtocol.swift; sourceTree = "<group>"; };
 		693476BC2E02EED000916824 /* MockWorkoutRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWorkoutRepository.swift; sourceTree = "<group>"; };
 		693476D32E0897BC00916824 /* GoalViewComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoalViewComponent.swift; sourceTree = "<group>"; };
+		695C95DA2E33AE87003E22C1 /* StepsIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsIndicator.swift; sourceTree = "<group>"; };
+		695C95DE2E33AEB8003E22C1 /* DayProgressDetailSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayProgressDetailSheet.swift; sourceTree = "<group>"; };
+		695C95E22E33AEC3003E22C1 /* DailySteps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailySteps.swift; sourceTree = "<group>"; };
+		695C95E62E33AED2003E22C1 /* DailyStepsStorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyStepsStorageService.swift; sourceTree = "<group>"; };
+		695C95EA2E33AEDB003E22C1 /* HealthKitCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitCoordinator.swift; sourceTree = "<group>"; };
+		695C95EE2E33AEFA003E22C1 /* HealthKitPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitPersistenceService.swift; sourceTree = "<group>"; };
+		695C95F22E33AF04003E22C1 /* MusclePositionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MusclePositionManager.swift; sourceTree = "<group>"; };
+		695C95F62E33AF15003E22C1 /* StepsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StepsService.swift; sourceTree = "<group>"; };
+		695C95FA2E33AF23003E22C1 /* WorkoutGenderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutGenderManager.swift; sourceTree = "<group>"; };
+		695C95FE2E33AF27003E22C1 /* WorkoutSearchManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkoutSearchManager.swift; sourceTree = "<group>"; };
+		695C96022E411D43003E22C1 /* DailyProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyProgress.swift; sourceTree = "<group>"; };
+		695C96062E411D92003E22C1 /* DailyProgressService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyProgressService.swift; sourceTree = "<group>"; };
 		6965DE6E2E18325600F8099A /* TrainerMapsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrainerMapsViewModel.swift; sourceTree = "<group>"; };
 		6965DE782E1E848C00F8099A /* FirebaseTrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirebaseTrainerRepository.swift; sourceTree = "<group>"; };
 		6965DE7C2E1E849400F8099A /* MockTrainerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTrainerRepository.swift; sourceTree = "<group>"; };
@@ -760,7 +800,6 @@
 				691996D52DFC8FC2007FAB40 /* Notifications */,
 				691996B82DFC8F62007FAB40 /* Recipes */,
 				691996912DFC8E9C007FAB40 /* Transitions */,
-				691996842DFC8E5D007FAB40 /* ProgressBar */,
 				691995892DFC84F3007FAB40 /* Main */,
 				691995A02DFC86D5007FAB40 /* Screens */,
 				6919958A2DFC8502007FAB40 /* Model */,
@@ -810,16 +849,16 @@
 			children = (
 				6919959E2DFC8689007FAB40 /* LoadingInfo */,
 				6919959D2DFC8674007FAB40 /* GymEquip */,
+				6919959A2DFC8643007FAB40 /* WhichPlace */,
 				6919959C2DFC8659007FAB40 /* LevelActivity */,
 				6919959B2DFC8650007FAB40 /* WorkoutLevel */,
-				6919959A2DFC8643007FAB40 /* WhichPlace */,
 				691995992DFC8632007FAB40 /* DietType */,
 				69B066622E0C753200A954B7 /* AllergySelection */,
-				691995982DFC8626007FAB40 /* TargetWeigth */,
-				691995942DFC8594007FAB40 /* BodyCurrent */,
+				691995942DFC8594007FAB40 /* BMI */,
 				691995972DFC861C007FAB40 /* Weigth */,
 				691995962DFC8610007FAB40 /* Heigth */,
 				691995952DFC85C4007FAB40 /* BirthYear */,
+				691995982DFC8626007FAB40 /* TargetWeigth */,
 				691995932DFC858F007FAB40 /* Goal */,
 				691995922DFC858A007FAB40 /* Gender */,
 			);
@@ -894,13 +933,13 @@
 			path = Goal;
 			sourceTree = "<group>";
 		};
-		691995942DFC8594007FAB40 /* BodyCurrent */ = {
+		691995942DFC8594007FAB40 /* BMI */ = {
 			isa = PBXGroup;
 			children = (
 				691995CC2DFC889D007FAB40 /* BMIView.swift */,
 				691995D02DFC88AE007FAB40 /* BMIViewModel.swift */,
 			);
-			path = BodyCurrent;
+			path = BMI;
 			sourceTree = "<group>";
 		};
 		691995952DFC85C4007FAB40 /* BirthYear */ = {
@@ -1162,15 +1201,6 @@
 			path = Logout;
 			sourceTree = "<group>";
 		};
-		691996842DFC8E5D007FAB40 /* ProgressBar */ = {
-			isa = PBXGroup;
-			children = (
-				691996852DFC8E6C007FAB40 /* ProgressViewModel.swift */,
-				691996892DFC8E7C007FAB40 /* ProgressBarView.swift */,
-			);
-			path = ProgressBar;
-			sourceTree = "<group>";
-		};
 		691996912DFC8E9C007FAB40 /* Transitions */ = {
 			isa = PBXGroup;
 			children = (
@@ -1310,6 +1340,8 @@
 				696EBA962E286FBA00A296FB /* HeartRateIndicator.swift */,
 				696EBA9A2E286FD100A296FB /* MuscleGroupButton.swift */,
 				696EBAB52E2FDAF400A296FB /* MuscleCategoryCards.swift */,
+				695C95DA2E33AE87003E22C1 /* StepsIndicator.swift */,
+				695C95DE2E33AEB8003E22C1 /* DayProgressDetailSheet.swift */,
 			);
 			path = ComponentWorkout;
 			sourceTree = "<group>";
@@ -1319,6 +1351,8 @@
 			children = (
 				696EBA5B2E286A6300A296FB /* WorkoutLocation.swift */,
 				696EBA5F2E286A6900A296FB /* WorkoutTip.swift */,
+				695C95E22E33AEC3003E22C1 /* DailySteps.swift */,
+				695C96022E411D43003E22C1 /* DailyProgress.swift */,
 			);
 			path = ModelsWorkout;
 			sourceTree = "<group>";
@@ -1332,6 +1366,14 @@
 				696EBA702E286ABD00A296FB /* UserPreferencesService.swift */,
 				696EBA742E286AC200A296FB /* WorkoutService.swift */,
 				696EBA782E286AC700A296FB /* WorkoutTemplateService.swift */,
+				695C95E62E33AED2003E22C1 /* DailyStepsStorageService.swift */,
+				695C95EA2E33AEDB003E22C1 /* HealthKitCoordinator.swift */,
+				695C95EE2E33AEFA003E22C1 /* HealthKitPersistenceService.swift */,
+				695C95F22E33AF04003E22C1 /* MusclePositionManager.swift */,
+				695C95F62E33AF15003E22C1 /* StepsService.swift */,
+				695C95FA2E33AF23003E22C1 /* WorkoutGenderManager.swift */,
+				695C95FE2E33AF27003E22C1 /* WorkoutSearchManager.swift */,
+				695C96062E411D92003E22C1 /* DailyProgressService.swift */,
 			);
 			path = ServicesWorkout;
 			sourceTree = "<group>";
@@ -1589,6 +1631,7 @@
 				691996462DFC8D8A007FAB40 /* TellAFView.swift in Sources */,
 				6965DE7A2E1E848C00F8099A /* FirebaseTrainerRepository.swift in Sources */,
 				691996222DFC8CFC007FAB40 /* GymEquipmentViewModel.swift in Sources */,
+				695C95EC2E33AEDB003E22C1 /* HealthKitCoordinator.swift in Sources */,
 				696EBA6B2E286AB100A296FB /* PerformanceOptimizer.swift in Sources */,
 				696EBA4B2E286A1000A296FB /* WorkoutCharacterView.swift in Sources */,
 				693476BA2E02EEBE00916824 /* WorkoutRepositoryProtocol.swift in Sources */,
@@ -1600,7 +1643,6 @@
 				696EBA532E286A2A00A296FB /* WorkoutHeaderView.swift in Sources */,
 				691996052DFC8C85007FAB40 /* WorkoutLevelViewModel.swift in Sources */,
 				691996C22DFC8F74007FAB40 /* RecipesLowCarb.swift in Sources */,
-				691996872DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */,
 				696EBA662E286A9E00A296FB /* HealthKitService.swift in Sources */,
 				691995D22DFC88AE007FAB40 /* BMIViewModel.swift in Sources */,
 				690DF7F82E1191660038A671 /* NutritionExample.swift in Sources */,
@@ -1614,14 +1656,17 @@
 				6919963E2DFC8D60007FAB40 /* RateAppViewModel.swift in Sources */,
 				6919962A2DFC8D1A007FAB40 /* SubscriptionViewModel.swift in Sources */,
 				693476D52E0897C600916824 /* GoalViewComponent.swift in Sources */,
-				6919968C2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
 				6901B4972E0089C100173562 /* CurrentSubscriptionCard.swift in Sources */,
 				6901B4982E0089C100173562 /* SubscriptionPlanCard.swift in Sources */,
+				695C96092E411D92003E22C1 /* DailyProgressService.swift in Sources */,
 				6901B4992E0089C100173562 /* FeatureCard.swift in Sources */,
 				6901B49A2E0089C100173562 /* SubscriptionPlansSection.swift in Sources */,
 				6901B49B2E0089C100173562 /* FeaturesSection.swift in Sources */,
+				695C95F32E33AF04003E22C1 /* MusclePositionManager.swift in Sources */,
+				695C95EF2E33AEFA003E22C1 /* HealthKitPersistenceService.swift in Sources */,
 				69B0667D2E0DF1C200A954B7 /* TrainerChatView.swift in Sources */,
 				6901B49C2E0089C100173562 /* SubscriptionHeader.swift in Sources */,
+				695C95F72E33AF15003E22C1 /* StepsService.swift in Sources */,
 				691995BA2DFC884E007FAB40 /* LoginViewModel.swift in Sources */,
 				691996572DFC8DA0007FAB40 /* SettingsView.swift in Sources */,
 				696EBA572E286A3300A296FB /* WorkoutHeaderViewModel.swift in Sources */,
@@ -1636,6 +1681,7 @@
 				696EBA4F2E286A1800A296FB /* WorkoutCharacterViewModel.swift in Sources */,
 				691997032DFC91C4007FAB40 /* FAQViewModel.swift in Sources */,
 				691996362DFC8D34007FAB40 /* TellAFViewModel.swift in Sources */,
+				695C95FC2E33AF23003E22C1 /* WorkoutGenderManager.swift in Sources */,
 				6919964E2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				691996B12DFC8F5A007FAB40 /* color.swift in Sources */,
 				691995FE2DFC8C74007FAB40 /* WhichPlaceView.swift in Sources */,
@@ -1651,6 +1697,7 @@
 				6965DE7D2E1E849400F8099A /* MockTrainerRepository.swift in Sources */,
 				6919969D2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */,
 				691995E92DFC8C03007FAB40 /* 7WeightView.swift in Sources */,
+				695C95E32E33AEC3003E22C1 /* DailySteps.swift in Sources */,
 				691995C92DFC888C007FAB40 /* 3GoalView.swift in Sources */,
 				696EBA992E286FBA00A296FB /* HeartRateIndicator.swift in Sources */,
 				691996CB2DFC8F94007FAB40 /* ImagePicker.swift in Sources */,
@@ -1681,12 +1728,14 @@
 				690DF8292E14A42C0038A671 /* Buttons.swift in Sources */,
 				696EBA602E286A6900A296FB /* WorkoutTip.swift in Sources */,
 				691995DB2DFC88BD007FAB40 /* 5BirthYearView.swift in Sources */,
+				695C95DD2E33AE87003E22C1 /* StepsIndicator.swift in Sources */,
 				691996FF2DFC91AF007FAB40 /* FAQView.swift in Sources */,
 				696EBA492E286A0900A296FB /* WorkoutCalendarView.swift in Sources */,
 				691996112DFC8CA4007FAB40 /* LevelActivityViewModel.swift in Sources */,
 				6965DE862E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				696EBA402E2869FB00A296FB /* LocationMenuView.swift in Sources */,
 				6919962D2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
+				695C96042E411D43003E22C1 /* DailyProgress.swift in Sources */,
 				696EBA1D2E26C17200A296FB /* OnboardingCard.swift in Sources */,
 				6919965D2DFC8DAE007FAB40 /* RateAppView.swift in Sources */,
 				691996022DFC8C7B007FAB40 /* WhichPlaceViewModel.swift in Sources */,
@@ -1696,6 +1745,7 @@
 				690DF81B2E14A3FB0038A671 /* Layout.swift in Sources */,
 				696EBA7B2E286AC700A296FB /* WorkoutTemplateService.swift in Sources */,
 				6919964A2DFC8D8E007FAB40 /* WriteTSView.swift in Sources */,
+				695C95E82E33AED2003E22C1 /* DailyStepsStorageService.swift in Sources */,
 				691995BF2DFC886C007FAB40 /* 2GenderSelectionView.swift in Sources */,
 				691996BA2DFC8F6B007FAB40 /* RecipesCalorieDeficit.swift in Sources */,
 				693476BE2E02EED200916824 /* MockWorkoutRepository.swift in Sources */,
@@ -1714,12 +1764,14 @@
 				699A65052E01EEAF008D6BDA /* WorkoutViewModel.swift in Sources */,
 				690DF81F2E14A4020038A671 /* Headers.swift in Sources */,
 				6919970F2DFCB412007FAB40 /* DaySelectorView.swift in Sources */,
+				695C95E02E33AEB8003E22C1 /* DayProgressDetailSheet.swift in Sources */,
 				691996C72DFC8F8A007FAB40 /* UserManager.swift in Sources */,
 				696EBA832E286AE700A296FB /* WorkoutTypography.swift in Sources */,
 				691995E12DFC88CB007FAB40 /* HeightViewModel.swift in Sources */,
 				691996832DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */,
 				696EBA182E26C16C00A296FB /* OnboardingBack.swift in Sources */,
 				6901B48D2E00823700173562 /* SubscriptionManager.swift in Sources */,
+				695C96012E33AF27003E22C1 /* WorkoutSearchManager.swift in Sources */,
 				69B0666A2E0C759C00A954B7 /* AllergySelectionViewModel.swift in Sources */,
 				691995ED2DFC8C0C007FAB40 /* 8TargetWeightView.swift in Sources */,
 				6965DE712E18325A00F8099A /* TrainerMapsViewModel.swift in Sources */,
@@ -1748,6 +1800,7 @@
 				691996662DFC8DC2007FAB40 /* AnalyticsView.swift in Sources */,
 				69B066712E0DEF4E00A954B7 /* TrainerData.swift in Sources */,
 				69B0666D2E0DB61F00A954B7 /* TrainerViewModel.swift in Sources */,
+				695C96082E411D92003E22C1 /* DailyProgressService.swift in Sources */,
 				6919964B2DFC8D8E007FAB40 /* WriteTSView.swift in Sources */,
 				691996C42DFC8F74007FAB40 /* RecipesLowCarb.swift in Sources */,
 				690DF7FA2E1191660038A671 /* NutritionExample.swift in Sources */,
@@ -1757,6 +1810,7 @@
 				690DF8012E1194050038A671 /* ResultSoon.swift in Sources */,
 				696EBA7F2E286AE000A296FB /* WorkoutColors.swift in Sources */,
 				691996BE2DFC8F6F007FAB40 /* RecipesKetos.swift in Sources */,
+				695C95F82E33AF15003E22C1 /* StepsService.swift in Sources */,
 				6919967D2DFC8E3C007FAB40 /* GroceryListView.swift in Sources */,
 				6919966F2DFC8E03007FAB40 /* MeViewModel.swift in Sources */,
 				691997152DFCB47C007FAB40 /* TodaysMealsView.swift in Sources */,
@@ -1769,6 +1823,7 @@
 				6901B4A02E0089C100173562 /* SubscriptionPlansSection.swift in Sources */,
 				6901B4A12E0089C100173562 /* FeaturesSection.swift in Sources */,
 				6901B4A22E0089C100173562 /* SubscriptionHeader.swift in Sources */,
+				695C95F12E33AEFA003E22C1 /* HealthKitPersistenceService.swift in Sources */,
 				691995D72DFC88B6007FAB40 /* BirthYearViewModel.swift in Sources */,
 				691996172DFC8CB4007FAB40 /* GymEquipmentView.swift in Sources */,
 				6919965A2DFC8DA8007FAB40 /* ProfileView.swift in Sources */,
@@ -1780,16 +1835,20 @@
 				691995EF2DFC8C0C007FAB40 /* 8TargetWeightView.swift in Sources */,
 				6919965F2DFC8DAE007FAB40 /* RateAppView.swift in Sources */,
 				691995B42DFC881F007FAB40 /* 1LoginView.swift in Sources */,
+				695C95DC2E33AE87003E22C1 /* StepsIndicator.swift in Sources */,
 				691997012DFC91C4007FAB40 /* FAQViewModel.swift in Sources */,
 				69D11C122DFCCC21004721EF /* RecipeComponent.swift in Sources */,
 				691995C12DFC8878007FAB40 /* GenderSelecctionViewModel.swift in Sources */,
 				696EBA652E286A9E00A296FB /* HealthKitService.swift in Sources */,
+				695C95F52E33AF04003E22C1 /* MusclePositionManager.swift in Sources */,
 				691996B32DFC8F5A007FAB40 /* color.swift in Sources */,
 				691995F92DFC8C69007FAB40 /* 9DietTypeView.swift in Sources */,
 				691995BE2DFC886C007FAB40 /* 2GenderSelectionView.swift in Sources */,
+				695C95FB2E33AF23003E22C1 /* WorkoutGenderManager.swift in Sources */,
 				696EBA2B2E2802BA00A296FB /* ProgressWorkout.swift in Sources */,
 				691995D92DFC88BD007FAB40 /* 5BirthYearView.swift in Sources */,
 				696EBA8B2E286E5300A296FB /* SearchBarWorkoutViewModel.swift in Sources */,
+				695C95EB2E33AEDB003E22C1 /* HealthKitCoordinator.swift in Sources */,
 				6919962F2DFC8D1F007FAB40 /*  WriteTSViewModel.swift in Sources */,
 				691996AE2DFC8F54007FAB40 /*  NutritionCalculator.swift in Sources */,
 				693476D62E0897C600916824 /* GoalViewComponent.swift in Sources */,
@@ -1797,6 +1856,7 @@
 				691996612DFC8DBB007FAB40 /* CoachesView.swift in Sources */,
 				691996312DFC8D24007FAB40 /* ProfileViewModel.swift in Sources */,
 				6965DE7F2E1E849400F8099A /* MockTrainerRepository.swift in Sources */,
+				695C95E52E33AEC3003E22C1 /* DailySteps.swift in Sources */,
 				691996122DFC8CA4007FAB40 /* LevelActivityViewModel.swift in Sources */,
 				691996CC2DFC8F94007FAB40 /* ImagePicker.swift in Sources */,
 				691995F12DFC8C12007FAB40 /* TargetWeightViewModel.swift in Sources */,
@@ -1806,6 +1866,7 @@
 				696EBA262E26C18000A296FB /* OnboardingNext.swift in Sources */,
 				690DF80E2E149CE80038A671 /* OnboardingTemplate.swift in Sources */,
 				691996F22DFC90E0007FAB40 /* DietTypeViewModel.swift in Sources */,
+				695C96052E411D43003E22C1 /* DailyProgress.swift in Sources */,
 				691995E72DFC8BFD007FAB40 /* WeightViewModel.swift in Sources */,
 				696EBAB22E2C3E9C00A296FB /* WorkoutProgressManager.swift in Sources */,
 				696EBA472E286A0900A296FB /* WorkoutCalendarView.swift in Sources */,
@@ -1818,6 +1879,8 @@
 				690DF8332E1556C40038A671 /* Transitions.swift in Sources */,
 				691996372DFC8D34007FAB40 /* TellAFViewModel.swift in Sources */,
 				691996432DFC8D83007FAB40 /* MeView.swift in Sources */,
+				695C95E72E33AED2003E22C1 /* DailyStepsStorageService.swift in Sources */,
+				695C95FF2E33AF27003E22C1 /* WorkoutSearchManager.swift in Sources */,
 				69B066682E0C759C00A954B7 /* AllergySelectionViewModel.swift in Sources */,
 				691995D12DFC88AE007FAB40 /* BMIViewModel.swift in Sources */,
 				6919969C2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */,
@@ -1829,7 +1892,7 @@
 				6919960F2DFC8C9D007FAB40 /* 10LevelActivityView.swift in Sources */,
 				691995C52DFC8886007FAB40 /* GoalViewModel.swift in Sources */,
 				690DF8272E14A42C0038A671 /* Buttons.swift in Sources */,
-				691996882DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */,
+				695C95DF2E33AEB8003E22C1 /* DayProgressDetailSheet.swift in Sources */,
 				6919962B2DFC8D1A007FAB40 /* SubscriptionViewModel.swift in Sources */,
 				6965DE872E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				691996FD2DFC91AF007FAB40 /* FAQView.swift in Sources */,
@@ -1838,7 +1901,6 @@
 				691996A92DFC8F25007FAB40 /* WNHApp.swift in Sources */,
 				696EBA972E286FBA00A296FB /* HeartRateIndicator.swift in Sources */,
 				6919964F2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
-				6919968A2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
 				6965DE8B2E1E9AA100F8099A /* TrainerRepositoryProtocol.swift in Sources */,
 				69B0667E2E0DF1C200A954B7 /* TrainerChatView.swift in Sources */,
 				696EBA942E286FB100A296FB /* ExerciseVideo.swift in Sources */,
@@ -1905,16 +1967,16 @@
 				691996072DFC8C85007FAB40 /* WorkoutLevelViewModel.swift in Sources */,
 				696EBA442E286A0300A296FB /* WorkoutBottomControlsView.swift in Sources */,
 				690DF7F92E1191660038A671 /* NutritionExample.swift in Sources */,
-				691996862DFC8E6C007FAB40 /* ProgressViewModel.swift in Sources */,
 				691995D32DFC88AE007FAB40 /* BMIViewModel.swift in Sources */,
 				691996DD2DFC9027007FAB40 /* UserProfile.swift in Sources */,
 				6901B4892E0079E800173562 /* ViewModifiers.swift in Sources */,
+				695C95F02E33AEFA003E22C1 /* HealthKitPersistenceService.swift in Sources */,
 				691996162DFC8CB4007FAB40 /* GymEquipmentView.swift in Sources */,
 				6919963D2DFC8D60007FAB40 /* RateAppViewModel.swift in Sources */,
+				695C95DB2E33AE87003E22C1 /* StepsIndicator.swift in Sources */,
 				696EBA8C2E286E5300A296FB /* SearchBarWorkoutViewModel.swift in Sources */,
 				691996292DFC8D1A007FAB40 /* SubscriptionViewModel.swift in Sources */,
 				696EBA252E26C18000A296FB /* OnboardingNext.swift in Sources */,
-				6919968B2DFC8E7C007FAB40 /* ProgressBarView.swift in Sources */,
 				6965DEA82E21599B00F8099A /* Font.swift in Sources */,
 				691995BB2DFC884E007FAB40 /* LoginViewModel.swift in Sources */,
 				693476D42E0897C600916824 /* GoalViewComponent.swift in Sources */,
@@ -1940,6 +2002,7 @@
 				691996352DFC8D34007FAB40 /* TellAFViewModel.swift in Sources */,
 				6919964D2DFC8D93007FAB40 /* TrainerView.swift in Sources */,
 				691995FF2DFC8C74007FAB40 /* WhichPlaceView.swift in Sources */,
+				695C95E42E33AEC3003E22C1 /* DailySteps.swift in Sources */,
 				6965DE882E1E866A00F8099A /* FirebaseService.swift in Sources */,
 				696EBA1A2E26C16C00A296FB /* OnboardingBack.swift in Sources */,
 				6919961B2DFC8CDC007FAB40 /* showInfo.swift in Sources */,
@@ -1958,7 +2021,9 @@
 				691995FA2DFC8C69007FAB40 /* 9DietTypeView.swift in Sources */,
 				696EBA592E286A3300A296FB /* WorkoutHeaderViewModel.swift in Sources */,
 				696EBA292E2802BA00A296FB /* ProgressWorkout.swift in Sources */,
+				695C95F92E33AF15003E22C1 /* StepsService.swift in Sources */,
 				6919969E2DFC8EDF007FAB40 /* AIAssistantView.swift in Sources */,
+				695C95E92E33AED2003E22C1 /* DailyStepsStorageService.swift in Sources */,
 				696EBA892E286E4C00A296FB /* SearchBarWorkoutView.swift in Sources */,
 				69B066722E0DEF4E00A954B7 /* TrainerData.swift in Sources */,
 				691995EB2DFC8C03007FAB40 /* 7WeightView.swift in Sources */,
@@ -1971,9 +2036,11 @@
 				6919960D2DFC8C9D007FAB40 /* 10LevelActivityView.swift in Sources */,
 				691996C32DFC8F74007FAB40 /* RecipesLowCarb.swift in Sources */,
 				690DF8312E1556C40038A671 /* Transitions.swift in Sources */,
+				695C96032E411D43003E22C1 /* DailyProgress.swift in Sources */,
 				690DF8252E14A40A0038A671 /* Cards.swift in Sources */,
 				696EBA762E286AC200A296FB /* WorkoutService.swift in Sources */,
 				69B066762E0DEF5400A954B7 /* TrainerMapsView.swift in Sources */,
+				695C96072E411D92003E22C1 /* DailyProgressService.swift in Sources */,
 				6901B4AF2E00C3ED00173562 /* PremiumFeature.swift in Sources */,
 				696EBA502E286A1800A296FB /* WorkoutCharacterViewModel.swift in Sources */,
 				690DF8102E149CE80038A671 /* OnboardingTemplate.swift in Sources */,
@@ -1983,7 +2050,9 @@
 				691996262DFC8D16007FAB40 /* AnalyticsViewModel.swift in Sources */,
 				69B066642E0C757900A954B7 /* AllergySelectionView.swift in Sources */,
 				696EBA612E286A6900A296FB /* WorkoutTip.swift in Sources */,
+				695C95F42E33AF04003E22C1 /* MusclePositionManager.swift in Sources */,
 				696EBA1E2E26C17200A296FB /* OnboardingCard.swift in Sources */,
+				695C95ED2E33AEDB003E22C1 /* HealthKitCoordinator.swift in Sources */,
 				691996B22DFC8F5A007FAB40 /* color.swift in Sources */,
 				691997192DFCB482007FAB40 /* TodaysMealsViewModel.swift in Sources */,
 				691996A82DFC8F25007FAB40 /* WNHApp.swift in Sources */,
@@ -2013,6 +2082,7 @@
 				691996492DFC8D8E007FAB40 /* WriteTSView.swift in Sources */,
 				696EBAB32E2C3E9C00A296FB /* WorkoutProgressManager.swift in Sources */,
 				690DF81D2E14A3FB0038A671 /* Layout.swift in Sources */,
+				695C95E12E33AEB8003E22C1 /* DayProgressDetailSheet.swift in Sources */,
 				6901B4AA2E00905500173562 /* PaymentService.swift in Sources */,
 				691996FE2DFC91AF007FAB40 /* FAQView.swift in Sources */,
 				691997112DFCB41B007FAB40 /* DaySelectorViewModel.swift in Sources */,
@@ -2028,7 +2098,9 @@
 				693476B92E02EEBE00916824 /* WorkoutRepositoryProtocol.swift in Sources */,
 				696EBA802E286AE000A296FB /* WorkoutColors.swift in Sources */,
 				691996812DFC8E53007FAB40 /* GroceryListViewModel.swift in Sources */,
+				695C95FD2E33AF23003E22C1 /* WorkoutGenderManager.swift in Sources */,
 				691995EE2DFC8C0C007FAB40 /* 8TargetWeightView.swift in Sources */,
+				695C96002E33AF27003E22C1 /* WorkoutSearchManager.swift in Sources */,
 				690DF8282E14A42C0038A671 /* Buttons.swift in Sources */,
 				696EBA692E286AB100A296FB /* PerformanceOptimizer.swift in Sources */,
 			);

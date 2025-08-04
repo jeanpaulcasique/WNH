@@ -3,9 +3,10 @@ import UIKit
 
 struct GoalView: View {
     @ObservedObject var viewModel: GoalViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
+    
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToBodyCurrent = false
+    @State private var navigateToTargetWeight = false
     @State private var isButtonDisabled = false
     @State private var isLoading = false
     @State private var selectedIndex: Int = 1 // Por defecto "Get fitter" (keepFit)
@@ -110,7 +111,7 @@ struct GoalView: View {
                 HStack {
                     // Botón back circular gris
                     Button(action: {
-                        progressViewModel.decreaseProgress()
+                        
                         isNavigatingToPreviousScreen = true
                     }) {
                         Image(systemName: "chevron.left")
@@ -126,9 +127,23 @@ struct GoalView: View {
                     // Botón Next igual a GenderSelectionView
                     Button(action: {
                         withAnimation {
-                            progressViewModel.advanceProgress()
+                            
                         }
-                        navigateToBodyCurrent = true
+                        // Debug: Imprimir información de selección
+                        print("Selected Index: \(selectedIndex)")
+                        print("Selected Goal: \(goals[selectedIndex])")
+                        print("Is Build Muscle: \(goals[selectedIndex] == .buildMuscle)")
+                        
+                        // Si el usuario eligió "Gain Weight", ir a TargetWeightView
+                        if goals[selectedIndex] == .buildMuscle {
+                            print("Navigating to TargetWeightView")
+                            // Navegar a TargetWeightView
+                            navigateToTargetWeight = true
+                        } else {
+                            print("Navigating to BirthYearView")
+                            // Para otros objetivos, ir a BirthYearView como antes
+                            navigateToBodyCurrent = true
+                        }
                     }) {
                         HStack(spacing: 8) {
                             Text("Next")
@@ -151,15 +166,26 @@ struct GoalView: View {
                     .padding(.trailing, 20)
                     .padding(.bottom, 20)
                     
-                    NavigationLink(
-                        destination: BirthYearView(viewModel: BirthYearViewModel(), progressViewModel: progressViewModel),
-                        isActive: $navigateToBodyCurrent
-                    ) {
-                        EmptyView()
+                    // NavigationLink condicional basado en la selección
+                    if goals[selectedIndex] == .buildMuscle {
+                        NavigationLink(
+                            destination: TargetWeightView(viewModel: TargetWeightViewModel()),
+                            isActive: $navigateToTargetWeight
+                        ) {
+                            EmptyView()
+                        }
+                        .hidden()
+                    } else {
+                        NavigationLink(
+                            destination: BirthYearView(viewModel: BirthYearViewModel()),
+                            isActive: $navigateToBodyCurrent
+                        ) {
+                            EmptyView()
+                        }
+                        .hidden()
                     }
-                    .hidden()
                     NavigationLink(
-                        destination: GenderSelectionView(progressViewModel: progressViewModel, viewModel: GenderSelectionViewModel()),
+                        destination: GenderSelectionView(viewModel: GenderSelectionViewModel()),
                         isActive: $isNavigatingToPreviousScreen
                     ) {
                         EmptyView()
@@ -294,8 +320,7 @@ struct CustomScrollPicker<Item: Hashable, Content: View>: View {
 struct GoalView_Previews: PreviewProvider {
     static var previews: some View {
         GoalView(
-            viewModel: GoalViewModel(),
-            progressViewModel: ProgressViewModel()
+            viewModel: GoalViewModel()
         )
     }
 }

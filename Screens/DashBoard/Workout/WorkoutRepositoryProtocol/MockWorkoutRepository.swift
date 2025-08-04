@@ -74,46 +74,68 @@ class MockWorkoutRepository: WorkoutRepositoryProtocol {
         switch muscleGroup.lowercased() {
         case "chest":
             return [
-                Exercise(name: "Push-ups", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Chest"], equipment: "Bodyweight"),
-                Exercise(name: "Bench Press", duration: "12 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Chest"], equipment: "Barbell")
+                Exercise(name: "Push-ups", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Chest"], equipment: ["Bodyweight"]),
+                Exercise(name: "Bench Press", duration: "12 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Chest"], equipment: ["Barbell"])
             ]
         case "biceps":
             return [
-                Exercise(name: "Bicep Curls", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Biceps"], equipment: "Dumbbell"),
-                Exercise(name: "Hammer Curls", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Biceps"], equipment: "Dumbbell")
+                Exercise(name: "Bicep Curls", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Biceps"], equipment: ["Dumbbell"]),
+                Exercise(name: "Hammer Curls", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Biceps"], equipment: ["Dumbbell"])
             ]
         case "lats":
             return [
-                Exercise(name: "Pull-ups", duration: "10 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Lats"], equipment: "Bodyweight"),
-                Exercise(name: "Lat Pulldowns", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Lats"], equipment: "Machine")
+                Exercise(name: "Pull-ups", duration: "10 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Lats"], equipment: ["Bodyweight"]),
+                Exercise(name: "Lat Pulldowns", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Lats"], equipment: ["Machine"])
             ]
         case "upper back":
             return [
-                Exercise(name: "Rows", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Upper Back"], equipment: "Barbell"),
-                Exercise(name: "Face Pulls", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Upper Back"], equipment: "Cable")
+                Exercise(name: "Rows", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Upper Back"], equipment: ["Barbell"]),
+                Exercise(name: "Face Pulls", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Upper Back"], equipment: ["Cable"])
             ]
         case "triceps":
             return [
-                Exercise(name: "Tricep Dips", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Triceps"], equipment: "Bodyweight"),
-                Exercise(name: "Overhead Extensions", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Triceps"], equipment: "Dumbbell")
+                Exercise(name: "Tricep Dips", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Triceps"], equipment: ["Bodyweight"]),
+                Exercise(name: "Overhead Extensions", duration: "15 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Triceps"], equipment: ["Dumbbell"])
             ]
         case "glutes":
             return [
-                Exercise(name: "Squats", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Glutes"], equipment: "Barbell"),
-                Exercise(name: "Hip Thrusts", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Glutes"], equipment: "Barbell")
+                Exercise(name: "Squats", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Glutes"], equipment: ["Bodyweight"]),
+                Exercise(name: "Hip Thrusts", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Glutes"], equipment: ["Barbell"])
+            ]
+        case "quads":
+            return [
+                Exercise(name: "Lunges", duration: "12 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Quads"], equipment: ["Bodyweight"]),
+                Exercise(name: "Leg Press", duration: "15 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Quads"], equipment: ["Machine"])
             ]
         case "hamstrings":
             return [
-                Exercise(name: "Deadlifts", duration: "10 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Hamstrings"], equipment: "Barbell"),
-                Exercise(name: "Leg Curls", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Hamstrings"], equipment: "Machine")
+                Exercise(name: "Deadlifts", duration: "10 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Hamstrings"], equipment: ["Barbell"]),
+                Exercise(name: "Leg Curls", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Hamstrings"], equipment: ["Machine"])
+            ]
+        case "shoulders":
+            return [
+                Exercise(name: "Overhead Press", duration: "12 reps", difficulty: "High", videoURL: nil, muscleGroups: ["Shoulders"], equipment: ["Barbell"]),
+                Exercise(name: "Lateral Raises", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Shoulders"], equipment: ["Dumbbell"])
+            ]
+        case "abs":
+            return [
+                Exercise(name: "Crunches", duration: "20 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Abs"], equipment: ["Bodyweight"]),
+                Exercise(name: "Planks", duration: "30 seconds", difficulty: "Medium", videoURL: nil, muscleGroups: ["Abs"], equipment: ["Bodyweight"])
             ]
         case "calves":
             return [
-                Exercise(name: "Calf Raises", duration: "20 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Calves"], equipment: "Bodyweight"),
-                Exercise(name: "Jump Rope", duration: "5 min", difficulty: "Medium", videoURL: nil, muscleGroups: ["Calves"], equipment: "Rope")
+                Exercise(name: "Calf Raises", duration: "20 reps", difficulty: "Low", videoURL: nil, muscleGroups: ["Calves"], equipment: ["Bodyweight"]),
+                Exercise(name: "Seated Calf Raises", duration: "15 reps", difficulty: "Medium", videoURL: nil, muscleGroups: ["Calves"], equipment: ["Machine"])
+            ]
+        case "cardio":
+            return [
+                Exercise(name: "Running", duration: "30 minutes", difficulty: "Medium", videoURL: nil, muscleGroups: ["Cardio"], equipment: ["Bodyweight"]),
+                Exercise(name: "Cycling", duration: "45 minutes", difficulty: "Medium", videoURL: nil, muscleGroups: ["Cardio"], equipment: ["Bike"])
             ]
         default:
-            return []
+            return [
+                Exercise(name: "Generic Exercise", duration: "10 reps", difficulty: "Medium", videoURL: nil, muscleGroups: [muscleGroup], equipment: ["Bodyweight"])
+            ]
         }
     }
 }

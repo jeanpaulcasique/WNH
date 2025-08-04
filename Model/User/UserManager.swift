@@ -40,6 +40,10 @@ final class UserSessionManager: ObservableObject {
         UserDefaults.standard.set(false, forKey: isLoggedInKey)
         isLoggedIn = false
         // NO borramos hasCompletedOnboarding para que mantenga el progreso
+        
+        // Limpiar datos de autorización de HealthKit al hacer logout
+        let healthKitPersistence = HealthKitPersistenceService()
+        healthKitPersistence.clearAuthorizationData()
     }
     
     /// Marca el onboarding como completado.
@@ -62,6 +66,10 @@ final class UserSessionManager: ObservableObject {
         
         // También puedes limpiar otros datos del usuario aquí
         clearUserProfileData()
+        
+        // Limpiar datos de autorización de HealthKit
+        let healthKitPersistence = HealthKitPersistenceService()
+        healthKitPersistence.clearAuthorizationData()
     }
     
     /// Resetea solo el onboarding (para forzar que vuelva a pasar por el flujo).

@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BMIView: View {
     @ObservedObject var viewModel: BMIViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
+    
     @Environment(\.presentationMode) var presentationMode
     @State private var navigateToNextView = false
     @State private var navigateToWeightView = false
@@ -88,7 +88,7 @@ struct BMIView: View {
                     }
                     Spacer()
                     OnboardingNext {
-                        progressViewModel.advanceProgress()
+                        
                         navigateToNextView = true
                     }
                 }
@@ -97,17 +97,14 @@ struct BMIView: View {
                 .padding(.bottom, 18)
                 // Navegación
                 NavigationLink(
-                    destination: TargetWeightView(
-                        viewModel: TargetWeightViewModel(),
-                        progressViewModel: progressViewModel
-                    ),
+                    destination: DietTypeView(),
                     isActive: $navigateToNextView
                 ) {
                     EmptyView()
                 }
                 .hidden()
                 NavigationLink(
-                    destination: WeightView(viewModel: WeightViewModel(), progressViewModel: progressViewModel),
+                    destination: WeightView(viewModel: WeightViewModel(), ),
                     isActive: $navigateToWeightView
                 ) {
                     EmptyView()
@@ -184,7 +181,7 @@ struct BMIView: View {
 // MARK: - Preview
 struct BMIView_Previews: PreviewProvider {
     static var previews: some View {
-        BMIView(viewModel: BMIViewModel(), progressViewModel: ProgressViewModel())
+        BMIView(viewModel: BMIViewModel())
     }
 }
 

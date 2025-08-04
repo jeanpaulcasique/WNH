@@ -284,11 +284,11 @@ class WorkoutViewModelTests: XCTestCase {
         
         // When
         viewModel.selectMuscle(muscle)
-        viewModel.changeWorkoutMode(.atGym)
+        viewModel.changeWorkoutMode(.atTheGym)
         
         // Then
         XCTAssertEqual(viewModel.selectedMuscle?.name, "Chest")
-        XCTAssertEqual(viewModel.selectedWorkoutMode, .atGym)
+        XCTAssertEqual(viewModel.selectedWorkoutMode, .atTheGym)
     }
     
     // MARK: - Performance Tests

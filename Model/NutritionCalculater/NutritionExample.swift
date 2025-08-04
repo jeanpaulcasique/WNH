@@ -31,7 +31,7 @@ class NutritionExample {
             let calories = try await calculator.calculateDailyCalories(for: userProfile)
             let macros = try await calculator.calculateMacros(for: userProfile)
             let water = try await calculator.calculateWaterNeeds(for: userProfile)
-            let shortTermResults = resultSoon.calculateShortTermResults(for: userProfile)
+            let scientificResults = resultSoon.calculateScientificResults()
             
             print("📊 PLAN NUTRICIONAL:")
             print("   • Calorías diarias: \(Int(calories)) cal")
@@ -40,18 +40,16 @@ class NutritionExample {
             print("   • Carbohidratos: \(Int(macros.carbs))g")
             print("   • Agua diaria: \(String(format: "%.1f", water))L")
             
-            print("\n🎯 RESULTADOS ESPERADOS (4 semanas):")
-            print("   • Cambio de peso: \(String(format: "%.1f", shortTermResults.totalWeightChange)) kg")
-            print("   • Ganancia muscular: \(String(format: "%.1f", shortTermResults.totalMuscleGain)) kg")
-            print("   • Semana 1: \(String(format: "%.1f", shortTermResults.week1.weightChange)) kg")
-            print("   • Semana 2: \(String(format: "%.1f", shortTermResults.week2.weightChange)) kg")
-            print("   • Semana 3: \(String(format: "%.1f", shortTermResults.week3.weightChange)) kg")
-            print("   • Semana 4: \(String(format: "%.1f", shortTermResults.week4.weightChange)) kg")
+            print("\n🎯 RESULTADOS CIENTÍFICOS:")
+            print("   • Peso objetivo: \(String(format: "%.1f", scientificResults.targetWeight)) kg")
+            print("   • Tiempo al objetivo: \(scientificResults.adjustedTimeToTarget) días")
+            print("   • Cambio semanal: \(String(format: "%.2f", scientificResults.weeklyWeightChange)) kg")
+            print("   • Ganancia muscular: \(String(format: "%.1f", scientificResults.muscleGain)) kg/mes")
+            print("   • Probabilidad éxito: \(Int(scientificResults.successProbability * 100))%")
             
             // Generar recomendaciones usando ResultSoon
-            let report = resultSoon.generateCompleteResultsReport(for: userProfile)
             print("\n💡 RECOMENDACIONES:")
-            for (index, recommendation) in report.recommendations.enumerated() {
+            for (index, recommendation) in scientificResults.recommendations.enumerated() {
                 print("   \(index + 1). \(recommendation)")
             }
             
@@ -82,7 +80,7 @@ class NutritionExample {
         do {
             let calories = try await calculator.calculateDailyCalories(for: userProfile)
             let macros = try await calculator.calculateMacros(for: userProfile)
-            let shortTermResults = resultSoon.calculateShortTermResults(for: userProfile)
+            let scientificResults = resultSoon.calculateScientificResults()
             
             print("📊 PLAN NUTRICIONAL:")
             print("   • Calorías diarias: \(Int(calories)) cal")
@@ -90,13 +88,15 @@ class NutritionExample {
             print("   • Grasa: \(Int(macros.fat))g")
             print("   • Carbohidratos: \(Int(macros.carbs))g")
             
-            print("\n🎯 RESULTADOS ESPERADOS (4 semanas):")
-            print("   • Cambio de peso: \(String(format: "%.1f", shortTermResults.totalWeightChange)) kg")
-            print("   • Ganancia muscular: \(String(format: "%.1f", shortTermResults.totalMuscleGain)) kg")
+            print("\n🎯 RESULTADOS CIENTÍFICOS:")
+            print("   • Peso objetivo: \(String(format: "%.1f", scientificResults.targetWeight)) kg")
+            print("   • Tiempo al objetivo: \(scientificResults.adjustedTimeToTarget) días")
+            print("   • Cambio semanal: \(String(format: "%.2f", scientificResults.weeklyWeightChange)) kg")
+            print("   • Ganancia muscular: \(String(format: "%.1f", scientificResults.muscleGain)) kg/mes")
+            print("   • Probabilidad éxito: \(Int(scientificResults.successProbability * 100))%")
             
-            let report = resultSoon.generateCompleteResultsReport(for: userProfile)
             print("\n💡 RECOMENDACIONES:")
-            for (index, recommendation) in report.recommendations.enumerated() {
+            for (index, recommendation) in scientificResults.recommendations.enumerated() {
                 print("   \(index + 1). \(recommendation)")
             }
             
@@ -127,7 +127,7 @@ class NutritionExample {
         do {
             let calories = try await calculator.calculateDailyCalories(for: userProfile)
             let macros = try await calculator.calculateMacros(for: userProfile)
-            let shortTermResults = resultSoon.calculateShortTermResults(for: userProfile)
+            let scientificResults = resultSoon.calculateScientificResults()
             
             print("📊 PLAN NUTRICIONAL:")
             print("   • Calorías diarias: \(Int(calories)) cal")
@@ -135,13 +135,15 @@ class NutritionExample {
             print("   • Grasa: \(Int(macros.fat))g")
             print("   • Carbohidratos: \(Int(macros.carbs))g")
             
-            print("\n🎯 RESULTADOS ESPERADOS (4 semanas):")
-            print("   • Cambio de peso: \(String(format: "%.1f", shortTermResults.totalWeightChange)) kg")
-            print("   • Ganancia muscular: \(String(format: "%.1f", shortTermResults.totalMuscleGain)) kg")
+            print("\n🎯 RESULTADOS CIENTÍFICOS:")
+            print("   • Peso objetivo: \(String(format: "%.1f", scientificResults.targetWeight)) kg")
+            print("   • Tiempo al objetivo: \(scientificResults.adjustedTimeToTarget) días")
+            print("   • Cambio semanal: \(String(format: "%.2f", scientificResults.weeklyWeightChange)) kg")
+            print("   • Ganancia muscular: \(String(format: "%.1f", scientificResults.muscleGain)) kg/mes")
+            print("   • Probabilidad éxito: \(Int(scientificResults.successProbability * 100))%")
             
-            let report = resultSoon.generateCompleteResultsReport(for: userProfile)
             print("\n💡 RECOMENDACIONES:")
-            for (index, recommendation) in report.recommendations.enumerated() {
+            for (index, recommendation) in scientificResults.recommendations.enumerated() {
                 print("   \(index + 1). \(recommendation)")
             }
             
@@ -205,26 +207,23 @@ class NutritionExample {
         )
         
         let resultSoon = ResultSoon(userProfile: userProfile)
-        let longTermResults = resultSoon.calculateLongTermResults(for: userProfile)
+        let scientificResults = resultSoon.calculateScientificResults()
         
-        print("🎯 RESULTADOS A LARGO PLAZO:")
-        print("   • 3 meses: \(String(format: "%.1f", longTermResults.month3.weightChange)) kg")
-        print("   • 6 meses: \(String(format: "%.1f", longTermResults.month6.weightChange)) kg")
-        print("   • 12 meses: \(String(format: "%.1f", longTermResults.month12.weightChange)) kg")
+        print("🎯 RESULTADOS CIENTÍFICOS:")
+        print("   • Peso objetivo: \(String(format: "%.1f", scientificResults.targetWeight)) kg")
+        print("   • Tiempo al objetivo: \(scientificResults.adjustedTimeToTarget) días")
+        print("   • Cambio semanal: \(String(format: "%.2f", scientificResults.weeklyWeightChange)) kg")
+        print("   • Ganancia muscular: \(String(format: "%.1f", scientificResults.muscleGain)) kg/mes")
+        print("   • Probabilidad éxito: \(Int(scientificResults.successProbability * 100))%")
         
-        print("\n💪 GANANCIA MUSCULAR:")
-        print("   • 3 meses: \(String(format: "%.1f", longTermResults.month3.muscleGain)) kg")
-        print("   • 6 meses: \(String(format: "%.1f", longTermResults.month6.muscleGain)) kg")
-        print("   • 12 meses: \(String(format: "%.1f", longTermResults.month12.muscleGain)) kg")
-        
-        print("\n🏥 MEJORAS DE SALUD (6 meses):")
-        for improvement in longTermResults.month6.healthImprovements {
-            print("   • \(improvement)")
+        print("\n💡 RECOMENDACIONES:")
+        for (index, recommendation) in scientificResults.recommendations.enumerated() {
+            print("   \(index + 1). \(recommendation)")
         }
         
-        print("\n🔄 CAMBIOS DE ESTILO DE VIDA (12 meses):")
-        for change in longTermResults.month12.lifestyleChanges {
-            print("   • \(change)")
+        print("\n🔄 MILESTONES:")
+        for (index, milestone) in scientificResults.milestones.enumerated() {
+            print("   • Día \(milestone.day): \(milestone.description)")
         }
     }
     
@@ -291,10 +290,10 @@ extension NutritionExample {
         
         do {
             let calories = try await calculator.calculateDailyCalories(for: profile)
-            let shortResults = resultSoon.calculateShortTermResults(for: profile)
+            let scientificResults = resultSoon.calculateScientificResults()
             
             print("✅ Calorías: \(Int(calories))")
-            print("✅ Cambio semanal: \(String(format: "%.1f", shortResults.totalWeightChange/4))kg")
+            print("✅ Cambio semanal: \(String(format: "%.2f", scientificResults.weeklyWeightChange))kg")
             
         } catch {
             print("❌ Error: \(error)")

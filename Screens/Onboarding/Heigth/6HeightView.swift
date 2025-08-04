@@ -2,7 +2,7 @@ import SwiftUI
 
 struct HeightView: View {
     @StateObject var viewModel: HeightViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
+    
     @Environment(\.presentationMode) var presentationMode
     @State private var isNavigatingToNextScreen = false
     @State private var isNavigatingToPreviousScreen = false
@@ -132,7 +132,7 @@ struct HeightView: View {
                 HStack {
                     // Botón Back
                     Button(action: {
-                        progressViewModel.decreaseProgress()
+                        
                         isNavigatingToPreviousScreen = true
                     }) {
                         Image(systemName: "chevron.left")
@@ -148,7 +148,7 @@ struct HeightView: View {
                     // Botón Next
                     Button(action: {
                         withAnimation {
-                            progressViewModel.advanceProgress()
+                            
                         }
                         isNavigatingToNextScreen = true
                     }) {
@@ -174,14 +174,14 @@ struct HeightView: View {
                     .padding(.bottom, 20)
             
             NavigationLink(
-                destination: BMIView(viewModel: BMIViewModel(), progressViewModel: progressViewModel),
+                destination: WeightView(viewModel: WeightViewModel()),
                 isActive: $isNavigatingToNextScreen
             ) {
                 EmptyView()
             }
             .hidden()
             NavigationLink(
-                destination: BirthYearView(viewModel: BirthYearViewModel(), progressViewModel: progressViewModel),
+                destination: BirthYearView(viewModel: BirthYearViewModel(), ),
                 isActive: $isNavigatingToPreviousScreen
             ) {
                 EmptyView()
@@ -320,8 +320,7 @@ struct CustomTapeView: View {
 struct HeightView_Previews: PreviewProvider {
     static var previews: some View {
         HeightView(
-            viewModel: HeightViewModel(),
-            progressViewModel: ProgressViewModel()
+            viewModel: HeightViewModel()
         )
         .previewDevice("iPhone 16 Pro")
         .previewDisplayName("iPhone 16 Pro")

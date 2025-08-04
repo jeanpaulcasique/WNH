@@ -56,7 +56,7 @@ class WorkoutService: ObservableObject {
             switch location {
             case .atHome:
                 return exercise.equipment.contains("bodyweight") || exercise.equipment.contains("dumbbell")
-            case .atGym:
+            case .atTheGym:
                 return exercise.equipment.contains("barbell") || exercise.equipment.contains("machine")
             case .outdoors:
                 return exercise.equipment.contains("bodyweight") || exercise.equipment.contains("resistance")
@@ -79,7 +79,7 @@ class WorkoutService: ObservableObject {
                 switch location {
                 case .atHome:
                     return exercise.equipment.contains("bodyweight") || exercise.equipment.contains("dumbbell")
-                case .atGym:
+                case .atTheGym:
                     return exercise.equipment.contains("barbell") || exercise.equipment.contains("machine")
                 case .outdoors:
                     return exercise.equipment.contains("bodyweight") || exercise.equipment.contains("resistance")
@@ -97,7 +97,7 @@ class WorkoutService: ObservableObject {
         return allExercises.filter { exercise in
             exercise.name.localizedCaseInsensitiveContains(query) ||
             exercise.muscleGroups.contains { $0.localizedCaseInsensitiveContains(query) } ||
-            exercise.equipment.localizedCaseInsensitiveContains(query)
+            exercise.equipment.contains { $0.localizedCaseInsensitiveContains(query) }
         }
     }
     

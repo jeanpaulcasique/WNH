@@ -238,9 +238,9 @@ class WeightViewModel: ObservableObject {
     }
     
     // MARK: - Navigation Logic
-    func proceedToNext(progressViewModel: ProgressViewModel, completion: @escaping () -> Void) {
+    func proceedToNext(completion: @escaping () -> Void) {
         withAnimation(.easeInOut(duration: 0.5)) {
-            progressViewModel.advanceProgress()
+            
         }
         generateHapticFeedback()
         
@@ -249,8 +249,8 @@ class WeightViewModel: ObservableObject {
         }
     }
     
-    func goBack(progressViewModel: ProgressViewModel, completion: @escaping () -> Void) {
-        progressViewModel.decreaseProgress()
+    func goBack(completion: @escaping () -> Void) {
+        
         completion()
     }
     

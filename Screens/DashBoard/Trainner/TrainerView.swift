@@ -147,10 +147,12 @@ private extension FitnessTrainerApp {
                             .font(.system(size: 15, weight: .semibold))
                     }
                     .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(Color.appYellow)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.appYellow)
+                    )
                     .foregroundColor(.black)
-                    .clipShape(Capsule())
                     .shadow(color: Color.appYellow.opacity(0.18), radius: 6, x: 0, y: 2)
                 }
                 .padding(.leading, 10)

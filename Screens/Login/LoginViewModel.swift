@@ -117,18 +117,17 @@ class LoginViewModel: ObservableObject {
     
     /// Fuerza la navegación al onboarding
     func forceOnboardingFlow(sessionManager: UserSessionManager) {
-        // Reset completo del usuario
-        sessionManager.resetUserData()
+        // Reset solo el onboarding, mantener el login
+        sessionManager.resetOnboarding()
         
         // Reset estados de navegación
         resetNavigationState()
         resetButton()
         
-        // Login y forzar navegación a Fase1
+        // Asegurar que esté logueado
         sessionManager.login()
         
-        print("🔄 FORCE RESET: Navegando a Fase1/GenderSelection")
-        navigateToFase1 = true
+        print("🔄 FORCE RESET: Navegando a Onboarding")
         
         // Haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .heavy)

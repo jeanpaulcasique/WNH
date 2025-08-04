@@ -2,18 +2,16 @@ import SwiftUI
 
 // MARK: - Onboarding Navigation
 struct OnboardingNavigation<Content: View>: View {
-    let progressViewModel: ProgressViewModel
+    
     let showBackButton: Bool
     let onBack: (() -> Void)?
     let content: Content
     
     init(
-        progressViewModel: ProgressViewModel,
         showBackButton: Bool = true,
         onBack: (() -> Void)? = nil,
         @ViewBuilder content: () -> Content
     ) {
-        self.progressViewModel = progressViewModel
         self.showBackButton = showBackButton
         self.onBack = onBack
         self.content = content()

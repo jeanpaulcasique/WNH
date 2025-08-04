@@ -5,7 +5,7 @@ import SwiftUI
 
 struct OnboardingTemplateExample: View {
     @ObservedObject var viewModel: ExampleViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
+    @ObservedObject var progressViewModel: 
     @Environment(\.presentationMode) var presentationMode
     
     var body: some View {
@@ -74,7 +74,7 @@ class ExampleViewModel: ObservableObject {
         selectedOption = option
     }
     
-    func onNextTapped(progressViewModel: ProgressViewModel) {
+    func onNextTapped(progressViewModel: ) {
         guard hasSelection && !isButtonDisabled else { return }
         
         isButtonDisabled = true
@@ -125,7 +125,7 @@ enum ExampleOption: String, CaseIterable {
  
  struct GenderSelectionView: View {
      @ObservedObject var viewModel: GenderSelectionViewModel
-     @ObservedObject var progressViewModel: ProgressViewModel
+     @ObservedObject var progressViewModel: 
      @Environment(\.presentationMode) var presentationMode
      
      var body: some View {

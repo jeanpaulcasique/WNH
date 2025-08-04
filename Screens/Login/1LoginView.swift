@@ -4,7 +4,7 @@ import AuthenticationServices
 struct LoginView: View {
     @ObservedObject var viewModel = LoginViewModel()
     @StateObject var genderSelectionViewModel = GenderSelectionViewModel()
-    @StateObject var progressViewModel = ProgressViewModel()
+    
     @EnvironmentObject var sessionManager: UserSessionManager
 
     var body: some View {
@@ -29,10 +29,9 @@ struct LoginView: View {
                         .padding(.bottom, 50)
 
                     // START - nuevo usuario
-                    NavigationLink(destination: GenderSelectionView(
-                        progressViewModel: progressViewModel,
-                        viewModel: genderSelectionViewModel
-                    )) {
+                    NavigationLink(destination:                         GenderSelectionView(
+                            viewModel: genderSelectionViewModel
+                        )) {
                         HStack {
                             Text("START")
                                 .fontWeight(.bold)

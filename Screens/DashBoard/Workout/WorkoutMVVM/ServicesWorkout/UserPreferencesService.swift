@@ -8,6 +8,7 @@ class UserPreferencesService: ObservableObject {
     @Published var workoutPreferences: WorkoutPreferences
     @Published var notificationSettings: NotificationSettings
     @Published var userProfile: UserProfile
+    @Published var currentUserWeight: Double
     
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
@@ -41,6 +42,7 @@ class UserPreferencesService: ObservableObject {
         self.workoutPreferences = Self.loadWorkoutPreferences()
         self.notificationSettings = Self.loadNotificationSettings()
         self.userProfile = Self.loadUserProfile()
+        self.currentUserWeight = userDefaults.double(forKey: Keys.userWeight)
         
         setupBindings()
     }
@@ -67,10 +69,14 @@ class UserPreferencesService: ObservableObject {
     
     /// Obtiene el peso del usuario
     var userWeight: Double {
-        get { userDefaults.double(forKey: Keys.userWeight) }
+        get { currentUserWeight }
         set { 
+            currentUserWeight = newValue
             userDefaults.set(newValue, forKey: Keys.userWeight)
-            // userProfile.weight = newValue // UserProfile no es mutable
+            // Actualizar el peso en UserDefaults para que se refleje en UserProfile
+            userDefaults.set(newValue, forKey: "selectedWeightKg")
+            // Recargar el UserProfile para que refleje los cambios
+            userProfile = UserProfile()
             saveUserProfile()
         }
     }
@@ -190,12 +196,137 @@ class UserPreferencesService: ObservableObject {
     /// Obtiene el peso ideal basado en la altura y género
     var idealWeight: Double {
         let heightInMeters = userHeight / 100
-        let baseWeight = 22.0 * heightInMeters * heightInMeters
+        
+        // Fórmula más precisa basada en rangos de BMI saludable
+        // Para hombres: BMI 21-25 (promedio 23)
+        // Para mujeres: BMI 20-24 (promedio 22)
+        let baseBMI: Double
         
         switch userGender {
-        case .male: return baseWeight * 1.05
-        case .female: return baseWeight * 0.95
-        case .other, .notSet: return baseWeight
+        case .male:
+            baseBMI = 23.0 // BMI ideal para hombres
+        case .female:
+            baseBMI = 22.0 // BMI ideal para mujeres
+        case .other, .notSet:
+            baseBMI = 22.5 // Promedio general
+        }
+        
+        return baseBMI * heightInMeters * heightInMeters
+    }
+    
+    /// Calcula el promedio de pasos diarios recomendados basado en datos científicos
+    var recommendedDailySteps: Int {
+        // Base de pasos según edad y género (estudios científicos)
+        let baseSteps = calculateBaseSteps()
+        
+        // Multiplicador por nivel de actividad
+        let activityMultiplier = calculateActivityMultiplier()
+        
+        // Multiplicador por objetivo de fitness
+        let goalMultiplier = calculateGoalMultiplier()
+        
+        // Multiplicador por nivel de workout
+        let workoutMultiplier = calculateWorkoutMultiplier()
+        
+        // Multiplicador por BMI (si está fuera del rango saludable)
+        let bmiMultiplier = calculateBMIMultiplier()
+        
+        // Cálculo final
+        let recommendedSteps = Double(baseSteps) * activityMultiplier * goalMultiplier * workoutMultiplier * bmiMultiplier
+        
+        return Int(recommendedSteps.rounded())
+    }
+    
+    /// Calcula los pasos base según edad y género
+    private func calculateBaseSteps() -> Int {
+        // Basado en estudios de la OMS y CDC
+        switch userAge {
+        case 18...29:
+            return userGender == .male ? 10000 : 9500
+        case 30...39:
+            return userGender == .male ? 9500 : 9000
+        case 40...49:
+            return userGender == .male ? 9000 : 8500
+        case 50...59:
+            return userGender == .male ? 8500 : 8000
+        case 60...69:
+            return userGender == .male ? 8000 : 7500
+        case 70...79:
+            return userGender == .male ? 7500 : 7000
+        case 80...:
+            return userGender == .male ? 7000 : 6500
+        default:
+            return 8000 // Default para edades no especificadas
+        }
+    }
+    
+    /// Calcula multiplicador por nivel de actividad
+    private func calculateActivityMultiplier() -> Double {
+        // Basado en el nivel de actividad del usuario
+        // Esto se puede obtener del onboarding o inferir del workout level
+        switch workoutLevel {
+        case .beginner:
+            return 0.9 // Menos activo, empezando
+        case .intermediate:
+            return 1.0 // Actividad moderada
+        case .advanced:
+            return 1.15 // Muy activo
+        }
+    }
+    
+    /// Calcula multiplicador por objetivo de fitness
+    private func calculateGoalMultiplier() -> Double {
+        switch workoutGoal {
+        case .weightLoss:
+            return 1.2 // Más pasos para perder peso
+        case .muscleGain:
+            return 1.1 // Pasos moderados, enfoque en fuerza
+        case .strength:
+            return 1.0 // Pasos estándar, enfoque en fuerza
+        case .endurance:
+            return 1.3 // Muchos pasos para resistencia
+        case .generalFitness:
+            return 1.0 // Pasos estándar
+        case .flexibility:
+            return 0.9 // Menos pasos, más flexibilidad
+        }
+    }
+    
+    /// Calcula multiplicador por nivel de workout
+    private func calculateWorkoutMultiplier() -> Double {
+        switch workoutFrequency {
+        case .twoTimes:
+            return 0.9 // Poca frecuencia, menos pasos
+        case .threeTimes:
+            return 1.0 // Frecuencia estándar
+        case .fourTimes:
+            return 1.1
+        case .fiveTimes:
+            return 1.2
+        case .sixTimes:
+            return 1.3
+        case .daily:
+            return 1.4 // Entrenamiento diario, más pasos
+        }
+    }
+    
+    /// Calcula multiplicador por BMI
+    private func calculateBMIMultiplier() -> Double {
+        let currentBMI = bmi
+        
+        switch currentBMI {
+        case ..<18.5: // Bajo peso
+            return 0.9 // Menos pasos para evitar pérdida de peso
+        case 18.5..<25: // Peso normal
+            return 1.0 // Pasos estándar
+        case 25..<30: // Sobrepeso
+            return 1.1 // Más pasos para perder peso
+        case 30..<35: // Obesidad clase I
+            return 1.2 // Aún más pasos
+        case 35..<40: // Obesidad clase II
+            return 1.3 // Muchos pasos
+        default: // Obesidad clase III
+            return 1.4 // Máximo de pasos
         }
     }
     

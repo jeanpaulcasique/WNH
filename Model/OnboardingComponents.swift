@@ -114,13 +114,13 @@ struct OnboardingHeader: View {
     let icon: String
     let title: String
     let subtitle: String?
-    let progressViewModel: ProgressViewModel
+    let progressViewModel: 
     
     init(
         icon: String,
         title: String,
         subtitle: String? = nil,
-        progressViewModel: ProgressViewModel
+        progressViewModel: 
     ) {
         self.icon = icon
         self.title = title
@@ -213,13 +213,13 @@ struct OnboardingNavigation<Destination: View>: View {
 
 // MARK: - Onboarding Layout
 struct OnboardingLayout<Content: View>: View {
-    let progressViewModel: ProgressViewModel
+    let progressViewModel: 
     let header: OnboardingHeader
     let navigation: OnboardingNavigation<AnyView>
     let content: Content
     
     init(
-        progressViewModel: ProgressViewModel,
+        progressViewModel: ,
         header: OnboardingHeader,
         navigation: OnboardingNavigation<AnyView>,
         @ViewBuilder content: () -> Content
@@ -251,7 +251,7 @@ struct OnboardingLayout<Content: View>: View {
 
 // MARK: - Back Button
 struct OnboardingBackButton: View {
-    let progressViewModel: ProgressViewModel
+    let progressViewModel: 
     let presentationMode: DismissAction
     
     var body: some View {

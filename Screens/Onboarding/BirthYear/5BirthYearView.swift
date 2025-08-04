@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BirthYearView: View {
     @StateObject var viewModel: BirthYearViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
+    
     @Environment(\.presentationMode) var presentationMode
     @State private var isNavigatingToNextScreen = false
     @State private var isNavigatingToPreviousScreen = false
@@ -119,7 +119,7 @@ struct BirthYearView: View {
                 HStack {
                     // Botón Back
                     Button(action: {
-                        progressViewModel.decreaseProgress()
+                        
                         isNavigatingToPreviousScreen = true
                     }) {
                         Image(systemName: "chevron.left")
@@ -135,7 +135,7 @@ struct BirthYearView: View {
                     // Botón Next
                     Button(action: {
                         // Removido withAnimation para evitar animaciones
-                        progressViewModel.advanceProgress()
+                        
                         isNavigatingToNextScreen = true
                     }) {
                         HStack(spacing: 8) {
@@ -159,14 +159,14 @@ struct BirthYearView: View {
                     .padding(.bottom, 20)
                     
                     NavigationLink(
-                        destination: HeightView(viewModel: HeightViewModel(), progressViewModel: progressViewModel),
+                        destination: HeightView(viewModel: HeightViewModel(), ),
                         isActive: $isNavigatingToNextScreen
                     ) {
                         EmptyView()
                     }
                     .hidden()
                     NavigationLink(
-                        destination: GoalView(viewModel: GoalViewModel(), progressViewModel: progressViewModel),
+                        destination: GoalView(viewModel: GoalViewModel(), ),
                         isActive: $isNavigatingToPreviousScreen
                     ) {
                         EmptyView()
@@ -307,8 +307,7 @@ struct CustomScrollPickerNoAnimation<Item: Hashable, Content: View>: View {
 struct BirthYearView_Previews: PreviewProvider {
     static var previews: some View {
         BirthYearView(
-            viewModel: BirthYearViewModel(),
-            progressViewModel: ProgressViewModel()
+            viewModel: BirthYearViewModel()
         )
         .previewDevice("iPhone 16 Pro")
         .previewDisplayName("iPhone 16 Pro")

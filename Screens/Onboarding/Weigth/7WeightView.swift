@@ -2,7 +2,7 @@ import SwiftUI
 
 struct WeightView: View {
     @StateObject var viewModel: WeightViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
+    
     @Environment(\.presentationMode) var presentationMode
     @State private var isNavigatingToNextScreen = false
     @State private var isNavigatingToPreviousScreen = false
@@ -148,7 +148,7 @@ struct WeightView: View {
                 HStack {
                     // Botón Back
                     Button(action: {
-                        progressViewModel.decreaseProgress()
+                        
                         isNavigatingToPreviousScreen = true
                     }) {
                         Image(systemName: "chevron.left")
@@ -163,7 +163,7 @@ struct WeightView: View {
                     
                     // Botón Next
                     Button(action: {
-                        progressViewModel.advanceProgress()
+                        
                         isNavigatingToNextScreen = true
                     }) {
                         HStack(spacing: 8) {
@@ -187,14 +187,14 @@ struct WeightView: View {
                     .padding(.bottom, 20)
                     
                     NavigationLink(
-                        destination: BMIView(viewModel: BMIViewModel(), progressViewModel: progressViewModel),
+                        destination: BMIView(viewModel: BMIViewModel(), ),
                         isActive: $isNavigatingToNextScreen
                     ) {
                         EmptyView()
                     }
                     .hidden()
                     NavigationLink(
-                        destination: HeightView(viewModel: HeightViewModel(), progressViewModel: progressViewModel),
+                        destination: HeightView(viewModel: HeightViewModel(), ),
                         isActive: $isNavigatingToPreviousScreen
                     ) {
                         EmptyView()
@@ -224,8 +224,7 @@ struct WeightView: View {
 struct WeightView_Previews: PreviewProvider {
     static var previews: some View {
         WeightView(
-            viewModel: WeightViewModel(),
-            progressViewModel: ProgressViewModel()
+            viewModel: WeightViewModel()
         )
         .previewDevice("iPhone 16 Pro")
         .preferredColorScheme(.dark)

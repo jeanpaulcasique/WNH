@@ -308,7 +308,7 @@ extension WorkoutLocation {
         switch self {
         case .atHome:
             return "Entrenar desde casa"
-        case .atGym:
+        case .atTheGym:
             return "Ir al gimnasio"
         case .outdoors:
             return "Entrenar al aire libre"

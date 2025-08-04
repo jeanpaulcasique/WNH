@@ -5,21 +5,17 @@ import SwiftUI
 
 struct OnboardingTemplateExample: View {
     @ObservedObject var viewModel: ExampleViewModel
-    @ObservedObject var progressViewModel: ProgressViewModel
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
         OnboardingLayout(
-            progressViewModel: progressViewModel,
             header: PageHeader(
                 icon: "star.fill",
                 title: "Example Title",
-                subtitle: "Optional subtitle text",
-                progressViewModel: progressViewModel
+                subtitle: "Optional subtitle text"
             ),
             showBackButton: true,
             onBack: {
-                progressViewModel.decreaseProgress()
                 dismiss()
             }
         ) {
@@ -54,7 +50,7 @@ struct OnboardingTemplateExample: View {
                 if viewModel.hasSelection {
                     OnboardingNavigationWithNext(
                         isEnabled: true,
-                        action: { viewModel.onNextTapped(progressViewModel: progressViewModel) }
+                        action: { viewModel.onNextTapped() }
                     )
                 }
             }
@@ -80,12 +76,11 @@ class ExampleViewModel: ObservableObject {
         selectedOption = option
     }
     
-    func onNextTapped(progressViewModel: ProgressViewModel) {
+    func onNextTapped() {
         guard hasSelection && !isButtonDisabled else { return }
         
         isButtonDisabled = true
         isLoading = true
-        progressViewModel.advanceProgress()
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
             self.navigateToNext = true
@@ -131,24 +126,21 @@ enum ExampleOption: String, CaseIterable {
  
  struct GenderSelectionView: View {
      @ObservedObject var viewModel: GenderSelectionViewModel
-     @ObservedObject var progressViewModel: ProgressViewModel
      @Environment(\.dismiss) var dismiss
      
      var body: some View {
          OnboardingLayout(
-             progressViewModel: progressViewModel,
-             header: OnboardingHeader(
+             header: PageHeader(
                  icon: "person.2.fill",
-                 title: "What's your gender?",
-                 progressViewModel: progressViewModel
+                 title: "What's your gender?"
              ),
              navigation: OnboardingNavigation(
                  title: "Next",
                  isEnabled: viewModel.selectedGender != nil,
                  isLoading: $viewModel.isLoading,
                  isDisabled: $viewModel.isButtonDisabled,
-                 action: { viewModel.onNextTapped(progressViewModel: progressViewModel) },
-                 destination: AnyView(GoalView(viewModel: GoalViewModel(), progressViewModel: progressViewModel)),
+                 action: { viewModel.onNextTapped() },
+                 destination: AnyView(GoalView(viewModel: GoalViewModel())),
                  isActive: $viewModel.navigateToGoal
              )
          ) {
@@ -178,7 +170,6 @@ enum ExampleOption: String, CaseIterable {
              }
          }
                  .navigationBarItems(leading: OnboardingBackButton(
-            progressViewModel: progressViewModel,
             presentationMode: dismiss
         ))
      }

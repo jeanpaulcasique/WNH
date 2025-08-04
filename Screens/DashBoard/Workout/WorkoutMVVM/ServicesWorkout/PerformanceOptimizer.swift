@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import UIKit
+import SwiftUI
 
 /// Servicio que maneja optimizaciones de performance para el módulo Workout
 class PerformanceOptimizer: ObservableObject {

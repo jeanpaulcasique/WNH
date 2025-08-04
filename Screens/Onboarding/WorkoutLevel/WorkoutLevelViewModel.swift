@@ -22,6 +22,16 @@ class WorkoutLevelViewModel: ObservableObject {
             UserDefaults.standard.set(selectedIndex, forKey: "workoutLevelSelection")
         }
     }
+    @Published var selectedIntensity: String = "Medium" {
+        didSet {
+            UserDefaults.standard.set(selectedIntensity, forKey: "selectedIntensity")
+        }
+    }
+    @Published var selectedFrequency: String = "4-5" {
+        didSet {
+            UserDefaults.standard.set(selectedFrequency, forKey: "selectedFrequency")
+        }
+    }
     @Published var isNextButtonDisabled: Bool = false
     @Published var isLoading: Bool = false
     
@@ -74,6 +84,15 @@ class WorkoutLevelViewModel: ObservableObject {
             self.selectedIndex = savedSelection
         } else {
             self.selectedIndex = 0
+        }
+        
+        // Load saved intensity and frequency
+        if let savedIntensity = UserDefaults.standard.string(forKey: "selectedIntensity") {
+            self.selectedIntensity = savedIntensity
+        }
+        
+        if let savedFrequency = UserDefaults.standard.string(forKey: "selectedFrequency") {
+            self.selectedFrequency = savedFrequency
         }
     }
     

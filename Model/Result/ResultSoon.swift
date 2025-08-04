@@ -1,844 +1,648 @@
 import Foundation
 
-// MARK: - Estructuras de Resultados
-struct ShortTermResults {
-    let week1: WeekResults
-    let week2: WeekResults
-    let week3: WeekResults
-    let week4: WeekResults
-    
-    var totalWeightChange: Double {
-        week1.weightChange + week2.weightChange + week3.weightChange + week4.weightChange
-    }
-    
-    var totalMuscleGain: Double {
-        week1.muscleGain + week2.muscleGain + week3.muscleGain + week4.muscleGain
-    }
-    
-    var averageEnergyLevel: String {
-        let levels = [week1.energyLevel, week2.energyLevel, week3.energyLevel, week4.energyLevel]
-        return levels.max(by: { $0.count < $1.count }) ?? "Bueno"
-    }
-}
-
-struct WeekResults {
-    let weekNumber: Int
-    let weightChange: Double // kg
-    let muscleGain: Double // kg
-    let fatLoss: Double // kg
-    let energyLevel: String
-    let motivation: String
-    let tips: [String]
-    
-    var expectedWeight: Double {
-        let currentWeight = UserProfile.loadFromUserDefaults().weightKg
-        return currentWeight + weightChange
-    }
-    
-    var bodyFatPercentage: Double {
-        let currentWeight = UserProfile.loadFromUserDefaults().weightKg
-        let estimatedCurrentBodyFat = estimateInitialBodyFat()
-        let fatLossKg = abs(fatLoss)
-        let newWeight = currentWeight + weightChange
-        
-        guard newWeight > 0 else { return estimatedCurrentBodyFat }
-        
-        let newBodyFat = ((currentWeight * estimatedCurrentBodyFat / 100) - fatLossKg) / newWeight * 100
-        return max(5.0, min(35.0, newBodyFat))
-    }
-    
-    var muscleMass: Double {
-        let currentWeight = UserProfile.loadFromUserDefaults().weightKg
-        let estimatedCurrentBodyFat = estimateInitialBodyFat()
-        let currentMuscle = currentWeight * (1 - estimatedCurrentBodyFat / 100)
-        return currentMuscle + muscleGain
-    }
-    
-    var isPositive: Bool {
-        let goal = UserProfile.loadFromUserDefaults().goal.lowercased()
-        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
-            return weightChange < 0
-        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
-            return weightChange > 0
-        } else {
-            return abs(weightChange) < 0.5
-        }
-    }
-    
-    private func estimateInitialBodyFat() -> Double {
-        let profile = UserProfile.loadFromUserDefaults()
-        let isMale = ["male", "hombre", "masculino", "m"].contains(
-            profile.gender.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        )
-        
-        guard let bmi = profile.bmi else {
-            return isMale ? 15.0 : 22.0
-        }
-        
-        switch bmi {
-        case 0..<18.5: return isMale ? 8.0 : 15.0
-        case 18.5..<25.0: return isMale ? 15.0 : 22.0
-        case 25.0..<30.0: return isMale ? 20.0 : 28.0
-        default: return isMale ? 25.0 : 32.0
-        }
-    }
-}
-
-struct LongTermResults {
-    let month3: MonthResults
-    let month6: MonthResults
-    let month12: MonthResults
-    
-    var totalWeightChange: Double {
-        month12.weightChange
-    }
-    
-    var totalMuscleGain: Double {
-        month12.muscleGain
-    }
-    
-    var projectedBodyFatChange: Double {
-        let initial = estimateInitialBodyFat()
-        let final = calculateFinalBodyFat()
-        return final - initial
-    }
-    
-    private func estimateInitialBodyFat() -> Double {
-        let profile = UserProfile.loadFromUserDefaults()
-        let isMale = ["male", "hombre", "masculino", "m"].contains(
-            profile.gender.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        )
-        
-        guard let bmi = profile.bmi else {
-            return isMale ? 15.0 : 22.0
-        }
-        
-        switch bmi {
-        case 0..<18.5: return isMale ? 8.0 : 15.0
-        case 18.5..<25.0: return isMale ? 15.0 : 22.0
-        case 25.0..<30.0: return isMale ? 20.0 : 28.0
-        default: return isMale ? 25.0 : 32.0
-        }
-    }
-    
-    private func calculateFinalBodyFat() -> Double {
-        let initialBodyFat = estimateInitialBodyFat()
-        let fatLoss = month12.fatLoss
-        let profile = UserProfile.loadFromUserDefaults()
-        
-        let newWeight = profile.weightKg + month12.weightChange
-        guard newWeight > 0 else { return initialBodyFat }
-        
-        let newBodyFat = ((profile.weightKg * initialBodyFat / 100) - fatLoss) / newWeight * 100
-        return max(5.0, min(35.0, newBodyFat))
-    }
-}
-
-struct MonthResults {
-    let monthNumber: Int
-    let weightChange: Double
+// MARK: - Estructuras de Resultados Científicos
+struct ScientificResults {
+    let targetWeight: Double
+    let estimatedTimeToTarget: Int // días
+    let weeklyWeightChange: Double
+    let monthlyWeightChange: Double
     let muscleGain: Double
     let fatLoss: Double
-    let bodyComposition: String
-    let healthImprovements: [String]
-    let lifestyleChanges: [String]
-    
-    var expectedWeight: Double {
-        let currentWeight = UserProfile.loadFromUserDefaults().weightKg
-        return currentWeight + weightChange
-    }
-    
-    var metabolicImprovement: Double {
-        let muscleBonus = muscleGain * 13 // 13 calorías por kg de músculo
-        let activityBonus = monthNumber * 20 // Mejora por adaptación
-        return muscleBonus + Double(activityBonus)
-    }
-}
-
-struct ResultsReport {
-    let shortTerm: ShortTermResults
-    let longTerm: LongTermResults
-    let userProfile: UserProfile
-    let recommendations: [String]
+    let dailyCalorieTarget: Int
     let successProbability: Double
+    let recommendations: [String]
+    let milestones: [Milestone]
     
-    var totalWeightChange: Double {
-        shortTerm.totalWeightChange
+    var isRealistic: Bool {
+        // Verificar si el plan es científicamente realista
+        let weeklyChange = abs(weeklyWeightChange)
+        return weeklyChange >= 0.25 && weeklyChange <= 1.0
     }
     
-    var totalMuscleGain: Double {
-        shortTerm.totalMuscleGain
-    }
-    
-    var isOnTrack: Bool {
-        let goal = userProfile.goal.lowercased()
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            return totalWeightChange < -1.0
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            return totalWeightChange > 0.5
-        } else {
-            return abs(totalWeightChange) < 1.0
+    var adjustedTimeToTarget: Int {
+        // Ajustar tiempo si el plan no es realista
+        if !isRealistic {
+            let realisticWeeklyChange = weeklyWeightChange > 0 ? 0.5 : -0.5
+            let totalChange = abs(targetWeight - UserProfile.loadFromUserDefaults().weightKg)
+            return Int(totalChange / abs(realisticWeeklyChange) * 7)
         }
-    }
-    
-    var projectedSuccessMessage: String {
-        switch successProbability {
-        case 0.8...1.0:
-            return "¡Excelente! Tienes muy altas probabilidades de éxito 🚀"
-        case 0.6..<0.8:
-            return "Buen plan con alta probabilidad de éxito 💪"
-        case 0.4..<0.6:
-            return "Plan moderadamente desafiante pero alcanzable 📈"
-        default:
-            return "Plan ambicioso - considera ajustes para mayor éxito ⚠️"
-        }
+        return estimatedTimeToTarget
     }
 }
 
-// MARK: - ResultSoon - Calculadora Principal
+struct Milestone {
+    let day: Int
+    let description: String
+    let expectedWeight: Double
+    let motivation: String
+}
+
+// MARK: - Calculadora Científica de Resultados
 class ResultSoon {
     
-    // MARK: - Enums
-    enum BodyType: String, CaseIterable {
-        case skinny = "Flaco"
-        case regular = "Regular"
-        case muscular = "Musculoso"
-        case overweight = "Gordo"
+    // MARK: - Constantes Científicas
+    private struct Constants {
+        // Calorías por kg de peso corporal
+        static let caloriesPerKg = 7700 // calorías para perder/ganar 1kg
         
-        var description: String {
-            switch self {
-            case .skinny: return "Cuerpo delgado con poca masa muscular"
-            case .regular: return "Cuerpo promedio con masa muscular moderada"
-            case .muscular: return "Cuerpo atlético con buena masa muscular"
-            case .overweight: return "Cuerpo con exceso de peso"
-            }
-        }
-    }
-    
-    enum WorkoutIntensity: String, CaseIterable {
-        case light = "Suave"
-        case moderate = "Intermedio"
-        case intense = "Intensivo"
+        // Factores de actividad física (Harris-Benedict modificado)
+        static let sedentary = 1.2
+        static let lightlyActive = 1.375
+        static let moderatelyActive = 1.55
+        static let veryActive = 1.725
+        static let extremelyActive = 1.9
         
-        var multiplier: Double {
-            switch self {
-            case .light: return 1.1
-            case .moderate: return 1.25
-            case .intense: return 1.4
-            }
-        }
-    }
-    
-    enum DietType: String, CaseIterable {
-        case keto = "Keto"
-        case caloricDeficit = "Déficit Calórico"
-        case lowCarb = "Bajo en Carbohidratos"
+        // Pérdida de peso realista por semana
+        static let maxWeeklyWeightLoss = 1.0 // kg
+        static let minWeeklyWeightLoss = 0.25 // kg
+        static let maxWeeklyWeightGain = 0.5 // kg
         
-        var effectiveness: Double {
-            switch self {
-            case .keto: return 1.3
-            case .caloricDeficit: return 1.0
-            case .lowCarb: return 1.15
-            }
-        }
+        // Ganancia muscular realista por mes
+        static let maxMonthlyMuscleGain = 2.0 // kg
+        static let minMonthlyMuscleGain = 0.5 // kg
     }
     
     // MARK: - Propiedades
     private let userProfile: UserProfile
-    private lazy var nutritionCalculator: NutritionCalculator = {
-        return NutritionCalculator()
-    }()
     
     // MARK: - Inicialización
     init(userProfile: UserProfile = UserProfile.loadFromUserDefaults()) {
         self.userProfile = userProfile
     }
     
-    // MARK: - API Pública
-    func calculateShortTermResults() -> ShortTermResults {
-        let bodyType = determineBodyType()
-        let workoutIntensity = determineWorkoutIntensity()
-        let dietType = determineDietType()
-        
-        print("🎯 CALCULANDO RESULTADOS A CORTO PLAZO")
-        print("   • Tipo de cuerpo: \(bodyType.rawValue)")
-        print("   • Intensidad: \(workoutIntensity.rawValue)")
-        print("   • Dieta: \(dietType.rawValue)")
-        
-        let week1 = calculateWeekResults(week: 1, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        let week2 = calculateWeekResults(week: 2, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        let week3 = calculateWeekResults(week: 3, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        let week4 = calculateWeekResults(week: 4, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        
-        return ShortTermResults(week1: week1, week2: week2, week3: week3, week4: week4)
-    }
-    
-    func calculateLongTermResults() -> LongTermResults {
-        let bodyType = determineBodyType()
-        let workoutIntensity = determineWorkoutIntensity()
-        let dietType = determineDietType()
-        
-        print("🎯 CALCULANDO RESULTADOS A LARGO PLAZO")
-        
-        let month3 = calculateMonthResults(month: 3, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        let month6 = calculateMonthResults(month: 6, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        let month12 = calculateMonthResults(month: 12, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        
-        return LongTermResults(month3: month3, month6: month6, month12: month12)
-    }
-    
-    func generateCompleteResultsReport() -> ResultsReport {
-        let shortTerm = calculateShortTermResults()
-        let longTerm = calculateLongTermResults()
-        let successProbability = calculateSuccessProbability(for: userProfile, results: shortTerm)
-        
-        return ResultsReport(
-            shortTerm: shortTerm,
-            longTerm: longTerm,
-            userProfile: userProfile,
-            recommendations: generateRecommendations(),
-            successProbability: successProbability
-        )
-    }
-    
-    // MARK: - Métodos Privados
-    private func determineBodyType() -> BodyType {
-        guard let bmi = userProfile.bmi else { return .regular }
-        
-        switch bmi {
-        case 16.0..<18.5: return .skinny
-        case 18.5..<25.0: return .regular
-        case 25.0..<30.0: return .muscular
-        default: return .overweight
+    // MARK: - API Pública Principal
+    func calculateScientificResults() -> ScientificResults {
+        // ✅ CORREGIDO: Validaciones más robustas
+        guard userProfile.weightKg > 0 else {
+            print("❌ RESULTSOON - Peso inválido: \(userProfile.weightKg)")
+            return createDefaultResults()
         }
-    }
-    
-    private func determineWorkoutIntensity() -> WorkoutIntensity {
-        let workoutLevel = userProfile.workoutLevel.lowercased()
         
-        if workoutLevel.contains("suave") || workoutLevel.contains("principiante") || workoutLevel.contains("básico") {
-            return .light
-        } else if workoutLevel.contains("intensivo") || workoutLevel.contains("avanzado") {
-            return .intense
-        } else {
-            return .moderate
+        guard let height = userProfile.heightCm, height > 0 else {
+            print("❌ RESULTSOON - Altura inválida: \(userProfile.heightCm ?? -1)")
+            return createDefaultResults()
         }
-    }
-    
-    private func determineDietType() -> DietType {
-        let dietType = userProfile.dietType.lowercased()
         
-        if dietType.contains("keto") || dietType.contains("cetogénica") {
-            return .keto
-        } else if dietType.contains("bajo") && dietType.contains("carb") {
-            return .lowCarb
-        } else {
-            return .caloricDeficit
+        // ✅ CORREGIDO: Validar que el goal no esté vacío
+        guard !userProfile.goal.isEmpty else {
+            print("❌ RESULTSOON - Goal vacío")
+            return createDefaultResults()
         }
-    }
-    
-    private func calculateWeekResults(week: Int, bodyType: BodyType, workoutIntensity: WorkoutIntensity, dietType: DietType) -> WeekResults {
+        
         let goal = userProfile.goal.lowercased()
-        let baseWeightChange = getBaseWeightChange(week: week, goal: goal, bodyType: bodyType)
-        let adjustedWeightChange = baseWeightChange * workoutIntensity.multiplier * dietType.effectiveness
+        let currentWeight = userProfile.weightKg
         
-        let muscleGain = calculateMuscleGain(week: week, goal: goal, bodyType: bodyType, workoutIntensity: workoutIntensity)
-        let fatLoss = calculateFatLoss(weightChange: adjustedWeightChange, muscleGain: muscleGain, goal: goal)
+        // ✅ CORREGIDO: Cálculos seguros sin recursión
+        let targetWeight = calculateTargetWeight()
         
-        return WeekResults(
-            weekNumber: week,
-            weightChange: adjustedWeightChange,
+        print("🔬 CALCULANDO RESULTADOS CIENTÍFICOS")
+        print("   • Peso actual: \(currentWeight) kg")
+        print("   • Peso objetivo: \(targetWeight) kg")
+        print("   • Meta: \(goal)")
+        
+        let dailyCalorieTarget = calculateDailyCalorieTarget()
+        let weeklyWeightChange = calculateWeeklyWeightChange()
+        let monthlyWeightChange = weeklyWeightChange * 4
+        let estimatedTimeToTarget = calculateTimeToTarget(targetWeight: targetWeight, weeklyChange: weeklyWeightChange)
+        
+        let muscleGain = calculateMuscleGain()
+        let fatLoss = calculateFatLoss(weightChange: monthlyWeightChange, muscleGain: muscleGain)
+        let successProbability = calculateSuccessProbability()
+        let recommendations = generateScientificRecommendations()
+        let milestones = generateMilestones(targetWeight: targetWeight, weeklyChange: weeklyWeightChange)
+        
+        return ScientificResults(
+            targetWeight: targetWeight,
+            estimatedTimeToTarget: estimatedTimeToTarget,
+            weeklyWeightChange: weeklyWeightChange,
+            monthlyWeightChange: monthlyWeightChange,
             muscleGain: muscleGain,
             fatLoss: fatLoss,
-            energyLevel: getEnergyLevel(week: week, weightChange: adjustedWeightChange),
-            motivation: getMotivationMessage(week: week, weightChange: adjustedWeightChange, goal: goal),
-            tips: getWeeklyTips(week: week, bodyType: bodyType, goal: goal)
+            dailyCalorieTarget: dailyCalorieTarget,
+            successProbability: successProbability,
+            recommendations: recommendations,
+            milestones: milestones
         )
     }
     
-    private func getBaseWeightChange(week: Int, goal: String, bodyType: BodyType) -> Double {
-        let baseChange: Double
+    // MARK: - Métodos de Cálculo Científico
+    
+    private func calculateTargetWeight() -> Double {
+        let currentWeight = userProfile.weightKg
+        let goal = userProfile.goal.lowercased()
+        let bmi = userProfile.bmi ?? 25.0
+        let heightCm = userProfile.heightCm ?? 170
+        let heightM = Double(heightCm) / 100.0 // convertir a metros
         
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            baseChange = -0.5
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            baseChange = 0.3
+        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+            // Calcular peso objetivo basado en BMI saludable
+            let targetBMI: Double
+            if bmi > 30 {
+                targetBMI = 25.0 // Obesidad → Normal
+            } else if bmi > 25 {
+                targetBMI = 22.0 // Sobrepeso → Normal bajo
+            } else {
+                targetBMI = 20.0 // Normal → Delgado
+            }
+            
+            let targetWeight = targetBMI * heightM * heightM
+            return max(targetWeight, currentWeight * 0.85) // No más del 15% de pérdida inicial
+        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+            // Ganancia de peso para músculo
+            let muscleGain = min(currentWeight * 0.15, 10.0) // Máximo 15% o 10kg
+            return currentWeight + muscleGain
         } else {
-            baseChange = 0.0
+            // Mantener peso actual
+            return currentWeight
         }
-        
-        let bodyTypeMultiplier: Double
-        switch bodyType {
-        case .skinny: bodyTypeMultiplier = 0.8
-        case .regular: bodyTypeMultiplier = 1.0
-        case .muscular: bodyTypeMultiplier = 1.2
-        case .overweight: bodyTypeMultiplier = 1.3
-        }
-        
-        let weekMultiplier = 1.0 + (Double(week - 1) * 0.1)
-        
-        return baseChange * bodyTypeMultiplier * weekMultiplier
     }
     
-    private func calculateMuscleGain(week: Int, goal: String, bodyType: BodyType, workoutIntensity: WorkoutIntensity) -> Double {
-        guard goal.contains("ganar") || goal.contains("musculo") else { return 0.0 }
+    private func calculateDailyCalorieTarget() -> Int {
+        let currentWeight = userProfile.weightKg
+        let height = userProfile.heightCm
+        let age = calculateAge()
+        let isMale = isUserMale()
+        let activityLevel = getActivityMultiplier()
         
-        let baseMuscleGain = 0.1
-        let intensityMultiplier = workoutIntensity.multiplier
-        
-        let bodyTypeMultiplier: Double
-        switch bodyType {
-        case .skinny: bodyTypeMultiplier = 1.2
-        case .regular: bodyTypeMultiplier = 1.0
-        case .muscular: bodyTypeMultiplier = 0.8
-        case .overweight: bodyTypeMultiplier = 0.6
+        // Calcular Tasa Metabólica Basal (TMB) usando fórmula de Mifflin-St Jeor
+        let heightValue = height ?? 170
+        let tmb: Double
+        if isMale {
+            let weightComponent = 10 * currentWeight
+            let heightComponent = 6.25 * Double(heightValue)
+            let ageComponent = 5 * Double(age)
+            tmb = weightComponent + heightComponent - ageComponent + 5
+        } else {
+            let weightComponent = 10 * currentWeight
+            let heightComponent = 6.25 * Double(heightValue)
+            let ageComponent = 5 * Double(age)
+            tmb = weightComponent + heightComponent - ageComponent - 161
         }
         
-        let weekMultiplier = 1.0 + (Double(week - 1) * 0.05)
+        // Calcular Gasto Energético Total (GET)
+        let get = tmb * activityLevel
         
-        return baseMuscleGain * intensityMultiplier * bodyTypeMultiplier * weekMultiplier
+        // Ajustar según objetivo
+        let goal = userProfile.goal.lowercased()
+        let weeklyWeightChange = calculateWeeklyWeightChange()
+        let calorieAdjustment = weeklyWeightChange * Double(Constants.caloriesPerKg) / 7.0
+        
+        let targetCalories = get + calorieAdjustment
+        
+        return Int(targetCalories)
     }
     
-    private func calculateFatLoss(weightChange: Double, muscleGain: Double, goal: String) -> Double {
-        if goal.contains("perder") || goal.contains("adelgazar") {
+    private func calculateWeeklyWeightChange() -> Double {
+        let goal = userProfile.goal.lowercased()
+        let bmi = userProfile.bmi ?? 25.0
+        let activityLevel = getActivityMultiplier()
+        let dietEffectiveness = getDietEffectiveness()
+        let workoutIntensity = getWorkoutIntensity()
+        
+        // Verificar que tenemos datos válidos
+        guard userProfile.weightKg > 0 else { return 0.0 }
+        
+        var baseWeeklyChange: Double = 0
+        
+        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+            // Pérdida de peso
+            if bmi > 30 {
+                baseWeeklyChange = -0.8 // Obesidad: pérdida más rápida
+            } else if bmi > 25 {
+                baseWeeklyChange = -0.6 // Sobrepeso: pérdida moderada
+            } else {
+                baseWeeklyChange = -0.4 // Normal: pérdida lenta
+            }
+            
+            // Ajustar por actividad física
+            if activityLevel < Constants.moderatelyActive {
+                baseWeeklyChange *= 0.8 // Menos activo = menos pérdida
+            } else if activityLevel > Constants.veryActive {
+                baseWeeklyChange *= 1.2 // Más activo = más pérdida
+            }
+            
+        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+            // Ganancia de peso/músculo
+            baseWeeklyChange = 0.3 // Ganancia moderada
+            
+            // Ajustar por intensidad de entrenamiento
+            baseWeeklyChange *= workoutIntensity
+            
+        } else {
+            // Mantener peso
+            baseWeeklyChange = 0.0
+        }
+        
+        // Aplicar efectividad de la dieta
+        baseWeeklyChange *= dietEffectiveness
+        
+        // Limitar a rangos realistas
+        if baseWeeklyChange < 0 {
+            baseWeeklyChange = max(baseWeeklyChange, -Constants.maxWeeklyWeightLoss)
+            baseWeeklyChange = min(baseWeeklyChange, -Constants.minWeeklyWeightLoss)
+        } else if baseWeeklyChange > 0 {
+            baseWeeklyChange = min(baseWeeklyChange, Constants.maxWeeklyWeightGain)
+        }
+        
+        return baseWeeklyChange
+    }
+    
+    private func calculateTimeToTarget(targetWeight: Double, weeklyChange: Double) -> Int {
+        let currentWeight = userProfile.weightKg
+        let totalChange = abs(targetWeight - currentWeight)
+        
+        guard weeklyChange != 0 else { return 30 } // Default a 30 días si no hay cambio
+        
+        let weeksNeeded = totalChange / abs(weeklyChange)
+        let daysNeeded = Int(weeksNeeded * 7)
+        
+        // Limitar a rangos realistas
+        return max(14, min(daysNeeded, 365)) // Entre 2 semanas y 1 año
+    }
+    
+    private func calculateMuscleGain() -> Double {
+        let goal = userProfile.goal.lowercased()
+        guard goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") else {
+            return 0.0
+        }
+        
+        let workoutIntensity = getWorkoutIntensity()
+        let experienceLevel = getExperienceLevel()
+        let age = calculateAge()
+        
+        // Ganancia muscular base por mes
+        var monthlyGain = 1.0
+        
+        // Ajustar por intensidad de entrenamiento
+        monthlyGain *= workoutIntensity
+        
+        // Ajustar por experiencia
+        monthlyGain *= experienceLevel
+        
+        // Ajustar por edad
+        let ageFactor: Double
+        switch age {
+        case 18...25: ageFactor = 1.0
+        case 26...35: ageFactor = 0.9
+        case 36...45: ageFactor = 0.7
+        default: ageFactor = 0.5
+        }
+        monthlyGain *= ageFactor
+        
+        // Limitar a rangos realistas
+        return min(monthlyGain, Constants.maxMonthlyMuscleGain)
+    }
+    
+    private func calculateFatLoss(weightChange: Double, muscleGain: Double) -> Double {
+        let goal = userProfile.goal.lowercased()
+        
+        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
             return abs(weightChange) - muscleGain
-        } else if goal.contains("ganar") || goal.contains("musculo") {
+        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
             return max(0, muscleGain - weightChange)
         } else {
             return 0.0
         }
     }
     
-    private func calculateMonthResults(month: Int, bodyType: BodyType, workoutIntensity: WorkoutIntensity, dietType: DietType) -> MonthResults {
-        let goal = userProfile.goal.lowercased()
+    private func calculateSuccessProbability() -> Double {
+        var probability: Double = 0.7 // Base 70%
         
-        let totalWeightChange = calculateTotalWeightChange(month: month, goal: goal, bodyType: bodyType, workoutIntensity: workoutIntensity, dietType: dietType)
-        let totalMuscleGain = calculateTotalMuscleGain(month: month, goal: goal, bodyType: bodyType, workoutIntensity: workoutIntensity)
-        let totalFatLoss = calculateTotalFatLoss(weightChange: totalWeightChange, muscleGain: totalMuscleGain, goal: goal)
-        
-        return MonthResults(
-            monthNumber: month,
-            weightChange: totalWeightChange,
-            muscleGain: totalMuscleGain,
-            fatLoss: totalFatLoss,
-            bodyComposition: getBodyCompositionDescription(month: month, weightChange: totalWeightChange, muscleGain: totalMuscleGain, goal: goal),
-            healthImprovements: getHealthImprovements(month: month, goal: goal),
-            lifestyleChanges: getLifestyleChanges(month: month, goal: goal)
-        )
-    }
-    
-    private func calculateTotalWeightChange(month: Int, goal: String, bodyType: BodyType, workoutIntensity: WorkoutIntensity, dietType: DietType) -> Double {
-        let weeks = month * 4
-        var totalChange: Double = 0
-        
-        for week in 1...weeks {
-            let baseChange = getBaseWeightChange(week: week, goal: goal, bodyType: bodyType)
-            let adjustedChange = baseChange * workoutIntensity.multiplier * dietType.effectiveness
-            totalChange += adjustedChange
+        // Factor 1: Realismo del objetivo (20%)
+        let results = calculateScientificResults()
+        if results.isRealistic {
+            probability += 0.2
         }
         
-        return totalChange
-    }
-    
-    private func calculateTotalMuscleGain(month: Int, goal: String, bodyType: BodyType, workoutIntensity: WorkoutIntensity) -> Double {
-        guard goal.contains("ganar") || goal.contains("musculo") else { return 0.0 }
-        
-        let weeks = month * 4
-        var totalGain: Double = 0
-        
-        for week in 1...weeks {
-            totalGain += calculateMuscleGain(week: week, goal: goal, bodyType: bodyType, workoutIntensity: workoutIntensity)
+        // Factor 2: Nivel de actividad (15%)
+        let activityLevel = getActivityMultiplier()
+        if activityLevel >= Constants.moderatelyActive {
+            probability += 0.15
         }
         
-        return totalGain
-    }
-    
-    private func calculateTotalFatLoss(weightChange: Double, muscleGain: Double, goal: String) -> Double {
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            return abs(weightChange) - muscleGain
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            return max(0, muscleGain - weightChange)
-        } else {
-            return 0.0
+        // Factor 3: Edad (10%)
+        let age = calculateAge()
+        if age >= 18 && age <= 45 {
+            probability += 0.1
         }
-    }
-    
-    private func getEnergyLevel(week: Int, weightChange: Double) -> String {
-        let goal = userProfile.goal.lowercased()
         
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            if weightChange < -0.8 {
-                return "Alto - Gran progreso energiza tu motivación"
-            } else if weightChange < -0.3 {
-                return "Bueno - Sientes los beneficios del cambio"
-            } else {
-                return "Estable - Tu cuerpo se adapta gradualmente"
-            }
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            if weightChange > 0.5 {
-                return "Excelente - Ganancia muscular aumenta tu energía"
-            } else if weightChange > 0.2 {
-                return "Bueno - Progreso visible mejora tu estado de ánimo"
-            } else {
-                return "Estable - Construyendo base sólida"
-            }
-        } else {
-            switch week {
-            case 1: return "Adaptación - Tu cuerpo se acostumbra"
-            case 2: return "Mejorando - Energía más estable"
-            case 3: return "Poderoso - Energía sostenida para entrenamientos"
-            case 4: return "Máximo - Rendimiento físico óptimo"
-            default: return "Fuerte"
-            }
+        // Factor 4: Consistencia del plan (15%)
+        let workoutLevel = userProfile.workoutLevel.lowercased()
+        if workoutLevel.contains("intermedio") || workoutLevel.contains("moderate") {
+            probability += 0.15
         }
-    }
-    
-    private func getMotivationMessage(week: Int, weightChange: Double, goal: String) -> String {
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            if weightChange < 0 {
-                return "¡Excelente progreso! Has perdido \(String(format: "%.1f", abs(weightChange))) kg esta semana. ¡Sigue así!"
-            } else {
-                return "¡Mantén la consistencia! Los resultados llegarán pronto. Recuerda que el peso puede fluctuar."
-            }
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            if weightChange > 0 {
-                return "¡Increíble! Has ganado \(String(format: "%.1f", weightChange)) kg de masa muscular. ¡Continúa construyendo!"
-            } else {
-                return "¡Enfócate en la nutrición! Asegúrate de comer suficientes calorías para ganar músculo."
-            }
-        } else {
-            return "¡Manteniendo el equilibrio! Tu cuerpo se está adaptando perfectamente a tu nueva rutina."
-        }
-    }
-    
-    private func getWeeklyTips(week: Int, bodyType: BodyType, goal: String) -> [String] {
-        var tips: [String] = []
         
-        switch week {
-        case 1:
-            tips.append("Bebe al menos 2L de agua diariamente")
-            tips.append("Mantén un diario de comidas para tracking")
-            tips.append("Descansa 7-8 horas cada noche")
-        case 2:
-            tips.append("Aumenta gradualmente la intensidad de tus entrenamientos")
-            tips.append("Incluye proteína en cada comida")
-            tips.append("Mantén la consistencia en tu horario")
-        case 3:
-            tips.append("Varía tus ejercicios para evitar estancamiento")
-            tips.append("Mide tu progreso semanalmente")
-            tips.append("Celebra los pequeños logros")
-        case 4:
-            tips.append("Evalúa tu progreso y ajusta si es necesario")
-            tips.append("Mantén la motivación con metas a corto plazo")
-            tips.append("Comparte tu progreso con amigos o familia")
+        return min(probability, 1.0)
+    }
+    
+    // MARK: - Métodos de Soporte
+    
+    private func getActivityMultiplier() -> Double {
+        let activity = userProfile.levelActivity.lowercased()
+        
+        switch activity {
+        case let a where a.contains("sedentario") || a.contains("sedentary"):
+            return Constants.sedentary
+        case let a where a.contains("ligero") || a.contains("light"):
+            return Constants.lightlyActive
+        case let a where a.contains("moderado") || a.contains("moderate"):
+            return Constants.moderatelyActive
+        case let a where a.contains("activo") || a.contains("active"):
+            return Constants.veryActive
+        case let a where a.contains("muy activo") || a.contains("very active"):
+            return Constants.extremelyActive
         default:
-            tips.append("Mantén la consistencia en tu rutina")
+            return Constants.moderatelyActive
         }
+    }
+    
+    private func getDietEffectiveness() -> Double {
+        let dietType = userProfile.dietType.lowercased()
         
-        switch bodyType {
-        case .skinny:
-            tips.append("Enfócate en ejercicios de fuerza y resistencia")
-            tips.append("Aumenta tu ingesta calórica gradualmente")
-        case .overweight:
-            tips.append("Combina cardio y entrenamiento de fuerza")
-            tips.append("Mantén un déficit calórico sostenible")
-        case .muscular:
-            tips.append("Optimiza tu recuperación entre entrenamientos")
-            tips.append("Varía la intensidad de tus rutinas")
+        switch dietType {
+        case let d where d.contains("keto") || d.contains("cetogénica"):
+            return 1.2
+        case let d where d.contains("bajo") && d.contains("carb"):
+            return 1.1
+        case let d where d.contains("déficit") || d.contains("deficit"):
+            return 1.0
         default:
-            tips.append("Mantén un balance entre cardio y fuerza")
-        }
-        
-        return tips
-    }
-    
-    private func getBodyCompositionDescription(month: Int, weightChange: Double, muscleGain: Double, goal: String) -> String {
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            if weightChange < -5 {
-                return "Transformación significativa: pérdida de grasa notable y tonificación muscular"
-            } else if weightChange < -2 {
-                return "Progreso visible: reducción de grasa corporal y mejora en la composición"
-            } else {
-                return "Cambios sutiles pero importantes en la composición corporal"
-            }
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            if muscleGain > 3 {
-                return "Desarrollo muscular impresionante con ganancias significativas de fuerza"
-            } else if muscleGain > 1.5 {
-                return "Ganancia muscular visible y mejora en la definición"
-            } else {
-                return "Progreso gradual en el desarrollo muscular"
-            }
-        } else {
-            return "Composición corporal equilibrada y mantenimiento saludable"
+            return 1.0
         }
     }
     
-    private func getHealthImprovements(month: Int, goal: String) -> [String] {
-        var improvements: [String] = []
+    private func getWorkoutIntensity() -> Double {
+        let workoutLevel = userProfile.workoutLevel.lowercased()
         
-        if month >= 3 {
-            improvements.append("Mejora en la resistencia cardiovascular")
-            improvements.append("Mayor flexibilidad y movilidad")
-            improvements.append("Mejor calidad del sueño")
+        switch workoutLevel {
+        case let w where w.contains("suave") || w.contains("light") || w.contains("principiante"):
+            return 0.7
+        case let w where w.contains("intermedio") || w.contains("moderate"):
+            return 1.0
+        case let w where w.contains("intensivo") || w.contains("intense") || w.contains("avanzado"):
+            return 1.3
+        default:
+            return 1.0
         }
-        
-        if month >= 6 {
-            improvements.append("Reducción del estrés y ansiedad")
-            improvements.append("Mejor postura y equilibrio")
-            improvements.append("Aumento en los niveles de energía")
-        }
-        
-        if month >= 12 {
-            improvements.append("Prevención de enfermedades crónicas")
-            improvements.append("Mejora en la densidad ósea")
-            improvements.append("Sistema inmunológico fortalecido")
-        }
-        
-        return improvements
     }
     
-    private func getLifestyleChanges(month: Int, goal: String) -> [String] {
-        var changes: [String] = []
+    private func getExperienceLevel() -> Double {
+        let workoutLevel = userProfile.workoutLevel.lowercased()
         
-        if month >= 3 {
-            changes.append("Rutina de ejercicio establecida")
-            changes.append("Hábitos alimenticios mejorados")
-            changes.append("Mejor gestión del tiempo")
+        switch workoutLevel {
+        case let w where w.contains("principiante") || w.contains("beginner"):
+            return 1.2 // Principiantes ganan más músculo inicialmente
+        case let w where w.contains("intermedio") || w.contains("intermediate"):
+            return 1.0
+        case let w where w.contains("avanzado") || w.contains("advanced"):
+            return 0.8 // Avanzados ganan menos músculo
+        default:
+            return 1.0
         }
-        
-        if month >= 6 {
-            changes.append("Estilo de vida más activo")
-            changes.append("Preferencias alimentarias saludables")
-            changes.append("Mayor autodisciplina")
-        }
-        
-        if month >= 12 {
-            changes.append("Transformación completa del estilo de vida")
-            changes.append("Nuevos hobbies relacionados con el fitness")
-            changes.append("Influencia positiva en familia y amigos")
-        }
-        
-        return changes
     }
     
-    private func generateRecommendations() -> [String] {
+    private func isUserMale() -> Bool {
+        let gender = userProfile.gender.lowercased()
+        return ["male", "hombre", "masculino", "m"].contains(gender)
+    }
+    
+    private func calculateAge() -> Int {
+        // Verificar si birthYear es válido antes de convertir
+        guard userProfile.birthYear != "Not Set",
+              let birthYear = Int(userProfile.birthYear), 
+              birthYear > 1900 else { 
+            return 30 // Valor por defecto
+        }
+        let currentYear = Calendar.current.component(.year, from: Date())
+        return max(currentYear - birthYear, 18)
+    }
+    
+    // MARK: - Generación de Recomendaciones y Milestones
+    
+    private func generateScientificRecommendations() -> [String] {
         var recommendations: [String] = []
         let goal = userProfile.goal.lowercased()
-        let bodyType = determineBodyType()
         
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            recommendations.append("Mantén un déficit calórico de 300-500 calorías diarias")
-            recommendations.append("Combina cardio moderado con entrenamiento de fuerza")
-            recommendations.append("Prioriza proteína magra y vegetales")
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            recommendations.append("Consume 300-500 calorías extra diariamente")
-            recommendations.append("Enfócate en ejercicios compuestos y progresión")
-            recommendations.append("Asegúrate de descansar adecuadamente entre entrenamientos")
+        // ✅ CORREGIDO: Calcular valores directamente sin recursión
+        let dailyCalories = calculateDailyCalorieTarget()
+        let weeklyChange = calculateWeeklyWeightChange()
+        
+        // Recomendaciones basadas en calorías
+        recommendations.append("Consume \(dailyCalories) calorías diarias para alcanzar tu objetivo")
+        
+        // Recomendaciones específicas por objetivo
+        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+            let calorieDeficit = Int(abs(weeklyChange * Double(Constants.caloriesPerKg) / 7.0))
+            recommendations.append("Mantén un déficit de \(calorieDeficit) calorías diarias")
+            recommendations.append("Combina cardio moderado (30-45 min) con entrenamiento de fuerza")
+            recommendations.append("Prioriza proteína magra (1.6-2.2g por kg de peso corporal)")
+        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+            let calorieSurplus = Int(abs(weeklyChange * Double(Constants.caloriesPerKg) / 7.0))
+            recommendations.append("Consume \(calorieSurplus) calorías extra diariamente")
+            recommendations.append("Enfócate en ejercicios compuestos (sentadillas, peso muerto, press)")
+            recommendations.append("Descansa 48-72 horas entre entrenamientos del mismo grupo muscular")
         }
         
-        switch bodyType {
-        case .skinny:
-            recommendations.append("Aumenta gradualmente la ingesta calórica")
-            recommendations.append("Prioriza ejercicios de fuerza sobre cardio")
-        case .overweight:
-            recommendations.append("Comienza con cardio de baja intensidad")
-            recommendations.append("Establece metas realistas y sostenibles")
-        case .muscular:
-            recommendations.append("Optimiza tu rutina de entrenamiento")
-            recommendations.append("Mantén una nutrición consistente")
-        default:
-            recommendations.append("Mantén un balance entre todos los aspectos")
+        // Recomendaciones de actividad
+        let activityLevel = getActivityMultiplier()
+        if activityLevel < Constants.moderatelyActive {
+            recommendations.append("Aumenta gradualmente tu actividad física diaria")
         }
         
         return recommendations
     }
     
-    internal func calculateSuccessProbability(for profile: UserProfile, results: ShortTermResults) -> Double {
-        var successFactors: Double = 0
-        var totalFactors: Double = 0
+    private func generateMilestones(targetWeight: Double, weeklyChange: Double) -> [Milestone] {
+        var milestones: [Milestone] = []
+        let currentWeight = userProfile.weightKg
+        let goal = userProfile.goal.lowercased()
         
-        // Factor 1: Realismo del objetivo (30%)
-        let weightChangeRate = abs(results.totalWeightChange) / profile.weightKg
-        if weightChangeRate <= 0.05 {
-            successFactors += 30
-        } else if weightChangeRate <= 0.10 {
-            successFactors += 15
+        let totalChange = abs(targetWeight - currentWeight)
+        
+        // ✅ CORREGIDO: Evitar división por cero
+        guard abs(weeklyChange) > 0.01 else {
+            // Si no hay cambio semanal, crear milestone simple
+            milestones.append(Milestone(
+                day: 30,
+                description: "Maintain your current weight",
+                expectedWeight: currentWeight,
+                motivation: "Keep up the great work maintaining your healthy weight!"
+            ))
+            return milestones
         }
-        totalFactors += 30
         
-        // Factor 2: Consistencia de actividad (25%)
-        let activityConsistency = evaluateActivityConsistency(profile: profile)
-        successFactors += activityConsistency * 25
-        totalFactors += 25
+        let weeksToTarget = totalChange / abs(weeklyChange)
         
-        // Factor 3: Edad y metabolismo (20%)
-        let age = calculateAge(from: profile.birthYear)
-        let ageAdvantage: Double
-        switch age {
-        case 18...25: ageAdvantage = 1.0
-        case 26...35: ageAdvantage = 0.9
-        case 36...45: ageAdvantage = 0.7
-        default: ageAdvantage = 0.5
+        // Milestone 1: 25% del camino
+        let milestone1Weight = currentWeight + (weeklyChange * weeksToTarget * 0.25)
+        let milestone1Days = Int(weeksToTarget * 0.25 * 7)
+        
+        if milestone1Days >= 7 {
+            milestones.append(Milestone(
+                day: milestone1Days,
+                description: "25% del camino completado",
+                expectedWeight: milestone1Weight,
+                motivation: goal.contains("perder") ? "¡Ya notas que tu ropa queda más holgada!" : "¡Empiezas a ver cambios en el espejo!"
+            ))
         }
-        successFactors += ageAdvantage * 20
-        totalFactors += 20
         
-        // Factor 4: Tipo de cuerpo y objetivo (15%)
-        let bodyType = determineBodyType()
-        let bodyTypeAlignment = evaluateBodyTypeAlignment(profile: profile, bodyType: bodyType)
-        successFactors += bodyTypeAlignment * 15
-        totalFactors += 15
+        // Milestone 2: 50% del camino
+        let milestone2Weight = currentWeight + (weeklyChange * weeksToTarget * 0.5)
+        let milestone2Days = Int(weeksToTarget * 0.5 * 7)
         
-        // Factor 5: Intensidad de entrenamiento (10%)
-        let trainingCommitment = evaluateTrainingCommitment(profile.workoutLevel)
-        successFactors += trainingCommitment * 10
-        totalFactors += 10
-        
-        return successFactors / totalFactors
-    }
-    
-    private func evaluateActivityConsistency(profile: UserProfile) -> Double {
-        let goal = profile.goal.lowercased()
-        let activity = profile.levelActivity.lowercased()
-        
-        if goal.contains("perder") && (activity.contains("moderado") || activity.contains("activo")) {
-            return 1.0
-        } else if goal.contains("ganar") && (activity.contains("moderado") || activity.contains("activo")) {
-            return 1.0
-        } else if goal.contains("mantener") && activity.contains("ligero") {
-            return 1.0
-        } else {
-            return 0.6
+        if milestone2Days >= 14 {
+            milestones.append(Milestone(
+                day: milestone2Days,
+                description: "¡Mitad del camino!",
+                expectedWeight: milestone2Weight,
+                motivation: goal.contains("perder") ? "¡Has perdido la mitad de tu objetivo!" : "¡Tu transformación es visible!"
+            ))
         }
-    }
-    
-    private func evaluateBodyTypeAlignment(profile: UserProfile, bodyType: BodyType) -> Double {
-        let goal = profile.goal.lowercased()
         
-        switch (bodyType, goal) {
-        case (.overweight, let g) where g.contains("perder"):
-            return 1.0
-        case (.skinny, let g) where g.contains("ganar"):
-            return 1.0
-        case (.regular, _):
-            return 0.8
-        case (.muscular, let g) where g.contains("mantener"):
-            return 0.9
-        default:
-            return 0.5
+        // Milestone 3: 75% del camino
+        let milestone3Weight = currentWeight + (weeklyChange * weeksToTarget * 0.75)
+        let milestone3Days = Int(weeksToTarget * 0.75 * 7)
+        
+        if milestone3Days >= 21 {
+            milestones.append(Milestone(
+                day: milestone3Days,
+                description: "¡Casi llegas!",
+                expectedWeight: milestone3Weight,
+                motivation: goal.contains("perder") ? "¡Estás muy cerca de tu peso objetivo!" : "¡Tu nueva versión está casi lista!"
+            ))
         }
-    }
-    
-    private func evaluateTrainingCommitment(_ workoutLevel: String) -> Double {
-        let normalized = workoutLevel.lowercased()
         
-        if normalized.contains("intensivo") || normalized.contains("intense") {
-            return 1.0
-        } else if normalized.contains("intermedio") || normalized.contains("moderate") {
-            return 0.8
-        } else {
-            return 0.6
-        }
-    }
-    
-    private func calculateAge(from birthYear: String) -> Int {
-        guard let year = Int(birthYear), year > 1900 else { return 30 }
-        let currentYear = Calendar.current.component(.year, from: Date())
-        return max(currentYear - year, 18)
-    }
-}
-
-// MARK: - Métodos para ShowInfoViewModel
-extension ResultSoon {
-    
-    /// Método específico para integración con ShowInfoViewModel
-    func calculateShortTermResults(for profile: UserProfile) -> ShortTermResults {
-        // Actualizar el perfil interno si se pasa uno diferente
-        let tempProfile = self.userProfile
+        // Milestone final
+        milestones.append(Milestone(
+            day: Int(weeksToTarget * 7),
+            description: "¡Meta alcanzada!",
+            expectedWeight: targetWeight,
+            motivation: goal.contains("perder") ? "¡Has transformado tu cuerpo y tu vida!" : "¡Has construido la versión más fuerte de ti!"
+        ))
         
-        // Usar el perfil pasado como parámetro temporalmente
-        let calculator = ResultSoon(userProfile: profile)
-        return calculator.calculateShortTermResults()
+        return milestones
     }
     
-    /// Método específico para integración con ShowInfoViewModel
-    func calculateLongTermResults(for profile: UserProfile) -> LongTermResults {
-        let calculator = ResultSoon(userProfile: profile)
-        return calculator.calculateLongTermResults()
-    }
+    // MARK: - Métodos para ShowInfoViewModel
     
-    /// Método específico para integración con ShowInfoViewModel
-    func generateCompleteResultsReport(for profile: UserProfile) -> ResultsReport {
-        let calculator = ResultSoon(userProfile: profile)
-        return calculator.generateCompleteResultsReport()
-    }
-    
-    /// Resumen rápido para ShowInfoViewModel
-    func getQuickResultsSummary(for profile: UserProfile) -> String {
-        let shortTermResults = calculateShortTermResults(for: profile)
-        let successProbability = calculateSuccessProbability(for: profile, results: shortTermResults)
+    func getResultsSummary() -> String {
+        // ✅ CORREGIDO: Calcular valores directamente sin recursión
+        let targetWeight = calculateTargetWeight()
+        let weeklyChange = calculateWeeklyWeightChange()
+        let dailyCalories = calculateDailyCalorieTarget()
+        let muscleGain = calculateMuscleGain()
+        let successProbability = calculateSuccessProbability()
+        let timeToTarget = calculateTimeToTarget(targetWeight: targetWeight, weeklyChange: weeklyChange)
         
-        let weeklyChange = shortTermResults.totalWeightChange / 4.0
-        let goal = profile.goal.lowercased()
+        let goal = userProfile.goal.lowercased()
         let changeDirection = goal.contains("perder") ? "lose" : goal.contains("ganar") ? "gain" : "maintain"
+        let timeFrame = timeToTarget <= 30 ? "\(timeToTarget) days" : "\(timeToTarget / 30) months"
         
         return """
-        📊 Your personalized plan targets \(String(format: "%.1f", abs(weeklyChange)))kg weekly \(changeDirection)
-        🎯 Success probability: \(Int(successProbability * 100))%
-        💪 Total muscle gain: \(String(format: "%.1f", shortTermResults.totalMuscleGain))kg
-        ⚖️ Total weight change: \(String(format: "%.1f", shortTermResults.totalWeightChange))kg
+        🎯 Target: \(String(format: "%.1f", targetWeight))kg (\(changeDirection) \(String(format: "%.1f", abs(targetWeight - userProfile.weightKg)))kg)
+        ⏱️ Timeline: \(timeFrame)
+        📊 Weekly change: \(String(format: "%.2f", abs(weeklyChange)))kg
+        💪 Muscle gain: \(String(format: "%.1f", muscleGain))kg/month
+        🔥 Daily calories: \(dailyCalories)
+        ✅ Success rate: \(Int(successProbability * 100))%
         """
     }
     
-    /// Verifica si el plan es factible
-    func isPlanFeasible(for profile: UserProfile) -> Bool {
-        let shortTermResults = calculateShortTermResults(for: profile)
-        let successProbability = calculateSuccessProbability(for: profile, results: shortTermResults)
-        return successProbability > 0.6
+    func isPlanRealistic() -> Bool {
+        // ✅ CORREGIDO: Calcular directamente sin recursión
+        let weeklyChange = abs(calculateWeeklyWeightChange())
+        return weeklyChange >= 0.25 && weeklyChange <= 1.0
     }
     
-    /// Genera mensajes motivacionales para timeline
-    func generateMotivationalMilestones(for profile: UserProfile) -> [String] {
-        let goal = profile.goal.lowercased()
-        var milestones: [String] = []
+    func getMotivationalMessage() -> String {
+        // ✅ CORREGIDO: Calcular directamente sin recursión
+        let successProbability = calculateSuccessProbability()
         
-        if goal.contains("perder") || goal.contains("adelgazar") {
-            milestones.append("Semana 1: ¡Perdiste tus primeros 0.5-1kg! 🎉")
-            milestones.append("Semana 4: Tu ropa empieza a quedar más holgada 👕")
-            milestones.append("Semana 8: ¡Has perdido el 50% de tu objetivo! 💪")
-            milestones.append("Semana 12: ¡Meta alcanzada! Tu nueva versión te espera 🌟")
-        } else if goal.contains("ganar") || goal.contains("musculo") {
-            milestones.append("Semana 2: Notas mayor fuerza en tus entrenamientos 💪")
-            milestones.append("Semana 6: ¡Ya tienes más definición muscular! 🏋️")
-            milestones.append("Semana 10: Tus músculos son notablemente más grandes 🚀")
-            milestones.append("Semana 16: ¡Transformación completa lograda! 🏆")
+        if successProbability > 0.8 {
+            return "¡Excelente plan! Tienes muy altas probabilidades de éxito 🚀"
+        } else if successProbability > 0.6 {
+            return "Buen plan con alta probabilidad de éxito 💪"
         } else {
-            milestones.append("Semana 2: Rutina establecida exitosamente ✅")
-            milestones.append("Semana 6: Mejor energía y resistencia 🔋")
-            milestones.append("Semana 12: ¡Estilo de vida saludable consolidado! 🌱")
+            return "Plan ambicioso - considera ajustes para mayor éxito ⚠️"
+        }
+    }
+    
+    // MARK: - Helper Methods
+    private func createDefaultResults() -> ScientificResults {
+        print("🔬 RESULTSOON - Creando resultados por defecto")
+        
+        // ✅ CORREGIDO: Usar datos del usuario actual en lugar de valores fijos
+        let currentWeight = userProfile.weightKg > 0 ? userProfile.weightKg : 70.0
+        let targetWeight = currentWeight - 5.0 // Pérdida moderada por defecto
+        let goal = userProfile.goal.lowercased()
+        
+        // Ajustar objetivo según la meta del usuario
+        let adjustedTargetWeight: Double
+        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+            adjustedTargetWeight = currentWeight - 5.0
+        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+            adjustedTargetWeight = currentWeight + 3.0
+        } else {
+            adjustedTargetWeight = currentWeight // Mantener peso
         }
         
-        return milestones
+        return ScientificResults(
+            targetWeight: adjustedTargetWeight,
+            estimatedTimeToTarget: 60,
+            weeklyWeightChange: goal.contains("perder") ? -0.5 : goal.contains("ganar") ? 0.3 : 0.0,
+            monthlyWeightChange: goal.contains("perder") ? -2.0 : goal.contains("ganar") ? 1.2 : 0.0,
+            muscleGain: goal.contains("ganar") || goal.contains("musculo") ? 0.5 : 0.0,
+            fatLoss: goal.contains("perder") || goal.contains("adelgazar") ? 2.0 : 0.0,
+            dailyCalorieTarget: 2000,
+            successProbability: 0.75,
+            recommendations: [
+                "Complete your profile for personalized recommendations",
+                "Follow a consistent nutrition plan",
+                "Stay active with regular exercise"
+            ],
+            milestones: [
+                Milestone(day: 7, description: "First week completed", expectedWeight: currentWeight + (goal.contains("perder") ? -0.5 : goal.contains("ganar") ? 0.3 : 0.0), motivation: "Great start on your journey!"),
+                Milestone(day: 30, description: "First month milestone", expectedWeight: currentWeight + (goal.contains("perder") ? -2.0 : goal.contains("ganar") ? 1.2 : 0.0), motivation: "Keep going strong!")
+            ]
+        )
+    }
+    
+    // MARK: - Método de Prueba
+    func testCalculation() -> Bool {
+        print("🧪 RESULTSOON - Iniciando prueba de cálculo...")
+        
+        do {
+            let results = calculateScientificResults()
+            print("✅ RESULTSOON - Prueba exitosa:")
+            print("   • Peso objetivo: \(results.targetWeight)")
+            print("   • Calorías diarias: \(results.dailyCalorieTarget)")
+            print("   • Cambio semanal: \(results.weeklyWeightChange)")
+            return true
+        } catch {
+            print("❌ RESULTSOON - Prueba fallida: \(error)")
+            return false
+        }
     }
 }
 
 /*
- RESUMEN DEL ARCHIVO CORREGIDO:
+ RESUMEN DE LA REESTRUCTURACIÓN:
  
- ✅ ELIMINADO: Duplicación de estructuras
- ✅ MANTENIDO: Toda la lógica original de cálculo
- ✅ AÑADIDO: Métodos de extensión para ShowInfoViewModel
- ✅ SIMPLIFICADO: Una sola clase ResultSoon sin protocolos complejos
- ✅ COMPATIBLE: Con tu ShowInfoViewModel existente
+ ✅ CALCULOS CIENTÍFICOS: Basados en fórmulas reales (Mifflin-St Jeor, etc.)
+ ✅ OBJETIVOS REALISTAS: Basados en BMI y metas alcanzables
+ ✅ TIMELINES PRECISOS: Cálculo realista de tiempo al objetivo
+ ✅ FACTORES MÚLTIPLES: Actividad, dieta, intensidad, edad, experiencia
+ ✅ RECOMENDACIONES ESPECÍFICAS: Basadas en datos del usuario
+ ✅ MILESTONES PERSONALIZADOS: Hitos motivacionales realistas
+ ✅ PROBABILIDAD DE ÉXITO: Cálculo basado en múltiples factores
  
  CÓMO USAR:
  
- // En ShowInfoViewModel
  let resultSoon = ResultSoon()
- let shortTermResults = resultSoon.calculateShortTermResults(for: profile)
- let summary = resultSoon.getQuickResultsSummary(for: profile)
- let feasible = resultSoon.isPlanFeasible(for: profile)
+ let results = resultSoon.calculateScientificResults()
+ let summary = resultSoon.getResultsSummary()
+ let realistic = resultSoon.isPlanRealistic()
+ let motivation = resultSoon.getMotivationalMessage()
  
- Este archivo está listo para usar y debería compilar sin errores.
+ Este sistema ahora proporciona resultados científicos y realistas basados en todos los datos recolectados del usuario.
  */

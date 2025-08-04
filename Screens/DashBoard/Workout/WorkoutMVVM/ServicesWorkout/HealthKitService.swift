@@ -7,7 +7,7 @@ class HealthKitService: ObservableObject {
     
     // MARK: - Published Properties
     @Published var isAuthorized: Bool = false
-    @Published var currentHeartRate: Int = 0
+    @Published var currentHeartRate: Int? = nil
     @Published var authorizationStatus: HKAuthorizationStatus = .notDetermined
     @Published var lastUpdated: Date = Date()
     
@@ -96,6 +96,79 @@ class HealthKitService: ObservableObject {
             healthStore.stop(query)
             heartRateQuery = nil
         }
+    }
+    
+    /// Obtiene las calorías activas quemadas para una fecha específica
+    func getActiveCaloriesForDate(_ date: Date, completion: @escaping (Double) -> Void) {
+        guard isAuthorized else {
+            print("HealthKitService: Not authorized for calories")
+            completion(0.0)
+            return
+        }
+        
+        let now = Date()
+        let startOfDay = Calendar.current.startOfDay(for: date)
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay) ?? now
+        
+        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+        
+        let query = HKStatisticsQuery(quantityType: activeEnergyType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("HealthKitService: Error fetching calories: \(error.localizedDescription)")
+                    completion(0.0)
+                    return
+                }
+                
+                if let sum = result?.sumQuantity() {
+                    let calories = sum.doubleValue(for: .kilocalorie())
+                    print("HealthKitService: Fetched \(calories) calories for \(date)")
+                    completion(calories)
+                } else {
+                    print("HealthKitService: No calories data available for \(date)")
+                    completion(0.0)
+                }
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    /// Obtiene el ritmo cardíaco promedio para una fecha específica
+    func getHeartRateForDate(_ date: Date, completion: @escaping (Double?) -> Void) {
+        guard isAuthorized else {
+            completion(nil)
+            return
+        }
+        
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        
+        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+        
+        let query = HKStatisticsQuery(
+            quantityType: heartRateType,
+            quantitySamplePredicate: predicate,
+            options: .discreteAverage
+        ) { _, statistics, error in
+            DispatchQueue.main.async {
+                if let error = error {
+                    print("Error fetching heart rate data: \(error.localizedDescription)")
+                    completion(nil)
+                    return
+                }
+                
+                if let average = statistics?.averageQuantity() {
+                    let heartRate = average.doubleValue(for: HKUnit(from: "count/min"))
+                    completion(heartRate)
+                } else {
+                    completion(nil)
+                }
+            }
+        }
+        
+        healthStore.execute(query)
     }
     
     /// Obtiene el ritmo cardíaco promedio para un período específico
@@ -222,15 +295,26 @@ class HealthKitService: ObservableObject {
     
     private func checkAuthorizationStatus() {
         guard HKHealthStore.isHealthDataAvailable() else {
+            print("HealthKit no está disponible")
             isAuthorized = false
             authorizationStatus = .notDetermined
             return
         }
         
         let status = healthStore.authorizationStatus(for: heartRateType)
+        print("HealthKit authorization status: \(status.rawValue)")
+        
         DispatchQueue.main.async {
             self.authorizationStatus = status
             self.isAuthorized = status == .sharingAuthorized
+            
+            print("HealthKit isAuthorized set to: \(self.isAuthorized)")
+            
+            // Si ya está autorizado, iniciar monitoreo automáticamente
+            if status == .sharingAuthorized {
+                print("HealthKit already authorized, starting monitoring")
+                self.startHeartRateMonitoring()
+            }
         }
     }
     

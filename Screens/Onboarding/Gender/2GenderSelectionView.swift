@@ -3,7 +3,7 @@ import SwiftUI
 struct GenderSelectionView: View {
     @State private var selectedGender: Gender? = nil
     @State private var navigateToGoal = false
-    @ObservedObject var progressViewModel: ProgressViewModel
+
     @ObservedObject var viewModel: GenderSelectionViewModel
     @Environment(\.dismiss) var dismiss
     
@@ -143,7 +143,7 @@ struct GenderSelectionView: View {
                             if let gender = selectedGender {
                                 viewModel.selectedGender = gender
                             }
-                            progressViewModel.advanceProgress()
+    
                             navigateToGoal = true
                         }) {
                             HStack(spacing: 8) {
@@ -169,7 +169,7 @@ struct GenderSelectionView: View {
                         .padding(.bottom, 20)
                         
                         NavigationLink(
-                            destination: GoalView(viewModel: GoalViewModel(), progressViewModel: progressViewModel),
+                            destination: GoalView(viewModel: GoalViewModel()),
                             isActive: $navigateToGoal
                         ) {
                             EmptyView()
@@ -196,10 +196,9 @@ extension Color {
 struct GenderSelectionView_Previews: PreviewProvider {
     static var previews: some View {
         NavigationView {
-            GenderSelectionView(
-                progressViewModel: ProgressViewModel(),
-                viewModel: GenderSelectionViewModel()
-            )
+                    GenderSelectionView(
+            viewModel: GenderSelectionViewModel()
+        )
         }
         .preferredColorScheme(.light)
     }

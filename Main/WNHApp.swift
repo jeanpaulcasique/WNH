@@ -7,7 +7,6 @@ struct WNHApp: App {
     @StateObject private var sessionManager = UserSessionManager()
     
     // ✅ OPTIMIZACIÓN: Lazy loading de ViewModels pesados
-    @State private var progressViewModel: ProgressViewModel?
     @State private var dietViewModel: DietViewModel?
 
     var body: some Scene {
@@ -19,33 +18,45 @@ struct WNHApp: App {
                 
                 Group {
                     if sessionManager.isLoggedIn {
-                        DashboardView()
-                            .environmentObject(dietViewModel ?? DietViewModel())
-                            .onAppear {
-                                // ✅ OPTIMIZACIÓN: Cargar ViewModels solo cuando se necesiten
-                                if dietViewModel == nil {
-                                    dietViewModel = DietViewModel()
-                                }
-                                dietViewModel?.startWaterRemindersThreeTimes()
-                                if let dietVM = dietViewModel {
-                                    Task {
-                                        await dietVM.loadHeavyDataIfNeeded()
+                        if sessionManager.shouldShowOnboarding {
+                            // Mostrar onboarding si el usuario no lo ha completado
+                            // Por ahora, mostrar la primera vista del onboarding
+                            GenderSelectionView(
+                                viewModel: GenderSelectionViewModel()
+                            )
+                            .environmentObject(sessionManager)
+                        } else {
+                            // Mostrar dashboard si ya completó el onboarding
+                            DashboardView()
+                                .environmentObject(dietViewModel ?? DietViewModel())
+                                .onAppear {
+                                    // ✅ OPTIMIZACIÓN: Cargar ViewModels solo cuando se necesiten
+                                    if dietViewModel == nil {
+                                        dietViewModel = DietViewModel()
+                                    }
+                                    dietViewModel?.startWaterRemindersThreeTimes()
+                                    if let dietVM = dietViewModel {
+                                        Task {
+                                            await dietVM.loadHeavyDataIfNeeded()
+                                        }
                                     }
                                 }
-                            }
+                        }
                     } else {
                         LoginView(viewModel: LoginViewModel())
                     }
                 }
             }
             .environmentObject(sessionManager)
-            .environmentObject(progressViewModel ?? ProgressViewModel())
+
             .preferredColorScheme(.dark)
             .onAppear {
-                // ✅ OPTIMIZACIÓN: Inicializar ProgressViewModel solo si es necesario
-                if progressViewModel == nil {
-                    progressViewModel = ProgressViewModel()
-                }
+                
+                
+                // 🔧 TEMPORAL: Resetear solo onboarding para testing (quitar en producción)
+                #if DEBUG
+                // sessionManager.resetOnboarding() // Descomenta esta línea si quieres forzar el onboarding
+                #endif
             }
         }
     }

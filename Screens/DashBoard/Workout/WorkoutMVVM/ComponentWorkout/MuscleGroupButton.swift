@@ -6,13 +6,53 @@ struct MuscleGroupButton: View {
     @State private var cardioBounce = false
     @State private var waveAnimation = false
     
+    // Propiedades computadas para configuraciones específicas por músculo
+    private var lineLengthForMuscle: CGFloat {
+        switch muscleGroup.name {
+        case "Abs":
+            return 100 // Línea más larga para abs
+        case "Obliques":
+            return 95 // Línea más larga para obliques
+        case "Glutes", "Lower Back":
+            return 120 // Línea aún más larga para glúteos y lower back
+        default:
+            return MuscleButtonPositions.LineConfig.lineLength
+        }
+    }
+    
+    private var lineOffsetForMuscle: CGFloat {
+        switch muscleGroup.name {
+        case "Abs":
+            return 50 // Offset más largo para abs
+        case "Obliques":
+            return 48 // Offset más largo para obliques
+        case "Glutes", "Lower Back":
+            return 60 // Offset aún más largo para glúteos y lower back
+        default:
+            return MuscleButtonPositions.LineConfig.lineOffset
+        }
+    }
+    
+    private var textOffsetForMuscle: CGFloat {
+        switch muscleGroup.name {
+        case "Abs":
+            return 120 // Offset de texto más largo para abs
+        case "Obliques":
+            return 115 // Offset de texto más largo para obliques
+        case "Glutes", "Lower Back":
+            return 140 // Offset de texto aún más largo para glúteos y lower back
+        default:
+            return MuscleButtonPositions.LineConfig.textOffset
+        }
+    }
+    
     var body: some View {
         Button(action: action) {
             ZStack {
                 // Botón especial para Cardio con icono de correr
                 if muscleGroup.name == "Cardio" {
                     Image(systemName: "figure.run")
-                        .font(.system(size: 24, weight: .medium))
+                        .font(.system(size: 32, weight: .medium))
                         .foregroundColor(.yellow)
                         .scaleEffect(cardioBounce ? 1.1 : 1.0)
                         .animation(.easeInOut(duration: 0.6).repeatForever(autoreverses: true), value: cardioBounce)
@@ -40,7 +80,7 @@ struct MuscleGroupButton: View {
                     // Línea punteada horizontal solo para músculos que no son cardio
                     Rectangle()
                         .fill(Color.gray.opacity(0.6))
-                        .frame(width: MuscleButtonPositions.LineConfig.lineLength, height: 1)
+                        .frame(width: lineLengthForMuscle, height: 1)
                         .mask(
                             Rectangle()
                                 .fill(
@@ -52,16 +92,16 @@ struct MuscleGroupButton: View {
                                 )
                         )
                         .offset(x: muscleGroup.isLeftSide ? 
-                               -MuscleButtonPositions.LineConfig.lineOffset : 
-                               MuscleButtonPositions.LineConfig.lineOffset, y: 0)
+                               -lineOffsetForMuscle : 
+                               lineOffsetForMuscle, y: 0)
                     
                     // Texto del músculo solo para músculos que no son cardio
                     Text(muscleGroup.name)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.white)
                         .offset(x: muscleGroup.isLeftSide ? 
-                               -MuscleButtonPositions.LineConfig.textOffset : 
-                               MuscleButtonPositions.LineConfig.textOffset, y: 0)
+                               -textOffsetForMuscle : 
+                               textOffsetForMuscle, y: 0)
                 }
             }
         }

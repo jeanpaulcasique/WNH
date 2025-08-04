@@ -61,10 +61,10 @@ class WorkoutServiceTests: XCTestCase {
         XCTAssertEqual(workoutService.selectedWorkoutMode, .atHome)
         
         // When
-        workoutService.changeWorkoutMode(.atGym)
+        workoutService.changeWorkoutMode(.atTheGym)
         
         // Then
-        XCTAssertEqual(workoutService.selectedWorkoutMode, .atGym)
+        XCTAssertEqual(workoutService.selectedWorkoutMode, .atTheGym)
     }
     
     func testChangeWorkoutModeUpdatesUserDefaults() {
@@ -87,7 +87,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let backExercise = Exercise(
             name: "Pull-ups",
@@ -95,7 +95,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Intermediate",
             videoURL: nil,
             muscleGroups: ["Back"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         
         workoutService.allExercises = [chestExercise, backExercise]
@@ -116,7 +116,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let gymExercise = Exercise(
             name: "Bench Press",
@@ -124,14 +124,14 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Advanced",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "barbell"
+            equipment: ["barbell"]
         )
         
         workoutService.allExercises = [homeExercise, gymExercise]
         
         // When
         let homeExercises = workoutService.getExercisesForLocation(.atHome)
-        let gymExercises = workoutService.getExercisesForLocation(.atGym)
+        let gymExercises = workoutService.getExercisesForLocation(.atTheGym)
         
         // Then
         XCTAssertEqual(homeExercises.count, 1)
@@ -149,7 +149,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let chestGymExercise = Exercise(
             name: "Bench Press",
@@ -157,7 +157,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Advanced",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "barbell"
+            equipment: ["barbell"]
         )
         
         workoutService.allExercises = [chestHomeExercise, chestGymExercise]
@@ -183,7 +183,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let exercise2 = Exercise(
             name: "Pull-ups",
@@ -191,7 +191,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Intermediate",
             videoURL: nil,
             muscleGroups: ["Back"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         
         workoutService.allExercises = [exercise1, exercise2]
@@ -212,7 +212,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let exercise2 = Exercise(
             name: "Pull-ups",
@@ -220,7 +220,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Intermediate",
             videoURL: nil,
             muscleGroups: ["Back"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         
         workoutService.allExercises = [exercise1, exercise2]
@@ -241,7 +241,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let exercise2 = Exercise(
             name: "Bench Press",
@@ -249,7 +249,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Advanced",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "barbell"
+            equipment: ["barbell"]
         )
         
         workoutService.allExercises = [exercise1, exercise2]
@@ -270,7 +270,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         
         workoutService.allExercises = [exercise1]
@@ -293,7 +293,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Beginner",
             videoURL: nil,
             muscleGroups: ["Chest"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         let exercise2 = Exercise(
             name: "Pull-ups",
@@ -301,7 +301,7 @@ class WorkoutServiceTests: XCTestCase {
             difficulty: "Intermediate",
             videoURL: nil,
             muscleGroups: ["Back"],
-            equipment: "bodyweight"
+            equipment: ["bodyweight"]
         )
         
         workoutService.allExercises = [exercise1, exercise2]
