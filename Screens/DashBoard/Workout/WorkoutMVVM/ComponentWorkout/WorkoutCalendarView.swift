@@ -20,7 +20,8 @@ struct WorkoutCalendarView: View {
                     progress: progressManager.getProgress(for: date).completionPercentage,
                     date: date,
                     isToday: Calendar.current.isDateInToday(date),
-                    steps: workoutViewModel.getStepsForDate(date)
+                    steps: workoutViewModel.getStepsForDate(date),
+                    workoutViewModel: workoutViewModel
                 )
                 .onTapGesture {
                     self.selectedDateWrapper = IdentifiableDate(date: date)
@@ -44,17 +45,59 @@ struct WorkoutDayProgressCircle: View {
     let date: Date
     let isToday: Bool
     let steps: Int
+    @ObservedObject var workoutViewModel: WorkoutViewModel
+    
+    // ✅ Calcular progreso diario basado en ejercicios y pasos (misma lógica que HeaderProgressCard)
+    private var dailyProgressPercentage: Double {
+        let exercisesProgress = calculateExercisesProgress()
+        let stepsProgress = calculateStepsProgress()
+        
+        // Promedio ponderado: 70% ejercicios, 30% pasos
+        let totalProgress = (exercisesProgress * 0.7) + (stepsProgress * 0.3)
+        
+        return min(totalProgress, 1.0)
+    }
+    
+    // ✅ Calcular progreso de ejercicios
+    private func calculateExercisesProgress() -> Double {
+        let targetExercises = 10 // Meta diaria de ejercicios
+        let completedExercises = getExercisesCompletedForDate()
+        
+        let progress = Double(completedExercises) / Double(targetExercises)
+        return min(progress, 1.0)
+    }
+    
+    // ✅ Calcular progreso de pasos
+    private func calculateStepsProgress() -> Double {
+        let targetSteps = workoutViewModel.userPreferencesService.recommendedDailySteps
+        let completedSteps = workoutViewModel.getStepsForDate(date)
+        
+        let progress = Double(completedSteps) / Double(targetSteps)
+        return min(progress, 1.0)
+    }
+    
+    // ✅ Obtener ejercicios completados para una fecha específica
+    private func getExercisesCompletedForDate() -> Int {
+        // Usar el progressManager para obtener datos históricos
+        let progressManager = WorkoutProgressManager()
+        let dayProgress = progressManager.getProgress(for: date)
+        return dayProgress.exercisesCompleted
+    }
     
     var progressColor: Color {
-        switch progress {
+        let percentage = dailyProgressPercentage
+        
+        switch percentage {
         case 0.0..<0.25:
             return .red
         case 0.25..<0.5:
             return .orange
         case 0.5..<0.75:
             return .yellow
-        default:
+        case 0.75...1.0:
             return .green
+        default:
+            return .red
         }
     }
     
@@ -65,14 +108,14 @@ struct WorkoutDayProgressCircle: View {
                     .stroke(Color.white.opacity(0.15), lineWidth: 5)
                     .frame(width: 42, height: 42) // Tamaño círculo
                 Circle()
-                    .trim(from: 0, to: progress)
+                    .trim(from: 0, to: dailyProgressPercentage)
                     .stroke(
-                        isToday ? Color.yellow : progressColor, // Ahora amarillo para el día actual
+                        progressColor, // ✅ Siempre usar el color de progreso, no amarillo
                         style: StrokeStyle(lineWidth: 5, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
                     .frame(width: 42, height: 42) // Tamaño círculo
-                    .animation(.easeInOut(duration: 0.7), value: progress)
+                    .animation(.easeInOut(duration: 0.7), value: dailyProgressPercentage)
                 Text(dayNumber)
                     .font(.system(size: 18, weight: .bold)) // Tamaño número
                     .foregroundColor(isToday ? .yellow : .white) // También el número en amarillo

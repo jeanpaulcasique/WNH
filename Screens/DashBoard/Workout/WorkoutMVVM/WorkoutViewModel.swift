@@ -147,6 +147,16 @@ class WorkoutViewModel: ObservableObject {
         healthKitService.getActiveCaloriesForDate(date, completion: completion)
     }
     
+    /// Obtiene los pasos para una fecha específica desde HealthKit
+    func getStepsForDateFromHealthKit(_ date: Date, completion: @escaping (Int?) -> Void) {
+        healthKitService.getStepsForDate(date, completion: completion)
+    }
+    
+    /// Guarda los pasos del día actual
+    func saveTodaySteps(_ steps: Int) {
+        dailyStepsStorage.saveTodaySteps(steps)
+    }
+    
     /// Solicita autorización de HealthKit
     func requestHealthKitAuthorization() {
         healthKitService.requestAuthorization()

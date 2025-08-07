@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - Nutrition Calculator
+
 // MARK: - Enhanced CalculatorNutrition.swift
 // Fusión de la lógica existente con arquitectura moderna
 

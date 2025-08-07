@@ -29,6 +29,8 @@ struct DietView: View {
     @StateObject private var daySelectorVM = DaySelectorViewModel()
     @StateObject private var todaysMealsVM = TodaysMealsViewModel()
     @State private var showGrocerySheet = false
+    @State private var showFoodScanner = false
+    @State private var showWaterAlert = false
     @State private var headerScale: CGFloat = 1.0
     @State private var showCalorieAlert = false
     @State private var currentTipIndex = 0
@@ -47,7 +49,22 @@ struct DietView: View {
                 .ignoresSafeArea()
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 30) {
+                    VStack(spacing: 10) {
+                        // Header title section
+                        VStack(spacing: 16) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "fork.knife.circle.fill")
+                                    .font(.system(size: 36, weight: .bold))
+                                    .foregroundColor(.appYellow)
+                                
+                                Text("Samson's Diet")
+                                    .font(.system(size: 32, weight: .bold))
+                                    .foregroundColor(.white)
+                            }
+                        }
+                        .padding(.top, 20)
+                        .padding(.bottom, 5)
+                        
                         headerSection
                         nutritionOverviewSection
                         
@@ -66,12 +83,33 @@ struct DietView: View {
                     .padding(.bottom, 100)
                 }
                 
-                // Floating grocery button
+                // Floating buttons
                 VStack {
                     Spacer()
-                    groceryFloatingButton
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 20)
+                    HStack(spacing: 8) {
+                        Spacer()
+                        // Food scanner button
+                        Button(action: {
+                            showFoodScanner = true
+                            let generator = UIImpactFeedbackGenerator(style: .medium)
+                            generator.impactOccurred()
+                        }) {
+                            Image(systemName: "camera.viewfinder")
+                                .font(.system(size: 24))
+                                .foregroundColor(.appBlack)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 14)
+                                .background(Color.appYellow)
+                                .cornerRadius(18)
+                                .shadow(color: Color.appYellow.opacity(0.3), radius: 6, x: 0, y: 3)
+                        }
+                        
+                        groceryFloatingButton
+                        
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 20)
                 }
             }
             .navigationBarHidden(true)
@@ -80,6 +118,12 @@ struct DietView: View {
         .preferredColorScheme(.dark)
         .sheet(isPresented: $showGrocerySheet) {
             GroceryListSheetView2(groceryListViewModel: vm.groceryListViewModel)
+        }
+        .sheet(isPresented: $showFoodScanner) {
+            FoodScannerView()
+        }
+        .sheet(isPresented: $showWaterAlert) {
+            WaterInfoSheet()
         }
         .alert("Calorie Target", isPresented: $showCalorieAlert) {
             Button("OK", role: .cancel) { }
@@ -163,45 +207,29 @@ extension DietView {
 private extension DietView {
     
     var headerSection: some View {
-        VStack(spacing: 8) {
-            HStack {
-                    Image(systemName: "fork.knife.circle.fill")
-                    .font(.system(size: 28, weight: .bold))
-                    .foregroundColor(.appYellow)
-                Text(userName != nil ? "¡Hola, \(userName!)!" : "¡Listo para comer saludable!")
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundColor(.appYellow)
-                Spacer()
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(0..<dietTips.count, id: \.self) { index in
+                    dietTipCard(tip: dietTips[index])
+                }
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 12)
-            .padding(.bottom, 2)
-            
-            ZStack {
-                ForEach(0..<dietTips.count, id: \.self) { i in
-                    if i == currentTipIndex {
-                        Text(dietTips[i])
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(.appWhite.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                            .padding(.horizontal, 12)
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.85)
-                            .id(i)
-                            .opacity(animateTip ? 1 : 0)
-                            .offset(y: animateTip ? 0 : 30)
-                            .animation(.spring(response: 0.7, dampingFraction: 0.7), value: animateTip)
-                    }
-            }
+            .padding(.horizontal, 3)
         }
-            .frame(height: 36)
-        }
-        .background(.ultraThinMaterial)
-        .cornerRadius(18)
-        .shadow(color: Color.appYellow.opacity(0.08), radius: 8, x: 0, y: 2)
-        .padding(.horizontal, 8)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.top, 10)
+        .padding(.bottom, 0)
+    }
+    
+    private func dietTipCard(tip: String) -> some View {
+        Text(tip)
+            .font(.system(size: 15, weight: .medium))
+            .foregroundColor(.appWhite.opacity(0.85))
+            .multilineTextAlignment(.center)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(width: 280, height: 80)
+            .background(.ultraThinMaterial)
+            .cornerRadius(18)
+            .shadow(color: Color.appYellow.opacity(0.08), radius: 8, x: 0, y: 2)
     }
     
     var nutritionOverviewSection: some View {
@@ -231,7 +259,7 @@ private extension DietView {
                     value: vm.calculateRecommendedWaterIntake(),
                     subtitle: "recommended",
                     color: .cyan,
-                    action: nil
+                    action: { showWaterAlert = true }
                 )
             }
             .opacity(vm.showNutritionCards ? 1 : 0)
@@ -242,63 +270,37 @@ private extension DietView {
     var groceryFloatingButton: some View {
         Button(action: {
             showGrocerySheet = true
-            
-            // Haptic feedback
             let generator = UIImpactFeedbackGenerator(style: .medium)
             generator.impactOccurred()
         }) {
-            HStack(spacing: 10) {
-                // Carrito de compras
+            HStack(spacing: 1) {
                 ZStack {
                     Circle()
                         .fill(Color.appYellow)
-                        .frame(width: 65, height: 45)
-                        .shadow(color: Color.appYellow.opacity(0.3), radius: 8, x: 0, y: 4)
-                        .padding(.bottom, 3)
+                        .frame(width: 50, height: 35)
+                        .shadow(color: Color.appYellow.opacity(0.3), radius: 6, x: 0, y: 3)
                     
-                    // Icono del carrito
                     Image(systemName: "cart.fill")
-                        .font(.system(size: 19))
+                        .font(.system(size: 20))
                         .foregroundColor(.appBlack)
                     
-                    // Indicador de progreso
                     if !vm.isGroceryListEmpty {
                         Circle()
                             .fill(vm.isGroceryListCompleted ? Color.green : Color.orange)
-                            .frame(width: 10, height: 10)
+                            .frame(width: 8, height: 8)
                             .overlay(
                                 Circle()
                                     .stroke(Color.appBlack, lineWidth: 1)
                             )
-                            .offset(x: 15, y: -8)
+                            .offset(x: 12, y: -6)
                     }
                 }
-                
-                // Texto y contador
-                VStack(alignment: .leading, spacing: 0) {
-                    Text("Grocery")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(.appBlack)
-                    
-                    if !vm.isGroceryListEmpty {
-                        Text("\(vm.groceryListCheckedCount)/\(vm.groceryListTotalCount)")
-                            .font(.system(size: 11))
-                            .foregroundColor(.appBlack.opacity(0.7))
-                    }
-                }
-                .padding(.leading, 0)
-                
-                // Flecha
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.appBlack.opacity(0.7))
-                    .padding(.leading, 3)
-                }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            }
+            .padding(.horizontal, 4)
+            .padding(.vertical, 9)
             .background(Color.appYellow)
-            .cornerRadius(22)
-            .shadow(color: Color.appYellow.opacity(0.3), radius: 8, x: 0, y: 4)
+            .cornerRadius(18)
+            .shadow(color: Color.appYellow.opacity(0.3), radius: 6, x: 0, y: 3)
         }
         .buttonStyle(PlainButtonStyle())
     }

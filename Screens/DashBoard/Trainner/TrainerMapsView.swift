@@ -23,6 +23,9 @@ struct TrainersMapsView: View {
                 viewModel.setTrainers(trainers)
                 viewModel.onAppearMap() // Centrar en la ubicación del usuario al entrar
             }
+            .onDisappear {
+                viewModel.stopLocationUpdates() // Detener actualizaciones cuando se sale
+            }
         }
         .preferredColorScheme(.dark)
     }
@@ -117,8 +120,12 @@ private extension TrainersMapsView {
     
     var mapSection: some View {
         ZStack {
-            // Mapa real con pines de entrenadores
-            Map(coordinateRegion: $viewModel.region, annotationItems: trainers) { trainer in
+            // Mapa real con pines de entrenadores y ubicación del usuario
+            Map(coordinateRegion: $viewModel.region, 
+                interactionModes: .all,
+                showsUserLocation: true,
+                userTrackingMode: .constant(.none),
+                annotationItems: trainers) { trainer in
                 MapAnnotation(coordinate: CLLocationCoordinate2D(latitude: trainer.location.latitude, longitude: trainer.location.longitude)) {
                     Button(action: {
                         selectedTrainer = trainer
@@ -142,7 +149,10 @@ private extension TrainersMapsView {
                     VStack(spacing: 8) {
                         mapControlButton("+") { viewModel.zoomIn() }
                         mapControlButton("-") { viewModel.zoomOut() }
-                        mapControlButton("⊙") { viewModel.centerMapOnUserLocation() }
+                        mapControlButton("📍") { 
+                            viewModel.centerMapOnUserLocation()
+                            viewModel.requestLocationPermission()
+                        }
                     }
                 }
                 Spacer()
@@ -159,17 +169,26 @@ private extension TrainersMapsView {
     func mapControlButton(_ symbol: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(symbol)
-                .font(.system(size: 18, weight: .bold))
+                .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(.white)
-                .frame(width: 40, height: 40)
-                .background(Color.gray.opacity(0.7))
-                .cornerRadius(8)
+                .frame(width: 44, height: 44)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.black.opacity(0.7))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                        )
+                )
+                .shadow(color: .black.opacity(0.3), radius: 4, x: 0, y: 2)
         }
         .highPriorityGesture(TapGesture().onEnded {
             action()
         })
         .allowsHitTesting(true)
         .zIndex(5)
+        .scaleEffect(viewModel.isUserLocationPulsing ? 1.1 : 1.0)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isUserLocationPulsing)
     }
 }
 

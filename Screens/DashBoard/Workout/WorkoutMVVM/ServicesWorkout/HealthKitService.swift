@@ -20,6 +20,7 @@ class HealthKitService: ObservableObject {
     private let heartRateType = HKQuantityType.quantityType(forIdentifier: .heartRate)!
     private let workoutType = HKObjectType.workoutType()
     private let activeEnergyType = HKQuantityType.quantityType(forIdentifier: .activeEnergyBurned)!
+    private let stepType = HKQuantityType.quantityType(forIdentifier: .stepCount)!
     
     // MARK: - Initialization
     
@@ -39,7 +40,8 @@ class HealthKitService: ObservableObject {
         let typesToRead: Set<HKObjectType> = [
             heartRateType,
             workoutType,
-            activeEnergyType
+            activeEnergyType,
+            stepType
         ]
         
         let typesToWrite: Set<HKSampleType> = [
@@ -101,32 +103,56 @@ class HealthKitService: ObservableObject {
     /// Obtiene las calorías activas quemadas para una fecha específica
     func getActiveCaloriesForDate(_ date: Date, completion: @escaping (Double) -> Void) {
         guard isAuthorized else {
-            print("HealthKitService: Not authorized for calories")
-            completion(0.0)
+            completion(0)
             return
         }
         
-        let now = Date()
-        let startOfDay = Calendar.current.startOfDay(for: date)
-        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay) ?? now
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
         
         let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
-        
-        let query = HKStatisticsQuery(quantityType: activeEnergyType, quantitySamplePredicate: predicate, options: .cumulativeSum) { _, result, error in
+        let query = HKStatisticsQuery(
+            quantityType: activeEnergyType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, statistics, error in
             DispatchQueue.main.async {
-                if let error = error {
-                    print("HealthKitService: Error fetching calories: \(error.localizedDescription)")
-                    completion(0.0)
-                    return
-                }
-                
-                if let sum = result?.sumQuantity() {
+                if let sum = statistics?.sumQuantity() {
                     let calories = sum.doubleValue(for: .kilocalorie())
-                    print("HealthKitService: Fetched \(calories) calories for \(date)")
                     completion(calories)
                 } else {
-                    print("HealthKitService: No calories data available for \(date)")
-                    completion(0.0)
+                    completion(0)
+                }
+            }
+        }
+        
+        healthStore.execute(query)
+    }
+    
+    /// Obtiene los pasos para una fecha específica
+    func getStepsForDate(_ date: Date, completion: @escaping (Int?) -> Void) {
+        guard isAuthorized else {
+            completion(nil)
+            return
+        }
+        
+        let calendar = Calendar.current
+        let startOfDay = calendar.startOfDay(for: date)
+        let endOfDay = calendar.date(byAdding: .day, value: 1, to: startOfDay)!
+        
+        let predicate = HKQuery.predicateForSamples(withStart: startOfDay, end: endOfDay, options: .strictStartDate)
+        let query = HKStatisticsQuery(
+            quantityType: stepType,
+            quantitySamplePredicate: predicate,
+            options: .cumulativeSum
+        ) { _, statistics, error in
+            DispatchQueue.main.async {
+                if let sum = statistics?.sumQuantity() {
+                    let steps = Int(sum.doubleValue(for: .count()))
+                    completion(steps)
+                } else {
+                    completion(nil)
                 }
             }
         }

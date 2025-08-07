@@ -42,5 +42,7 @@
     <string>WNH needs access to your health data to display your heart rate and workout information.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>WNH needs permission to save your workout data and heart rate information to HealthKit.</string>
+    <key>NSCameraUsageDescription</key>
+    <string>WNH needs camera access to scan your food and estimate calories using AI.</string>
 </dict>
 </plist>

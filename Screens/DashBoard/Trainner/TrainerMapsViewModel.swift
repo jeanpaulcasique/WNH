@@ -13,7 +13,7 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
     @Published var mapZoomLevel: Double = 10.0
     @Published var locationPermissionStatus: CLAuthorizationStatus = .notDetermined
     @Published var region: MKCoordinateRegion = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060),
+        center: CLLocationCoordinate2D(latitude: 40.4168, longitude: -3.7038), // Madrid por defecto
         span: MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
     )
     
@@ -40,7 +40,9 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
     private func setupLocationManager() {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
-        locationManager.distanceFilter = 100 // Update every 100 meters
+        locationManager.distanceFilter = 10 // Update every 10 meters for better precision
+        locationManager.headingFilter = kCLHeadingFilterNone
+        locationManager.pausesLocationUpdatesAutomatically = false
     }
     
     func requestLocationPermission() {
@@ -50,8 +52,11 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
         case .authorizedWhenInUse, .authorizedAlways:
             getCurrentLocation()
         case .denied, .restricted:
-            // Use default location (NYC)
-            userLocation = CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060)
+            // Use Madrid as default location
+            userLocation = CLLocationCoordinate2D(latitude: 40.4168, longitude: -3.7038)
+            withAnimation(.easeInOut(duration: 0.5)) {
+                region.center = userLocation!
+            }
         @unknown default:
             break
         }
@@ -64,7 +69,11 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
         }
         
         isLoadingLocation = true
-        locationManager.requestLocation()
+        locationManager.startUpdatingLocation() // Iniciar monitoreo continuo para mejor precisión
+    }
+    
+    func stopLocationUpdates() {
+        locationManager.stopUpdatingLocation()
     }
     
     // MARK: - Trainer Management
@@ -147,9 +156,22 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
     }
     
     func centerMapOnUserLocation() {
-        guard let userLoc = userLocation else { return }
+        guard let userLoc = userLocation else { 
+            // Si no hay ubicación, intentar obtenerla
+            getCurrentLocation()
+            return 
+        }
+        
+        // Activar pulso visual
+        startLocationPulsing()
+        
         withAnimation(.easeInOut(duration: 0.5)) {
             region.center = userLoc
+        }
+        
+        // Detener el pulso después de 2 segundos
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            self.stopLocationPulsing()
         }
     }
     
@@ -270,10 +292,14 @@ class TrainersMapsViewModel: NSObject, ObservableObject {
 
     // Llama a este método cuando el usuario entra al mapa
     func onAppearMap() {
+        // Siempre intentar obtener la ubicación actual al abrir el mapa
+        getCurrentLocation()
+        
+        // Si ya tenemos una ubicación guardada, centrar inmediatamente
         if let userLoc = userLocation {
-            region.center = userLoc
-        } else {
-            getCurrentLocation()
+            withAnimation(.easeInOut(duration: 0.5)) {
+                region.center = userLoc
+            }
         }
     }
 }
@@ -287,15 +313,28 @@ extension TrainersMapsViewModel: CLLocationManagerDelegate {
             self.userLocation = location.coordinate
             self.isLoadingLocation = false
             self.sortTrainersByDistance()
-            self.region.center = location.coordinate // Centrar el mapa automáticamente
+            
+            // Siempre centrar en la ubicación actual cuando se obtiene
+            withAnimation(.easeInOut(duration: 0.5)) {
+                self.region.center = location.coordinate
+            }
+            
+            // Debug: Mostrar información de precisión
+            print("📍 Ubicación actualizada:")
+            print("   • Coordenadas: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            print("   • Precisión: ±\(location.horizontalAccuracy)m")
+            print("   • Altitud: \(location.altitude)m")
         }
     }
     
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         DispatchQueue.main.async {
             self.isLoadingLocation = false
-            // Use default location (NYC) if location fails
-            self.userLocation = CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060)
+            // Use Madrid as default location if location fails
+            self.userLocation = CLLocationCoordinate2D(latitude: 40.4168, longitude: -3.7038)
+            withAnimation(.easeInOut(duration: 0.5)) {
+                self.region.center = self.userLocation!
+            }
         }
         print("Location error: \(error.localizedDescription)")
     }
@@ -308,8 +347,11 @@ extension TrainersMapsViewModel: CLLocationManagerDelegate {
             case .authorizedWhenInUse, .authorizedAlways:
                 self.getCurrentLocation()
             case .denied, .restricted:
-                // Use default location
-                self.userLocation = CLLocationCoordinate2D(latitude: 40.7128, longitude: -74.0060)
+                // Use Madrid as default location
+                self.userLocation = CLLocationCoordinate2D(latitude: 40.4168, longitude: -3.7038)
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    self.region.center = self.userLocation!
+                }
             case .notDetermined:
                 break
             @unknown default:

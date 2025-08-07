@@ -83,6 +83,8 @@ class WeightViewModel: ObservableObject {
             self.selectedWeightKg = savedWeight
         } else {
             self.selectedWeightKg = 70.0
+            // ✅ Guardar el peso inicial para el cálculo de progreso
+            UserDefaults.standard.set(70.0, forKey: "startingWeightKg")
         }
         
         if let savedUnit = UserDefaults.standard.value(forKey: "isKgSelected") as? Bool {

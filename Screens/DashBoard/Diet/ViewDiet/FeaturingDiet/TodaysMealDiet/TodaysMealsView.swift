@@ -10,11 +10,6 @@ struct TodaysMealsView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
-                
-                // Progress indicator
-                Text("\(viewModel.getTotalDailyCalories())/\(viewModel.totalCaloriesGoal) kcal")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.appYellow.opacity(0.8))
             }
             
             VStack(spacing: 12) {

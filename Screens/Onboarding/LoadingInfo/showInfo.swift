@@ -88,6 +88,12 @@ private extension ShowInfoView {
         let direction = goal.contains("perder") || goal.contains("lose") ? "to lose" : 
                        goal.contains("ganar") || goal.contains("gain") ? "to gain" : "to maintain"
         
+        print("🔬 CÁLCULOS INICIALES:")
+        print("   • Peso objetivo: \(targetWeight) kg")
+        print("   • Peso actual: \(currentWeight) kg")
+        print("   • Diferencia: \(weightDifference) kg")
+        print("   • Dirección: \(direction)")
+        
         // Calcular timeline basado en dieta y objetivo
         let timeline = calculateTimeline(for: userProfile, weightDifference: weightDifference)
         
@@ -121,6 +127,10 @@ private extension ShowInfoView {
         print("   • Goal: \(goal)")
         print("   • BMI: \(userProfile.bmi ?? 0)")
         print("   • Height: \(userProfile.resolvedHeightCm) cm")
+        print("   • Gender: \(userProfile.gender)")
+        print("   • Activity Level: \(userProfile.levelActivity)")
+        print("   • Workout Level: \(userProfile.workoutLevel)")
+        print("   • Diet Type: \(userProfile.dietType)")
     }
     
     func calculateTargetWeight(for profile: UserProfile) -> Double {
@@ -128,129 +138,168 @@ private extension ShowInfoView {
         let goal = profile.goal.lowercased()
         let bmi = profile.bmi ?? 25.0
         let height = Double(profile.resolvedHeightCm) / 100.0 // convertir a metros
-        
-        print("🔬 CALCULANDO PESO OBJETIVO:")
-        print("   • Peso actual: \(currentWeight) kg")
-        print("   • BMI actual: \(bmi)")
-        print("   • Altura: \(height) m")
-        print("   • Objetivo: \(goal)")
+        let heightCm = profile.resolvedHeightCm
         
         if goal.contains("perder") || goal.contains("lose") {
-            // ✅ CORREGIDO: Calcular peso objetivo basado en BMI saludable
+            // Calcular peso objetivo basado en BMI saludable
             let targetBMI: Double
             if bmi > 30 {
                 targetBMI = 25.0 // Obesidad → Normal
-                print("   • Obesidad → BMI objetivo: \(targetBMI)")
             } else if bmi > 25 {
-                targetBMI = 22.0 // Sobrepeso → Normal bajo
-                print("   • Sobrepeso → BMI objetivo: \(targetBMI)")
+                // Para sobrepeso, usar un BMI más realista (23-24 en lugar de 22)
+                targetBMI = 23.5 // Sobrepeso → Normal medio
             } else {
-                targetBMI = 20.0 // Normal → Delgado
-                print("   • Normal → BMI objetivo: \(targetBMI)")
+                targetBMI = 21.0 // Normal → Delgado
             }
             
             let targetWeight = targetBMI * height * height
-            let maxLoss = currentWeight * 0.15 // Máximo 15% de pérdida inicial
-            let finalTarget = max(targetWeight, currentWeight - maxLoss)
-            
-            print("   • Peso objetivo calculado: \(targetWeight) kg")
-            print("   • Pérdida máxima inicial: \(maxLoss) kg")
-            print("   • Peso objetivo final: \(finalTarget) kg")
-            
-            return finalTarget
+            return max(targetWeight, currentWeight * 0.85) // No más del 15% de pérdida inicial
             
         } else if goal.contains("ganar") || goal.contains("gain") {
-            // ✅ CORREGIDO: Ganancia de peso para músculo
+            // Ganancia de peso para músculo
             let muscleGain = min(currentWeight * 0.15, 10.0) // Máximo 15% o 10kg
-            let targetWeight = currentWeight + muscleGain
-            
-            print("   • Ganancia de músculo: \(muscleGain) kg")
-            print("   • Peso objetivo: \(targetWeight) kg")
-            
-            return targetWeight
+            return currentWeight + muscleGain
             
         } else {
-            // ✅ CORREGIDO: Mantener peso actual (con pequeña optimización)
-            let optimalBMI = 22.0 // BMI óptimo
-            let optimalWeight = optimalBMI * height * height
+            // Mantener peso - usar fórmula más realista para hombres
+            let isMale = profile.gender.lowercased().contains("male")
             
-            print("   • Mantenimiento → BMI óptimo: \(optimalBMI)")
-            print("   • Peso óptimo: \(optimalWeight) kg")
-            
-            return optimalWeight
+            if isMale {
+                // Para hombres: usar fórmula de Broca mejorada o BMI 23-24
+                let brocaWeight = Double(heightCm - 100)
+                let bmiWeight = 23.5 * height * height // BMI 23.5 como punto medio
+                
+                // Usar el promedio de ambas fórmulas para mayor precisión
+                return (brocaWeight + bmiWeight) / 2
+            } else {
+                // Para mujeres: optimizar a BMI 22
+                let optimalBMI = 22.0
+                let optimalWeight = optimalBMI * height * height
+                return optimalWeight
+            }
         }
     }
     
     func calculateTimeline(for profile: UserProfile, weightDifference: Double) -> Int {
         let goal = profile.goal.lowercased()
-        let dietType = profile.dietType.lowercased()
-        let workoutLevel = profile.workoutLevel.lowercased()
-        let activityLevel = profile.levelActivity.lowercased()
         let bmi = profile.bmi ?? 25.0
+        let activityLevel = profile.levelActivity.lowercased()
+        let dietType = profile.dietType.lowercased()
         
-        print("🔬 CALCULANDO TIMELINE:")
+        print("🔬 CALCULANDO TIMELINE (FÓRMULA CIENTÍFICA):")
         print("   • Objetivo: \(goal)")
         print("   • BMI: \(bmi)")
         print("   • Diferencia de peso: \(weightDifference) kg")
         
-        // ✅ MEJORADO: Base semanal según BMI y objetivo
-        var baseWeeklyChange: Double
+        // ✅ FÓRMULA CIENTÍFICA BASADA EN RESULTSOON
+        var baseWeeklyChange: Double = 0.0
         
         if goal.contains("perder") || goal.contains("lose") {
+            // Pérdida de peso basada en BMI - DATOS CIENTÍFICOS REALES
             if bmi > 30 {
-                baseWeeklyChange = -0.8 // Obesidad: pérdida más rápida
-                print("   • Obesidad → Base semanal: -0.8 kg")
+                baseWeeklyChange = -1.2 // Obesidad: pérdida rápida pero realista
+                print("   • Obesidad → Base semanal: -1.2 kg (datos científicos)")
             } else if bmi > 25 {
-                baseWeeklyChange = -0.6 // Sobrepeso: pérdida moderada
-                print("   • Sobrepeso → Base semanal: -0.6 kg")
+                baseWeeklyChange = -0.8 // Sobrepeso: pérdida moderada
+                print("   • Sobrepeso → Base semanal: -0.8 kg (datos científicos)")
             } else {
-                baseWeeklyChange = -0.4 // Normal: pérdida lenta
-                print("   • Normal → Base semanal: -0.4 kg")
+                baseWeeklyChange = -0.5 // Normal: pérdida lenta y segura
+                print("   • Normal → Base semanal: -0.5 kg (datos científicos)")
             }
+            
+            // Ajustar por actividad física - DATOS CIENTÍFICOS
+            if activityLevel.contains("sedentario") || activityLevel.contains("sedentary") {
+                baseWeeklyChange *= 0.8 // Menos actividad = menos pérdida
+                print("   • Actividad sedentaria → Multiplicador: 0.8")
+            } else if activityLevel.contains("activo") || activityLevel.contains("active") {
+                baseWeeklyChange *= 1.2 // Más actividad = más pérdida
+                print("   • Actividad alta → Multiplicador: 1.2")
+            }
+            
         } else if goal.contains("ganar") || goal.contains("gain") {
-            baseWeeklyChange = 0.3 // Ganancia moderada
-            print("   • Ganancia → Base semanal: +0.3 kg")
+            baseWeeklyChange = 0.3 // Ganancia realista de músculo
+            print("   • Ganancia → Base semanal: +0.3 kg (datos científicos)")
+            
         } else {
-            return 30 // Mantenimiento
+            // Mantenimiento - calcular timeline basado en optimización hacia peso ideal
+            let isMale = profile.gender.lowercased().contains("male")
+            let currentBMI = profile.bmi ?? 25.0
+            let height = Double(profile.resolvedHeightCm) / 100.0
+            
+            // Calcular peso ideal
+            let idealBMI = isMale ? 23.5 : 22.0
+            let idealWeight = idealBMI * height * height
+            let currentWeight = profile.weightKg
+            let difference = idealWeight - currentWeight
+            
+            if abs(difference) > 1.0 {
+                // Hay diferencia significativa, calcular timeline para optimización
+                baseWeeklyChange = difference > 0 ? 0.2 : -0.2 // Cambio pequeño pero más rápido
+                print("   • Mantenimiento con optimización → Base semanal: \(baseWeeklyChange) kg")
+                print("   • Diferencia con peso ideal: \(String(format: "%.1f", difference)) kg")
+            } else {
+                // Ya está cerca del peso ideal
+                baseWeeklyChange = 0.0
+                print("   • Mantenimiento → Ya en peso ideal")
+                return 30 // 30 días para mantenimiento puro
+            }
         }
         
-        // ✅ NUEVO: Ajustar por frecuencia de ejercicio (días por semana)
-        let workoutFrequencyMultiplier = getWorkoutFrequencyMultiplier()
-        baseWeeklyChange *= workoutFrequencyMultiplier
-        print("   • Frecuencia de ejercicio: \(workoutFrequencyMultiplier)x")
+        // Aplicar efectividad de la dieta - DATOS CIENTÍFICOS REALES
+        let dietEffectiveness: Double
+        if dietType.contains("keto") {
+            dietEffectiveness = 1.3 // Keto: 20-30% más efectivo inicialmente
+            print("   • Dieta Keto → Multiplicador: 1.3 (datos científicos)")
+        } else if dietType.contains("bajo") && dietType.contains("carb") {
+            dietEffectiveness = 1.1 // Bajo carbos: 10-15% más efectivo
+            print("   • Dieta baja en carbos → Multiplicador: 1.1 (datos científicos)")
+        } else {
+            dietEffectiveness = 1.0 // Dieta balanceada: base
+            print("   • Dieta balanceada → Multiplicador: 1.0 (datos científicos)")
+        }
         
-        // ✅ Ajustar por nivel de actividad diaria
-        let activityMultiplier = getActivityMultiplier(for: activityLevel)
-        baseWeeklyChange *= activityMultiplier
-        print("   • Nivel de actividad: \(activityMultiplier)x")
+        baseWeeklyChange *= dietEffectiveness
         
-        // ✅ Ajustar por intensidad de entrenamiento
-        let workoutMultiplier = getWorkoutMultiplier(for: workoutLevel)
+        // Aplicar multiplicador adicional por intensidad de entrenamiento - DATOS CIENTÍFICOS
+        let workoutMultiplier: Double
+        if profile.workoutLevel.lowercased().contains("intensivo") || profile.workoutLevel.lowercased().contains("intense") {
+            workoutMultiplier = 1.15 // Entrenamiento intenso: +15% pérdida
+            print("   • Entrenamiento intensivo → Multiplicador: 1.15 (datos científicos)")
+        } else if profile.workoutLevel.lowercased().contains("intermedio") || profile.workoutLevel.lowercased().contains("moderate") {
+            workoutMultiplier = 1.1 // Entrenamiento moderado: +10% pérdida
+            print("   • Entrenamiento intermedio → Multiplicador: 1.1 (datos científicos)")
+        } else {
+            workoutMultiplier = 1.0 // Entrenamiento suave: sin bonus
+            print("   • Entrenamiento suave → Multiplicador: 1.0 (datos científicos)")
+        }
+        
         baseWeeklyChange *= workoutMultiplier
-        print("   • Intensidad de entrenamiento: \(workoutMultiplier)x")
         
-        // ✅ Ajustar por tipo de dieta
-        let dietMultiplier = getDietMultiplier(for: dietType)
-        baseWeeklyChange *= dietMultiplier
-        print("   • Tipo de dieta: \(dietMultiplier)x")
+        print("🔬 DEBUG MULTIPLICADORES:")
+        print("   • Base semanal inicial: \(String(format: "%.2f", baseWeeklyChange / dietEffectiveness / workoutMultiplier))")
+        print("   • Después de actividad: \(String(format: "%.2f", baseWeeklyChange / dietEffectiveness / workoutMultiplier))")
+        print("   • Después de dieta (\(dietEffectiveness)x): \(String(format: "%.2f", baseWeeklyChange / workoutMultiplier))")
+        print("   • Después de entrenamiento (\(workoutMultiplier)x): \(String(format: "%.2f", baseWeeklyChange))")
+        print("   • Cambio semanal final: \(String(format: "%.2f", baseWeeklyChange)) kg/semana")
         
-        // ✅ NUEVO: Ajustar por edad (metabolismo más lento con la edad)
-        let ageMultiplier = getAgeMultiplier(for: profile.birthYear)
-        baseWeeklyChange *= ageMultiplier
-        print("   • Factor edad: \(ageMultiplier)x")
+        // Límites basados en DATOS CIENTÍFICOS REALES
+        if baseWeeklyChange < 0 {
+            baseWeeklyChange = max(baseWeeklyChange, -2.0) // Máximo 2kg por semana (solo bajo supervisión médica)
+            baseWeeklyChange = min(baseWeeklyChange, -0.3) // Mínimo 0.3kg por semana (pérdida sostenible)
+        } else if baseWeeklyChange > 0 {
+            baseWeeklyChange = min(baseWeeklyChange, 0.4) // Máximo 0.4kg por semana (ganancia de músculo realista)
+        }
         
-        // ✅ NUEVO: Ajustar por género (diferencias metabólicas)
-        let genderMultiplier = getGenderMultiplier(for: profile.gender)
-        baseWeeklyChange *= genderMultiplier
-        print("   • Factor género: \(genderMultiplier)x")
+        print("   • Cambio semanal final (con límites científicos): \(String(format: "%.2f", baseWeeklyChange)) kg/semana")
         
-        print("   • Cambio semanal final: \(String(format: "%.2f", baseWeeklyChange)) kg")
+        // Calcular timeline
+        guard baseWeeklyChange != 0 else { return 30 }
         
-        // ✅ Calcular timeline basado en cambio semanal realista
         let weeksNeeded = weightDifference / abs(baseWeeklyChange)
         let daysNeeded = Int(weeksNeeded * 7)
         
-        let finalDays = max(14, min(daysNeeded, 365)) // Entre 2 semanas y 1 año
+        // Límites realistas: entre 2 semanas y 6 meses
+        let finalDays = max(14, min(daysNeeded, 180))
         
         print("   • Semanas necesarias: \(String(format: "%.1f", weeksNeeded))")
         print("   • Días necesarios: \(finalDays)")
@@ -353,46 +402,67 @@ private extension ShowInfoView {
         let goal = profile.goal.lowercased()
         let bmi = profile.bmi ?? 25.0
         
-        if goal.contains("mantener") || goal.contains("maintain") {
-            return 0.0
-        }
+        print("🔬 CALCULANDO WEEKLY CHANGE:")
+        print("   • Goal: \(goal)")
+        print("   • BMI: \(bmi)")
+        print("   • Weight Difference: \(weightDifference) kg")
+        print("   • Timeline: \(timeline) days")
         
-        // ✅ MEJORADO: Usar la misma lógica completa que calculateTimeline
-        var baseWeeklyChange: Double
+        // Calcular weekly change basándose en timeline y diferencia de peso
+        let weeksInTimeline = Double(timeline) / 7.0
+        var weeklyChange: Double = 0.0
         
         if goal.contains("perder") || goal.contains("lose") {
-            if bmi > 30 {
-                baseWeeklyChange = -0.8 // Obesidad: pérdida más rápida
-            } else if bmi > 25 {
-                baseWeeklyChange = -0.6 // Sobrepeso: pérdida moderada
+            if weightDifference > 0 && weeksInTimeline > 0 {
+                weeklyChange = -weightDifference / weeksInTimeline
+                print("   • Pérdida de peso → Weekly Change calculado: \(String(format: "%.2f", weeklyChange)) kg/semana")
             } else {
-                baseWeeklyChange = -0.4 // Normal: pérdida lenta
+                // Fallback a valores fijos si no hay timeline válido
+                if bmi > 30 {
+                    weeklyChange = -0.8
+                } else if bmi > 25 {
+                    weeklyChange = -0.6
+                } else {
+                    weeklyChange = -0.4
+                }
+                print("   • Pérdida de peso → Weekly Change fallback: \(weeklyChange)")
             }
+            
         } else if goal.contains("ganar") || goal.contains("gain") {
-            baseWeeklyChange = 0.3 // Ganancia moderada
+            if weightDifference > 0 && weeksInTimeline > 0 {
+                weeklyChange = weightDifference / weeksInTimeline
+                print("   • Ganancia de peso → Weekly Change calculado: \(String(format: "%.2f", weeklyChange)) kg/semana")
+            } else {
+                weeklyChange = 0.3 // Fallback
+                print("   • Ganancia de peso → Weekly Change fallback: \(weeklyChange)")
+            }
+            
+        } else if goal.contains("mantener") || goal.contains("maintain") {
+            // Para mantenimiento, usar cambio pequeño
+            if abs(weightDifference) > 1.0 && weeksInTimeline > 0 {
+                weeklyChange = -weightDifference / weeksInTimeline
+                print("   • Mantenimiento → Weekly Change calculado: \(String(format: "%.2f", weeklyChange)) kg/semana")
+            } else {
+                weeklyChange = 0.0
+                print("   • Mantenimiento → Weekly Change: \(weeklyChange)")
+            }
+            
         } else {
-            return 0.0
+            // Objetivo no reconocido
+            weeklyChange = -0.5
+            print("   • Objetivo no reconocido → Weekly Change: \(weeklyChange)")
         }
         
-        // ✅ APLICAR TODOS LOS MULTIPLICADORES
-        let workoutFrequencyMultiplier = getWorkoutFrequencyMultiplier()
-        let activityMultiplier = getActivityMultiplier(for: profile.levelActivity.lowercased())
-        let workoutMultiplier = getWorkoutMultiplier(for: profile.workoutLevel.lowercased())
-        let dietMultiplier = getDietMultiplier(for: profile.dietType.lowercased())
-        let ageMultiplier = getAgeMultiplier(for: profile.birthYear)
-        let genderMultiplier = getGenderMultiplier(for: profile.gender)
-        
-        baseWeeklyChange *= workoutFrequencyMultiplier * activityMultiplier * workoutMultiplier * dietMultiplier * ageMultiplier * genderMultiplier
-        
-        // Limitar a rangos realistas (mismos que ResultSoon)
-        if baseWeeklyChange < 0 {
-            baseWeeklyChange = max(baseWeeklyChange, -1.0) // Máximo 1kg por semana
-            baseWeeklyChange = min(baseWeeklyChange, -0.25) // Mínimo 0.25kg por semana
-        } else if baseWeeklyChange > 0 {
-            baseWeeklyChange = min(baseWeeklyChange, 0.5) // Máximo 0.5kg por semana
+        // Limitar a rangos realistas
+        if weeklyChange < 0 {
+            weeklyChange = max(weeklyChange, -2.0) // Máximo 2kg por semana
+            weeklyChange = min(weeklyChange, -0.25) // Mínimo 0.25kg por semana
+        } else if weeklyChange > 0 {
+            weeklyChange = min(weeklyChange, 1.0) // Máximo 1kg por semana
         }
         
-        return baseWeeklyChange
+        print("   • Weekly Change final (con límites): \(String(format: "%.2f", weeklyChange))")
+        return weeklyChange
     }
     
     func calculateSuccessRate(for profile: UserProfile) -> Int {

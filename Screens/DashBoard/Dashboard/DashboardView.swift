@@ -26,11 +26,11 @@ struct DashboardView: View {
                     Text("Trainer")
                 }
 
-            // Pestaña Daily
-            Text("AI")
+            // Pestaña Shop
+            ShoppingView()
                 .tabItem {
-                    Image(systemName: "sparkles")
-                    Text("AI")
+                    Image(systemName: "cart.fill")
+                    Text("Shop")
                 }
 
             // Pestaña Me

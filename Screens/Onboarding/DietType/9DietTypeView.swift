@@ -273,17 +273,11 @@ struct EnhancedDietCard: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 24)
                     .stroke(
-                        isSelected ? Color.yellow : Color.gray.opacity(0.3),
+                        isSelected ? Color.black : Color.gray.opacity(0.3),
                         lineWidth: isSelected ? 3 : 1
                     )
             )
             .scaleEffect(isPressed ? 0.98 : 1.0)
-            .shadow(
-                color: isSelected ? Color.yellow.opacity(0.25) : Color.black.opacity(0.1),
-                radius: isSelected ? 15 : 5,
-                x: 0,
-                y: isSelected ? 8 : 2
-            )
             .animation(.spring(response: 0.4, dampingFraction: 0.7), value: isSelected)
             .animation(.spring(response: 0.3, dampingFraction: 0.8), value: isPressed)
         }

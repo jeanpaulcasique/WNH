@@ -1321,7 +1321,6 @@
 			isa = PBXGroup;
 			children = (
 				695C96202E43BDCE003E22C1 /* FoodScanModel.swift */,
-				695C96462E442011003E22C1 /* DaySelectorViewModel.swift */,
 			);
 			path = ModelsDiet;
 			sourceTree = "<group>";
@@ -1351,6 +1350,7 @@
 				6919970C2DFCB400007FAB40 /* DaySelectorView.swift */,
 				695C963B2E441D21003E22C1 /* NutritionDetailsView.swift */,
 				69D11C112DFCCC01004721EF /* RecipeComponent.swift */,
+				695C96462E442011003E22C1 /* DaySelectorViewModel.swift */,
 			);
 			path = ComponentDiet;
 			sourceTree = "<group>";

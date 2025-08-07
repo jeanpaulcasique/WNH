@@ -55,11 +55,11 @@ class StepsService: ObservableObject {
     /// Obtiene los pasos del día actual
     func fetchTodaySteps() {
         guard isAuthorized else { 
-            print("StepsService: Not authorized, using test data")
-            // ✅ TEMPORAL: Usar datos de prueba si no está autorizado
+            print("StepsService: Not authorized, showing 0 steps")
+            // ✅ NO usar datos de prueba - mostrar 0 cuando no está autorizado
             DispatchQueue.main.async {
-                self.todaySteps = 8472 // Datos de prueba
-                print("StepsService: Using test data - \(self.todaySteps) steps")
+                self.todaySteps = 0
+                print("StepsService: No authorization - showing 0 steps")
             }
             return 
         }
@@ -150,11 +150,11 @@ class StepsService: ObservableObject {
             print("StepsService: Already authorized, fetching today's steps")
             fetchTodaySteps()
         } else {
-            print("StepsService: Not authorized, using test data")
-            // ✅ TEMPORAL: Usar datos de prueba si no está autorizado
+            print("StepsService: Not authorized, showing 0 steps")
+            // ✅ NO usar datos de prueba - mostrar 0 cuando no está autorizado
             DispatchQueue.main.async {
-                self.todaySteps = 8472 // Datos de prueba
-                print("StepsService: Using test data - \(self.todaySteps) steps")
+                self.todaySteps = 0
+                print("StepsService: No authorization - showing 0 steps")
             }
         }
     }

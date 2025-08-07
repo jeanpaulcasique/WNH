@@ -223,6 +223,8 @@ struct WorkoutView: View {
                     viewModel.stepsService.startStepsMonitoring()
                 }
             }
+            .navigationBarHidden(true)
+            .navigationBarBackButtonHidden(true)
         }
     }
 }
