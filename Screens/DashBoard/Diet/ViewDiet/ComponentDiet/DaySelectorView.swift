@@ -41,10 +41,7 @@ struct DaySelectorView: View {
                                             lineWidth: 1
                                         )
                                 )
-                                .shadow(
-                                    color: viewModel.selectedDay == day ? Color.appYellow.opacity(0.3) : Color.clear,
-                                    radius: 8, x: 0, y: 4
-                                )
+
                         }
                         .onTapGesture {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {

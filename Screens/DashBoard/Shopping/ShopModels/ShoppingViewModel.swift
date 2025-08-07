@@ -9,6 +9,27 @@ class ShoppingViewModel: ObservableObject {
     @Published var searchText = ""
     @Published var selectedCategory: ProductCategory = .all
     
+    // MARK: - Product Sections
+    var recommendedProducts: [ShopProduct] {
+        products.filter { $0.rating >= 4.5 }.prefix(10).map { $0 }
+    }
+    
+    var weightGainProducts: [ShopProduct] {
+        products.filter { $0.category == .supplements || $0.category == .nutrition }.prefix(8).map { $0 }
+    }
+    
+    var fitnessEquipment: [ShopProduct] {
+        products.filter { $0.category == .equipment }.prefix(8).map { $0 }
+    }
+    
+    var nutritionProducts: [ShopProduct] {
+        products.filter { $0.category == .nutrition }.prefix(8).map { $0 }
+    }
+    
+    var trendingProducts: [ShopProduct] {
+        products.filter { $0.isNew || $0.discountPercentage > 0.1 }.prefix(8).map { $0 }
+    }
+    
     var filteredProducts: [ShopProduct] {
         var filtered = products
         

@@ -6,6 +6,9 @@ struct ShoppingView: View {
     @State private var selectedCategory: ProductCategory = .all
     @State private var showingCart = false
     @State private var showingProductDetail: ShopProduct?
+    @State private var showingCategoryView = false
+    @State private var selectedCategoryTitle = ""
+    @State private var selectedCategoryProducts: [ShopProduct] = []
     
     var body: some View {
         NavigationView {
@@ -31,6 +34,13 @@ struct ShoppingView: View {
         }
         .sheet(item: $showingProductDetail) { product in
             ProductDetailView(product: product, viewModel: viewModel)
+        }
+        .sheet(isPresented: $showingCategoryView) {
+            ShopCategoryView(
+                title: selectedCategoryTitle,
+                products: selectedCategoryProducts,
+                shoppingViewModel: viewModel
+            )
         }
         .onAppear {
             viewModel.loadProducts()
@@ -130,23 +140,110 @@ private extension ShoppingView {
     
     var productsContent: some View {
         ScrollView(showsIndicators: false) {
-            LazyVStack(spacing: 20) {
+            LazyVStack(spacing: 24) {
                 if viewModel.isLoading {
                     loadingView
-                } else if viewModel.filteredProducts.isEmpty {
+                } else if viewModel.products.isEmpty {
                     emptyStateView
                 } else {
-                    ForEach(viewModel.filteredProducts) { product in
-                        ProductCard(
-                            product: product,
-                            onTap: { showingProductDetail = product },
-                            onAddToCart: { viewModel.addToCart(product) }
+                    // Recommended for you
+                    if !viewModel.recommendedProducts.isEmpty {
+                        productSection(
+                            title: "Recomendados para ti",
+                            subtitle: "Basado en tus preferencias",
+                            products: viewModel.recommendedProducts
+                        )
+                    }
+                    
+                    // Weight Gain Products
+                    if !viewModel.weightGainProducts.isEmpty {
+                        productSection(
+                            title: "Gana más peso",
+                            subtitle: "Suplementos y nutrición",
+                            products: viewModel.weightGainProducts
+                        )
+                    }
+                    
+                    // Fitness Equipment
+                    if !viewModel.fitnessEquipment.isEmpty {
+                        productSection(
+                            title: "Equipamiento fitness",
+                            subtitle: "Todo para tu entrenamiento",
+                            products: viewModel.fitnessEquipment
+                        )
+                    }
+                    
+                    // Nutrition Products
+                    if !viewModel.nutritionProducts.isEmpty {
+                        productSection(
+                            title: "Nutrición premium",
+                            subtitle: "Alimentos saludables",
+                            products: viewModel.nutritionProducts
+                        )
+                    }
+                    
+                    // Trending Products
+                    if !viewModel.trendingProducts.isEmpty {
+                        productSection(
+                            title: "Tendencias",
+                            subtitle: "Productos populares",
+                            products: viewModel.trendingProducts
                         )
                     }
                 }
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 100)
+        }
+    }
+    
+    private func productSection(title: String, subtitle: String, products: [ShopProduct]) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            // Section header
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(title)
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundColor(.white)
+                    
+                    Text(subtitle)
+                        .font(.system(size: 14))
+                        .foregroundColor(.gray)
+                }
+                
+                Spacer()
+                
+                Button(action: {
+                    selectedCategoryTitle = title
+                    selectedCategoryProducts = products
+                    showingCategoryView = true
+                }) {
+                    HStack(spacing: 4) {
+                        Text("See more")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(.yellow)
+                        
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.yellow)
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+            
+            // Horizontal product scroll
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    ForEach(products) { product in
+                        HorizontalProductCard(
+                            product: product,
+                            onTap: { showingProductDetail = product },
+                            onAddToCart: { viewModel.addToCart(product) }
+                        )
+                    }
+                }
+                .padding(.horizontal, 4)
+            }
         }
     }
     
@@ -182,16 +279,33 @@ private extension ShoppingView {
     }
 }
 
-// MARK: - Product Card
-struct ProductCard: View {
+// MARK: - Extensions
+extension View {
+    func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
+        clipShape(RoundedCorner(radius: radius, corners: corners))
+    }
+}
+
+struct RoundedCorner: Shape {
+    var radius: CGFloat = .infinity
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
+    }
+}
+
+// MARK: - Horizontal Product Card
+struct HorizontalProductCard: View {
     let product: ShopProduct
     let onTap: () -> Void
     let onAddToCart: () -> Void
     
     var body: some View {
         Button(action: onTap) {
-            VStack(spacing: 0) {
-                // Product image
+            VStack(alignment: .leading, spacing: 0) {
+                // Product image - Fixed size
                 ZStack(alignment: .topTrailing) {
                     AsyncImage(url: URL(string: product.imageURL)) { image in
                         image
@@ -202,115 +316,107 @@ struct ProductCard: View {
                             .fill(Color.gray.opacity(0.3))
                             .overlay(
                                 Image(systemName: "photo")
-                                    .font(.system(size: 30))
+                                    .font(.system(size: 24))
                                     .foregroundColor(.gray)
                             )
                     }
-                    .frame(height: 200)
+                    .frame(width: 160, height: 160)
                     .clipped()
+                    .cornerRadius(12, corners: [.topLeft, .topRight])
                     
                     // Discount badge
                     if product.discountPercentage > 0 {
                         Text("-\(Int(product.discountPercentage * 100))%")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 10, weight: .bold))
                             .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
                             .background(Color.red)
-                            .cornerRadius(8)
-                            .padding(12)
+                            .cornerRadius(6)
+                            .padding(8)
                     }
                 }
                 
-                // Product info
+                // Product info - Fixed height container
                 VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text(product.name)
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(.white)
-                            .lineLimit(2)
-                        
-                        Spacer()
-                        
-                        if product.isNew {
-                            Text("NEW")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.green)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.green.opacity(0.2))
-                                .cornerRadius(4)
-                        }
-                    }
-                    
-                    Text(product.description)
-                        .font(.system(size: 14))
-                        .foregroundColor(.gray)
+                    // Product name - Fixed height
+                    Text(product.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
                         .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                        .frame(height: 36, alignment: .top) // Fixed height for 2 lines
                     
+                    // Price and rating - Fixed height
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             if product.discountPercentage > 0 {
                                 Text("$\(String(format: "%.2f", product.originalPrice))")
-                                    .font(.system(size: 14))
+                                    .font(.system(size: 11))
                                     .foregroundColor(.gray)
                                     .strikethrough()
                             }
                             
                             Text("$\(String(format: "%.2f", product.currentPrice))")
-                                .font(.system(size: 20, weight: .bold))
+                                .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.yellow)
                         }
                         
                         Spacer()
                         
                         // Rating
-                        HStack(spacing: 4) {
+                        HStack(spacing: 2) {
                             Image(systemName: "star.fill")
-                                .font(.system(size: 12))
+                                .font(.system(size: 10))
                                 .foregroundColor(.yellow)
                             Text(String(format: "%.1f", product.rating))
-                                .font(.system(size: 12, weight: .medium))
+                                .font(.system(size: 10, weight: .medium))
                                 .foregroundColor(.white.opacity(0.8))
                         }
                     }
+                    .frame(height: 32) // Fixed height
                     
-                    // Add to cart button
+                    // Add to cart button - Fixed height
                     Button(action: onAddToCart) {
-                        HStack(spacing: 8) {
+                        HStack(spacing: 4) {
                             Image(systemName: "bag.badge.plus")
-                                .font(.system(size: 16))
-                            Text("Add to Cart")
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 12))
+                            Text("Add")
+                                .font(.system(size: 12, weight: .semibold))
                         }
                         .foregroundColor(.black)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
+                        .frame(height: 32) // Fixed height
                         .background(Color.yellow)
-                        .cornerRadius(12)
+                        .cornerRadius(8)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                .padding(16)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .frame(height: 140) // Fixed total height for info section
             }
         }
         .buttonStyle(PlainButtonStyle())
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(
                     LinearGradient(
                         colors: [Color.yellow.opacity(0.6), Color.yellow.opacity(0.2), .clear],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     ),
-                    lineWidth: 1.5
+                    lineWidth: 1
                 )
         )
-        .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
+        .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+        .frame(width: 160, height: 300) // Fixed total card size
     }
 }
+
+
 
 // MARK: - Category Filter Button
 struct CategoryFilterButton: View {

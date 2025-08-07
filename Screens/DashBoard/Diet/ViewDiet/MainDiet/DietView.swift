@@ -1,19 +1,5 @@
 import SwiftUI
 
-// MARK: - Tips de dieta animados (ESPAÑOL)
-private let dietTips: [String] = [
-    "¡Mantén tu cuerpo hidratado! Bebe agua antes de cada comida.",
-    "Come proteínas magras en cada comida para mantener la masa muscular.",
-    "Incluye vegetales de colores en tu plato para obtener más nutrientes.",
-    "Planifica tus comidas con anticipación para evitar decisiones impulsivas.",
-    "Mastica lentamente y disfruta cada bocado para mejor digestión.",
-    "¡No te saltes el desayuno! Es la comida más importante del día.",
-    "Incluye grasas saludables como aguacate y nueces en tu dieta.",
-    "Controla las porciones usando platos más pequeños.",
-    "Cocina en casa más seguido para controlar ingredientes y calorías.",
-    "¡Escucha a tu cuerpo! Come cuando tengas hambre, para cuando estés satisfecho."
-]
-
 // MARK: - Botón animado al presionar
 struct PressableButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -23,7 +9,7 @@ struct PressableButtonStyle: ButtonStyle {
     }
 }
 
-// MARK: - DietView con estilo MeView
+// MARK: - DietView
 struct DietView: View {
     @StateObject private var vm = DietViewModel()
     @StateObject private var daySelectorVM = DaySelectorViewModel()
@@ -33,14 +19,12 @@ struct DietView: View {
     @State private var showWaterAlert = false
     @State private var headerScale: CGFloat = 1.0
     @State private var showCalorieAlert = false
-    @State private var currentTipIndex = 0
-    @State private var animateTip = false
     @State private var userName: String? = nil
 
     var body: some View {
         NavigationView {
             ZStack {
-                // Gradient background matching app style
+            
                 LinearGradient(
                     colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
                     startPoint: .topLeading,
@@ -48,39 +32,43 @@ struct DietView: View {
                 )
                 .ignoresSafeArea()
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 10) {
-                        // Header title section
-                        VStack(spacing: 16) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "fork.knife.circle.fill")
-                                    .font(.system(size: 36, weight: .bold))
-                                    .foregroundColor(.appYellow)
-                                
-                                Text("Samson's Diet")
-                                    .font(.system(size: 32, weight: .bold))
-                                    .foregroundColor(.white)
-                            }
+                VStack(spacing: 0) {
+                    // Header title section - Aligned with other screens
+                    VStack(spacing: 5) { // Reduced spacing from 16 to 5
+                        HStack(spacing: 12) {
+                            Image(systemName: "fork.knife.circle.fill")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.yellow)
+                            
+                            Text("Samson's Diet")
+                                .font(.system(size: 32, weight: .bold))
+                                .foregroundColor(.white)
                         }
-                        .padding(.top, 20)
-                        .padding(.bottom, 5)
-                        
-                        headerSection
-                        nutritionOverviewSection
-                        
-                        DaySelectorView(viewModel: daySelectorVM)
-                            .opacity(vm.showSelectors ? 1 : 0)
-                            .offset(y: vm.showSelectors ? 0 : 20)
-
-                        TodaysMealsView(viewModel: todaysMealsVM)
-                            .opacity(vm.showSelectors ? 1 : 0)
-                            .offset(y: vm.showSelectors ? 0 : 20)
-                        
-                        Spacer(minLength: 50)
                     }
-                    .padding(.horizontal, 20)
                     .padding(.top, 20)
-                    .padding(.bottom, 100)
+                  
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 0) {
+                            headerSection
+                            
+                            nutritionOverviewSection
+                                .padding(.top, -10) // Increased negative padding to reduce more space
+                            
+                            DaySelectorView(viewModel: daySelectorVM)
+                                .padding(.top, 10)
+                                .opacity(vm.showSelectors ? 1 : 0)
+                                .offset(y: vm.showSelectors ? 0 : 20)
+
+                            TodaysMealsView(viewModel: todaysMealsVM)
+                                .padding(.top, 10)
+                                .opacity(vm.showSelectors ? 1 : 0)
+                                .offset(y: vm.showSelectors ? 0 : 20)
+                            
+                            Spacer(minLength: 50)
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 100)
+                    }
                 }
                 
                 // Floating buttons
@@ -171,35 +159,6 @@ extension DietView {
         withAnimation(.spring(response: 0.5, dampingFraction: 0.7, blendDuration: 0).delay(0.3)) {
             vm.showSelectors = true
         }
-        
-        // Iniciar animación de tips
-        animateTip = false
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            animateTip = true
-        }
-        startTipTimer()
-    }
-    
-    private func startTipTimer() {
-        Timer.scheduledTimer(withTimeInterval: 15.0, repeats: false) { _ in
-            withAnimation(.spring(response: 0.7, dampingFraction: 0.7)) {
-                animateTip = false
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                let isLast = currentTipIndex == dietTips.count - 1
-                if isLast {
-                    Timer.scheduledTimer(withTimeInterval: 60.0, repeats: false) { _ in
-                        currentTipIndex = 0
-                        animateTip = true
-                        startTipTimer()
-                    }
-                } else {
-                    currentTipIndex = (currentTipIndex + 1)
-                    animateTip = true
-                    startTipTimer()
-                }
-            }
-        }
     }
 }
 
@@ -207,29 +166,8 @@ extension DietView {
 private extension DietView {
     
     var headerSection: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 12) {
-                ForEach(0..<dietTips.count, id: \.self) { index in
-                    dietTipCard(tip: dietTips[index])
-                }
-            }
-            .padding(.horizontal, 3)
-        }
-        .padding(.top, 10)
-        .padding(.bottom, 0)
-    }
-    
-    private func dietTipCard(tip: String) -> some View {
-        Text(tip)
-            .font(.system(size: 15, weight: .medium))
-            .foregroundColor(.appWhite.opacity(0.85))
-            .multilineTextAlignment(.center)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .frame(width: 280, height: 80)
-            .background(.ultraThinMaterial)
-            .cornerRadius(18)
-            .shadow(color: Color.appYellow.opacity(0.08), radius: 8, x: 0, y: 2)
+        DietInfoCardView()
+            .padding(.top, -25) // Negative padding to move cards up to desired distance
     }
     
     var nutritionOverviewSection: some View {
@@ -240,6 +178,7 @@ private extension DietView {
                     .foregroundColor(.appYellow)
                 Spacer()
             }
+            .padding(.top, 2)
             
             VStack(spacing: 12) {
                 // Calories card
@@ -372,4 +311,3 @@ struct DietView_Previews: PreviewProvider {
             .preferredColorScheme(.dark)
     }
 }
-

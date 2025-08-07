@@ -2,12 +2,14 @@ import SwiftUI
 import AVFoundation
 
 struct FoodScannerView: View {
-    @StateObject private var clarifaiService = ClarifaiService()
+    @StateObject private var logMealService = LogMealService()
     @State private var showImagePicker = false
     @State private var showCamera = false
     @State private var selectedImage: UIImage?
     @State private var showResults = false
     @State private var detectedFoods: [DetectedFood] = []
+    @State private var isViewLoaded = false
+    @State private var showCameraError = false
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
@@ -73,7 +75,7 @@ struct FoodScannerView: View {
                         }
                         .padding(.horizontal, 20)
                         .onTapGesture {
-                            showCamera = true
+                            openCameraOrPhotoLibrary()
                         }
                     }
                     
@@ -82,7 +84,7 @@ struct FoodScannerView: View {
                         if selectedImage == nil {
                             // Take photo button
                             Button(action: {
-                                showCamera = true
+                                openCameraOrPhotoLibrary()
                             }) {
                                 HStack(spacing: 12) {
                                     Image(systemName: "camera.fill")
@@ -102,7 +104,7 @@ struct FoodScannerView: View {
                             // Analyze and retake buttons
                             HStack(spacing: 16) {
                                 Button(action: {
-                                    showCamera = true
+                                    openCameraOrPhotoLibrary()
                                 }) {
                                     HStack(spacing: 8) {
                                         Image(systemName: "arrow.clockwise")
@@ -122,7 +124,7 @@ struct FoodScannerView: View {
                                     analyzeImage()
                                 }) {
                                     HStack(spacing: 8) {
-                                        if clarifaiService.isAnalyzing {
+                                        if logMealService.isAnalyzing {
                                             ProgressView()
                                                 .scaleEffect(0.8)
                                                 .progressViewStyle(CircularProgressViewStyle(tint: .appBlack))
@@ -131,7 +133,7 @@ struct FoodScannerView: View {
                                                 .font(.system(size: 16))
                                         }
                                         
-                                        Text(clarifaiService.isAnalyzing ? "Analyzing..." : "Analyze")
+                                        Text(logMealService.isAnalyzing ? "Analyzing..." : "Analyze")
                                             .font(.system(size: 16, weight: .medium))
                                     }
                                     .foregroundColor(.appBlack)
@@ -140,7 +142,7 @@ struct FoodScannerView: View {
                                     .background(Color.appYellow)
                                     .cornerRadius(8)
                                 }
-                                .disabled(clarifaiService.isAnalyzing)
+                                .disabled(logMealService.isAnalyzing)
                             }
                             .padding(.horizontal, 20)
                         }
@@ -153,18 +155,31 @@ struct FoodScannerView: View {
             .sheet(isPresented: $showCamera) {
                 ImagePicker(sourceType: .camera, selectedImage: $selectedImage)
             }
+            .sheet(isPresented: $showImagePicker) {
+                ImagePicker(sourceType: .photoLibrary, selectedImage: $selectedImage)
+            }
             .sheet(isPresented: $showResults) {
                 FoodScanResultsView(
                     detectedFoods: detectedFoods,
                     totalCalories: detectedFoods.reduce(0) { $0 + $1.calories }
                 )
             }
-            .alert("Error", isPresented: .constant(clarifaiService.errorMessage != nil)) {
+            .alert("Error", isPresented: .constant(logMealService.errorMessage != nil)) {
                 Button("OK") {
-                    clarifaiService.errorMessage = nil
+                    logMealService.errorMessage = nil
                 }
             } message: {
-                Text(clarifaiService.errorMessage ?? "")
+                Text(logMealService.errorMessage ?? "")
+            }
+            .alert("Camera Error", isPresented: $showCameraError) {
+                Button("OK") {
+                    showCameraError = false
+                }
+            } message: {
+                Text("Unable to access camera. Please check your camera permissions in Settings.")
+            }
+            .onAppear {
+                isViewLoaded = true
             }
         }
     }
@@ -172,7 +187,7 @@ struct FoodScannerView: View {
     private func analyzeImage() {
         guard let image = selectedImage else { return }
         
-        clarifaiService.analyzeFoodImage(image) { result in
+        logMealService.analyzeFoodImage(image) { result in
             switch result {
             case .success(let foods):
                 self.detectedFoods = foods
@@ -181,5 +196,24 @@ struct FoodScannerView: View {
                 print("Analysis failed: \(error.localizedDescription)")
             }
         }
+    }
+    
+    private func openCameraOrPhotoLibrary() {
+        print("📸 Attempting to open camera or photo library")
+        
+        // Check if we're running on simulator
+        #if targetEnvironment(simulator)
+        print("📱 Running on simulator, using photo library")
+        showImagePicker = true
+        #else
+        // On real device, try camera first
+        if UIImagePickerController.isSourceTypeAvailable(.camera) {
+            print("📷 Camera available on device, opening camera")
+            showCamera = true
+        } else {
+            print("⚠️ Camera not available, using photo library")
+            showImagePicker = true
+        }
+        #endif
     }
 } 

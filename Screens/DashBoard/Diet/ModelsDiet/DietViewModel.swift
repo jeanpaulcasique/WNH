@@ -572,9 +572,9 @@ enum MealType: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var displayName: String {
         switch self {
-        case .Breakfast: return "🍳 Breakfast"
-        case .Lunch:     return "🥗 Lunch"
-        case .Dinner:    return "🍽 Dinner"
+        case .Breakfast: return "Breakfast"
+        case .Lunch:     return "Lunch"
+        case .Dinner:    return "Dinner"
         }
     }
 }

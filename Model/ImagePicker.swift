@@ -20,11 +20,22 @@ struct ImagePicker: UIViewControllerRepresentable {
             if let image = info[.originalImage] as? UIImage {
                 parent.selectedImage = image
             }
-            picker.dismiss(animated: true)
+            picker.dismiss(animated: true) {
+                print("✅ Image picker dismissed successfully")
+            }
         }
 
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            picker.dismiss(animated: true)
+            picker.dismiss(animated: true) {
+                print("❌ Image picker cancelled")
+            }
+        }
+        
+        func imagePickerController(_ picker: UIImagePickerController, didFailWithError error: Error) {
+            print("❌ Image picker failed with error: \(error.localizedDescription)")
+            picker.dismiss(animated: true) {
+                print("✅ Image picker dismissed after error")
+            }
         }
     }
 
