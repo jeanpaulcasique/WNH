@@ -193,6 +193,10 @@ struct WeightView: View {
                         EmptyView()
                     }
                     .hidden()
+                    .onAppear {
+                        // ✅ Guardar el peso inicial del onboarding para la barra de progreso
+                        saveInitialWeightForProgressBar()
+                    }
                     NavigationLink(
                         destination: HeightView(viewModel: HeightViewModel(), ),
                         isActive: $isNavigatingToPreviousScreen
@@ -218,6 +222,13 @@ struct WeightView: View {
                 }
         )
     }
+    
+    // ✅ Función para guardar el peso inicial del onboarding para la barra de progreso
+    private func saveInitialWeightForProgressBar() {
+        let currentWeight = viewModel.selectedWeightKg
+        UserDefaults.standard.set(currentWeight, forKey: "onboardingInitialWeightKg")
+        print("✅ ONBOARDING: Peso inicial guardado para barra de progreso - \(currentWeight) kg")
+    }
 }
 
 // MARK: - Preview
@@ -231,7 +242,7 @@ struct WeightView_Previews: PreviewProvider {
     }
 }
 
-private struct ScrollOffsetPreferenceKey: PreferenceKey {
+struct ScrollOffsetPreferenceKey: PreferenceKey {
     static var defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()

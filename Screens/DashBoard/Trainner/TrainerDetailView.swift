@@ -157,8 +157,12 @@ struct TrainerDetailView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.3))
-                            .cornerRadius(8)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                            )
                     }
                 }
             }
@@ -175,8 +179,12 @@ struct TrainerDetailView: View {
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.3))
-                            .cornerRadius(6)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(16)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(Color.blue.opacity(0.3), lineWidth: 1)
+                            )
                     }
                     Spacer()
                 }
@@ -201,8 +209,12 @@ struct TrainerDetailView: View {
                             .padding(.vertical, 12)
                             .frame(maxWidth: .infinity)
                             .background(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(selectedTimeSlot == slot ? Color.yellow : Color.gray.opacity(0.3))
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(selectedTimeSlot == slot ? Color.yellow : Color.gray.opacity(0.1))
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .stroke(selectedTimeSlot == slot ? Color.yellow.opacity(0.3) : Color.gray.opacity(0.2), lineWidth: 1)
                             )
                     }
                 }
@@ -264,8 +276,12 @@ struct StatBox: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.2))
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.gray.opacity(0.1))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
     }
 }
@@ -296,7 +312,11 @@ struct ReviewCard: View {
                 .foregroundColor(.white.opacity(0.7))
         }
         .padding(12)
-        .background(Color.gray.opacity(0.2))
-        .cornerRadius(10)
+        .background(Color.gray.opacity(0.1))
+        .cornerRadius(16)
+        .overlay(
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+        )
     }
 }

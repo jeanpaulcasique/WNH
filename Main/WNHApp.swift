@@ -8,6 +8,11 @@ struct WNHApp: App {
     
     // ✅ OPTIMIZACIÓN: Lazy loading de ViewModels pesados
     @State private var dietViewModel: DietViewModel?
+    
+
+    
+    // AppDelegate para manejar notificaciones
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
 
     var body: some Scene {
         WindowGroup {
@@ -33,8 +38,10 @@ struct WNHApp: App {
                                     // ✅ OPTIMIZACIÓN: Cargar ViewModels solo cuando se necesiten
                                     if dietViewModel == nil {
                                         dietViewModel = DietViewModel()
+                                        // Solo programar notificaciones cuando se crea el ViewModel
+                                        dietViewModel?.startWaterRemindersThreeTimes()
                                     }
-                                    dietViewModel?.startWaterRemindersThreeTimes()
+                                    
                                     if let dietVM = dietViewModel {
                                         Task {
                                             await dietVM.loadHeavyDataIfNeeded()
@@ -51,14 +58,41 @@ struct WNHApp: App {
 
             .preferredColorScheme(.dark)
             .onAppear {
-                
-                
-                // 🔧 TEMPORAL: Resetear solo onboarding para testing (quitar en producción)
-                #if DEBUG
-                // sessionManager.resetOnboarding() // Descomenta esta línea si quieres forzar el onboarding
-                #endif
+                // ✅ La app ahora recuerda la sesión del usuario
+                // sessionManager.resetUserData() // Comentado para mantener la sesión
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                // Manejar notificaciones cuando la app se activa
+                handleNotificationIfNeeded()
             }
         }
+    }
+    
+    // MARK: - Notification Handling
+    
+    private func handleNotificationIfNeeded() {
+        // Verificar si hay una notificación pendiente de manejar
+        if let notificationData = UserDefaults.standard.object(forKey: "pendingNotification") as? [String: Any] {
+            // Limpiar la notificación pendiente
+            UserDefaults.standard.removeObject(forKey: "pendingNotification")
+            
+            // Navegar a DietView si es una notificación de agua
+            if let screen = notificationData["screen"] as? String, screen == "diet" {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    // Navegar a DietView
+                    navigateToDietView()
+                }
+            }
+        }
+    }
+    
+    private func navigateToDietView() {
+        // Navegar a DietView usando NotificationCenter para comunicar con DashboardView
+        NotificationCenter.default.post(
+            name: Notification.Name("NavigateToDietTab"),
+            object: nil
+        )
+        print("🚰 Notificación enviada para navegar a DietView")
     }
 }
 

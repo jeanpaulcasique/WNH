@@ -23,15 +23,15 @@ final class MeViewModel: ObservableObject {
     
     let accountSection: [MeMenuItem] = [
         MeMenuItem(title: "Subscription", icon: "crown.fill", color: .appYellow),
-        MeMenuItem(title: "Coaches", icon: "person.2.fill", color: .blue),
-        MeMenuItem(title: "Analytics", icon: "chart.bar.fill", color: .green)
+        MeMenuItem(title: "Coaches", icon: "person.2.fill", color: .appYellow),
+        MeMenuItem(title: "Analytics", icon: "chart.bar.fill", color: .appYellow)
     ]
 
     let supportSection: [MeMenuItem] = [
-        MeMenuItem(title: "Write to support", icon: "headphones", color: .orange),
-        MeMenuItem(title: "Tell a friend", icon: "square.and.arrow.up", color: .purple),
-        MeMenuItem(title: "Rate the app", icon: "star.fill", color: .yellow),
-        MeMenuItem(title: "Settings", icon: "gearshape.fill", color: .gray)
+        MeMenuItem(title: "Write to support", icon: "headphones", color: .appYellow),
+        MeMenuItem(title: "Tell a friend", icon: "square.and.arrow.up", color: .appYellow),
+        MeMenuItem(title: "Rate the app", icon: "star.fill", color: .appYellow),
+        MeMenuItem(title: "Settings", icon: "gearshape.fill", color: .appYellow)
     ]
     
     init() {

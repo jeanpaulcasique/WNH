@@ -23,8 +23,8 @@ struct WorkoutCharacterView: View {
                             // Cambia estos valores para hacer la imagen más grande o más pequeña
                             // width: ancho de la imagen
                             // height: alto de la imagen
-                            .frame(maxWidth: 780, maxHeight: 780) // ← Aumentado para compensar personaje más pequeño
-                            .scaleEffect(1.45) // ← Hace la imagen 40% más grande para compensar
+                            .frame(maxWidth: 540, maxHeight: 540) // ← Mantenido igual
+                            .scaleEffect(1.60) // ← Reducido para hacer la imagen trasera más pequeña
                             // ===== EDITA AQUÍ LA POSICIÓN DE LA IMAGEN =====
                             // offset(x, y) - x: horizontal, y: vertical
                             // x: negativo = izquierda, positivo = derecha

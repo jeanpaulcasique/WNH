@@ -338,17 +338,10 @@ struct TrainerCard: View {
         }
         .buttonStyle(PlainButtonStyle())
         .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
         )
     }
 }
@@ -375,18 +368,7 @@ struct CategoryTag: View {
                 isSelected ? Color.appYellow : Color.white.opacity(0.08)
             )
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.appYellow.opacity(0.6), Color.appYellow.opacity(0.2), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.5
-                    )
-            )
-            .shadow(color: Color.appYellow.opacity(0.15), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }

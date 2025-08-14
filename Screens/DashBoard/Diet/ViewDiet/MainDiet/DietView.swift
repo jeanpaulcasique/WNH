@@ -14,15 +14,19 @@ struct DietView: View {
     @StateObject private var vm = DietViewModel()
     @StateObject private var daySelectorVM = DaySelectorViewModel()
     @StateObject private var todaysMealsVM = TodaysMealsViewModel()
-    @State private var showGrocerySheet = false
-    @State private var showFoodScanner = false
-    @State private var showWaterAlert = false
+    enum ActiveSheet: Identifiable {
+        case grocery, scanner, water
+        var id: Int {
+            hashValue
+        }
+    }
+    @State private var activeSheet: ActiveSheet?
     @State private var headerScale: CGFloat = 1.0
     @State private var showCalorieAlert = false
     @State private var userName: String? = nil
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
             
                 LinearGradient(
@@ -78,7 +82,7 @@ struct DietView: View {
                         Spacer()
                         // Food scanner button
                         Button(action: {
-                            showFoodScanner = true
+                            activeSheet = .scanner
                             let generator = UIImpactFeedbackGenerator(style: .medium)
                             generator.impactOccurred()
                         }) {
@@ -104,14 +108,15 @@ struct DietView: View {
         }
         .accentColor(.appYellow)
         .preferredColorScheme(.dark)
-        .sheet(isPresented: $showGrocerySheet) {
-            GroceryListSheetView2(groceryListViewModel: vm.groceryListViewModel)
-        }
-        .sheet(isPresented: $showFoodScanner) {
-            FoodScannerView()
-        }
-        .sheet(isPresented: $showWaterAlert) {
-            WaterInfoSheet()
+        .sheet(item: $activeSheet) { item in
+            switch item {
+            case .grocery:
+                GroceryListSheetView2(groceryListViewModel: vm.groceryListViewModel)
+            case .scanner:
+                FoodScannerView()
+            case .water:
+                WaterInfoSheet()
+            }
         }
         .alert("Calorie Target", isPresented: $showCalorieAlert) {
             Button("OK", role: .cancel) { }
@@ -198,7 +203,7 @@ private extension DietView {
                     value: vm.calculateRecommendedWaterIntake(),
                     subtitle: "recommended",
                     color: .cyan,
-                    action: { showWaterAlert = true }
+                    action: { activeSheet = .water }
                 )
             }
             .opacity(vm.showNutritionCards ? 1 : 0)
@@ -208,7 +213,7 @@ private extension DietView {
     
     var groceryFloatingButton: some View {
         Button(action: {
-            showGrocerySheet = true
+            activeSheet = .grocery
             let generator = UIImpactFeedbackGenerator(style: .medium)
             generator.impactOccurred()
         }) {
@@ -224,14 +229,16 @@ private extension DietView {
                         .foregroundColor(.appBlack)
                     
                     if !vm.isGroceryListEmpty {
-                        Circle()
-                            .fill(vm.isGroceryListCompleted ? Color.green : Color.orange)
-                            .frame(width: 8, height: 8)
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.appBlack, lineWidth: 1)
-                            )
-                            .offset(x: 12, y: -6)
+                        withAnimation {
+                            Circle()
+                                .fill(vm.isGroceryListCompleted ? Color.green : Color.orange)
+                                .frame(width: 8, height: 8)
+                                .overlay(
+                                    Circle()
+                                        .stroke(Color.appBlack, lineWidth: 1)
+                                )
+                                .offset(x: 12, y: -6)
+                        }
                     }
                 }
             }

@@ -257,18 +257,7 @@ final class WriteTSViewModel: ObservableObject {
         // Clear current conversation from UserDefaults
         userDefaults.removeObject(forKey: conversationKey)
         
-        // Add welcome message for new conversation
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            let welcomeMessage = SupportMessage(
-                text: "Hello! This is a new conversation. How can I help you today?",
-                isFromUser: false,
-                timestamp: Date(),
-                attachments: [],
-                status: .delivered
-            )
-            self.messages.append(welcomeMessage)
-            self.saveConversation()
-        }
+        // Don't add welcome message automatically - let user start the conversation
     }
     
     func loadConversation(_ conversation: ConversationHistory) {

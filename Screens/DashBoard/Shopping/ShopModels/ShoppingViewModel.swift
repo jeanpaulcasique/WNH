@@ -60,12 +60,15 @@ class ShoppingViewModel: ObservableObject {
     
     // MARK: - Product Management
     func loadProducts() {
+        print("🛍️ Loading products...")
         isLoading = true
         
         // Simulate API call
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             self.products = ProductData.sampleProducts
             self.isLoading = false
+            print("✅ Products loaded: \(self.products.count) products")
+            print("📦 Product names: \(self.products.map { $0.name })")
         }
     }
     

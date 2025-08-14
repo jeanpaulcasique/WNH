@@ -88,6 +88,7 @@ struct WriteTSView: View {
     @State private var showNewConversationAlert = false
     @State private var showingAlert = false
     @State private var alertMessage = ""
+
     
     var body: some View {
         ZStack {
@@ -103,6 +104,8 @@ struct WriteTSView: View {
                 } else {
                     emailPreviewArea
                 }
+                
+
                 
                 // Input area
                 inputArea
@@ -141,6 +144,7 @@ struct WriteTSView: View {
                 selectedImage = nil // Reset para permitir seleccionar la misma imagen de nuevo
             }
         }
+
         .onTapGesture {
             hideKeyboard()
         }
@@ -235,11 +239,16 @@ private extension WriteTSView {
                     ForEach(viewModel.messages) { message in
                         MessageBubble(message: message)
                             .id(message.id)
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
                     }
                     
                     // Typing indicator
                     if viewModel.isTyping {
                         TypingIndicator()
+                            .transition(.opacity.combined(with: .scale))
                     }
                 }
                 .padding(.horizontal, 16)
@@ -305,6 +314,7 @@ private extension WriteTSView {
                     viewModel.removeAttachment(attachment)
                 }
                 .padding(.horizontal, 16)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
             }
             
             HStack(spacing: 12) {
@@ -353,6 +363,8 @@ private extension WriteTSView {
                     Image(systemName: viewModel.selectedContactMethod == .chat ? "arrow.up.circle.fill" : "envelope.fill")
                         .font(.system(size: 24))
                         .foregroundColor(messageText.isEmpty ? .gray : .appYellow)
+                        .scaleEffect(messageText.isEmpty ? 0.9 : 1.0)
+                        .animation(.easeInOut(duration: 0.2), value: messageText.isEmpty)
                 }
                 .disabled(messageText.isEmpty)
             }
@@ -396,16 +408,6 @@ private extension WriteTSView {
         }
     }
     
-    var helpButton: some View {
-        Button(action: {
-            viewModel.showQuickHelp()
-        }) {
-            Image(systemName: "questionmark.circle")
-                .foregroundColor(.appYellow)
-                .font(.system(size: 20))
-        }
-    }
-    
     // MARK: - Actions
     func sendMessage() {
         guard !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
@@ -436,6 +438,8 @@ private extension WriteTSView {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
+
+
 
 // MARK: - Supporting Views
 struct WelcomeMessageView: View {
@@ -475,42 +479,6 @@ struct WelcomeMessageView: View {
         .padding(.horizontal, 20)
     }
 }
-    var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "headphones")
-                .font(.system(size: 48))
-                .foregroundColor(.appYellow)
-            
-            Text("Hi there! 👋")
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.appWhite)
-            
-            Text("How can we help you today? Our support team is here to assist you with any questions or issues.")
-                .font(.system(size: 16))
-                .foregroundColor(.appWhite.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-            
-            // Quick actions
-            VStack(spacing: 8) {
-                QuickActionButton(title: "Account Issues", icon: "person.circle") {
-                    // Handle quick action
-                }
-                QuickActionButton(title: "App Problems", icon: "app.badge") {
-                    // Handle quick action
-                }
-                QuickActionButton(title: "Subscription Help", icon: "creditcard") {
-                    // Handle quick action
-                }
-            }
-            .padding(.top, 16)
-        }
-        .padding(20)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(16)
-        .padding(.horizontal, 20)
-    }
-
 
 struct QuickActionButton: View {
     let title: String

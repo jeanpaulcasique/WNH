@@ -63,12 +63,12 @@ enum FAQCategory: String, CaseIterable, Codable {
     var color: Color {
         switch self {
         case .all: return .appYellow
-        case .workouts: return .red
-        case .nutrition: return .green
-        case .account: return .blue
-        case .subscription: return .purple
-        case .technical: return .orange
-        case .general: return .gray
+        case .workouts: return .appYellow
+        case .nutrition: return .appYellow
+        case .account: return .appYellow
+        case .subscription: return .appYellow
+        case .technical: return .appYellow
+        case .general: return .appYellow
         }
     }
 }

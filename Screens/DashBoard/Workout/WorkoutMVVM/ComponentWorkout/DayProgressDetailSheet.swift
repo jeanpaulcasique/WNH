@@ -8,38 +8,80 @@ struct DayProgressDetailSheet: View {
     @ObservedObject var workoutViewModel: WorkoutViewModel
     @Environment(\.dismiss) private var dismiss
     
+    @State private var selectedDate: Date
+    @State private var currentMonth: Date
+    
     private var dayProgress: DayProgress {
-        progressManager.getProgress(for: date)
+        progressManager.getProgress(for: selectedDate)
+    }
+    
+    init(date: Date, progressManager: WorkoutProgressManager, workoutViewModel: WorkoutViewModel) {
+        self.date = date
+        self.progressManager = progressManager
+        self.workoutViewModel = workoutViewModel
+        self._selectedDate = State(initialValue: date)
+        self._currentMonth = State(initialValue: date)
     }
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 25) {
-                    // Gesture para cerrar teclado
-                    Color.clear
-                        .frame(height: 1)
-                        .onTapGesture {
-                            hideKeyboard()
+            VStack(spacing: 0) {
+                // Date Selector fijo en la parte superior
+                DateSelectorView(
+                    selectedDate: $selectedDate,
+                    currentMonth: $currentMonth
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 0)
+                .padding(.bottom, 16)
+                
+                // Contenido scrolleable
+                ScrollView {
+                    VStack(spacing: 16) {
+                        // Gesture para cerrar teclado
+                        Color.clear
+                            .frame(height: 1)
+                            .onTapGesture {
+                                hideKeyboard()
+                            }
+                        
+                        // Header con fecha y progreso en un solo card
+                        HStack(spacing: 8) {
+                            Image(systemName: "chart.pie.fill")
+                                .foregroundColor(Color.appYellow)
+                                .font(.headline)
+                            Text("Daily Progress")
+                                .font(.headline)
+                                .foregroundColor(.white)
                         }
-                    // Header con fecha y progreso en un solo card
-                    HeaderProgressCard(date: date, progress: dayProgress, workoutViewModel: workoutViewModel)
-                    
-                    // Métricas principales
-                    MetricsGridView(progress: dayProgress, workoutViewModel: workoutViewModel, date: date)
-                    
-                    // Sección de pasos
-                    StepsSectionView(
-                        workoutViewModel: workoutViewModel,
-                        date: date
-                    )
-                    
-                    // Gráficos detallados
-                    DetailedChartsView(progress: dayProgress, workoutViewModel: workoutViewModel)
-                    
-                    Spacer(minLength: 100)
+                        
+                        HeaderProgressCard(date: selectedDate, progress: dayProgress, workoutViewModel: workoutViewModel)
+                        
+                        // Métricas principales
+                        HStack(spacing: 8) {
+                            Image(systemName: "chart.bar.fill")
+                                .foregroundColor(Color.appYellow)
+                                .font(.headline)
+                            Text("Daily Metrics")
+                                .font(.headline)
+                                .foregroundColor(.white)
+                        }
+                        
+                        MetricsGridView(progress: dayProgress, workoutViewModel: workoutViewModel, date: selectedDate)
+                        
+                        // Sección de pasos
+                        StepsSectionView(
+                            workoutViewModel: workoutViewModel,
+                            date: selectedDate
+                        )
+                        
+                        // Gráficos detallados
+                        DetailedChartsView(progress: dayProgress, workoutViewModel: workoutViewModel)
+                        
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.horizontal, 8)
                 }
-                .padding(.horizontal, 20)
             }
             .background(
                 ZStack {
@@ -61,15 +103,7 @@ struct DayProgressDetailSheet: View {
             .onTapGesture {
                 hideKeyboard()
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Close") {
-                        dismiss()
-                    }
-                    .foregroundColor(.white)
-                }
-            }
+            .navigationBarHidden(true)
         }
         .preferredColorScheme(.dark)
     }
@@ -160,19 +194,7 @@ struct HeaderProgressCard: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
-            // Fecha y título
-            VStack(spacing: 8) {
-                Text(formattedDate)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .foregroundColor(.white)
-                
-                Text("Day Progress")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
+        VStack(spacing: 8) {
             // Círculo de progreso diario
             ZStack {
                 Circle()
@@ -199,14 +221,13 @@ struct HeaderProgressCard: View {
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 16)
-        .background(Color.white.opacity(0.05))
+        .padding(.vertical, 12)
+        .background(Color.clear)
         .cornerRadius(12)
         .frame(maxWidth: .infinity)
-        .frame(height: 200)
-        .padding(.top, 10)
-        .padding(.bottom, 16)
+        .frame(height: 160)
+        .padding(.top, 5)
+        .padding(.bottom, 8)
     }
 }
 
@@ -268,40 +289,40 @@ struct MetricsGridView: View {
     @State private var isLoadingCalories: Bool = false
     
     var body: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 3), spacing: 16) {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 12), count: 3), spacing: 12) {
             MetricCard(
                 title: "Exercises",
                 value: "\(progress.exercisesCompleted)/\(progress.totalExercises)",
                 icon: "dumbbell.fill",
-                color: .blue
+                color: Color.appYellow
             )
             
             MetricCard(
                 title: "Time",
                 value: "\(progress.workoutDurationMinutes) min",
                 icon: "clock.fill",
-                color: .green
+                color: Color.appYellow
             )
             
             MetricCard(
                 title: "Calories",
                 value: getCaloriesDisplayValue(),
                 icon: "flame.fill",
-                color: .orange
+                color: Color.appYellow
             )
             
             MetricCard(
                 title: "Steps",
                 value: getStepsDisplayValue(),
                 icon: "figure.walk",
-                color: .green
+                color: Color.appYellow
             )
             
             MetricCard(
                 title: "Heart Rate",
                 value: getHeartRateDisplayValue(),
                 icon: "heart.fill",
-                color: .red
+                color: Color.appYellow
             )
             
             EditableWeightCard(
@@ -502,7 +523,7 @@ struct MetricCard: View {
         VStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.title2)
-                .foregroundColor(color)
+                .foregroundColor(Color.appYellow)
             
             Text(value)
                 .font(.title3)
@@ -548,7 +569,7 @@ struct EditableWeightCard: View {
                 // Icono de balanza centrado
                 Image(systemName: "scalemass")
                     .font(.title2)
-                    .foregroundColor(.purple)
+                    .foregroundColor(Color.appYellow)
                 
                 // Icono de lápiz en la esquina superior derecha (solo para día actual)
                 if !isEditing && isCurrentDay {
@@ -557,7 +578,7 @@ struct EditableWeightCard: View {
                             Spacer()
                             Image(systemName: "pencil.circle.fill")
                                 .font(.caption)
-                                .foregroundColor(.purple.opacity(0.7))
+                                .foregroundColor(Color.appYellow.opacity(0.7))
                         }
                         Spacer()
                     }
@@ -578,7 +599,7 @@ struct EditableWeightCard: View {
                             Button("Done") {
                                 saveWeight()
                             }
-                            .foregroundColor(.purple)
+                            .foregroundColor(Color.appYellow)
                         }
                     }
                     .onSubmit {
@@ -610,7 +631,7 @@ struct EditableWeightCard: View {
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(isEditing ? Color.purple.opacity(0.5) : Color.clear, lineWidth: 1)
+                .stroke(isEditing ? Color.appYellow.opacity(0.5) : Color.clear, lineWidth: 1)
         )
         .onTapGesture {
             if !isEditing && isCurrentDay {
@@ -644,39 +665,17 @@ struct StepsSectionView: View {
     @ObservedObject var workoutViewModel: WorkoutViewModel
     let date: Date
     
-    @State private var isLoadingSteps = false
-    @State private var hasHealthKitData = false
-    @State private var stepsFromHealthKit: Int = 0
-    
     private var steps: Int {
-        // ✅ SINCRONIZADO CON EL CARD DE PASOS: Usar la misma lógica
-        
-        // Para el día actual, usar todaySteps del WorkoutViewModel
         if Calendar.current.isDateInToday(date) {
-            let todaySteps = workoutViewModel.getTodaySteps()
-            print("✅ STEPS SECTION: Usando todaySteps - \(todaySteps)")
-            return todaySteps
+            return workoutViewModel.getTodaySteps()
         }
         
-        // Para días pasados, usar getStepsForDate con validación
         let savedSteps = workoutViewModel.getStepsForDate(date)
-        
-        // Solo usar datos guardados si son realistas
-        if savedSteps > 0 && savedSteps < 30000 {
-            print("✅ STEPS SECTION: Usando datos pasados realistas - \(savedSteps)")
-            return savedSteps
-        } else {
-            print("❌ STEPS SECTION: Datos pasados irreales - \(savedSteps)")
-            return 0
-        }
+        return (savedSteps > 0 && savedSteps < 30000) ? savedSteps : 0
     }
     
     private var dailyGoal: Int {
         workoutViewModel.userPreferencesService.recommendedDailySteps
-    }
-    
-    private var weeklyAverage: Int {
-        workoutViewModel.getWeeklyAverageSteps()
     }
     
     private var progressPercentage: Double {
@@ -684,18 +683,36 @@ struct StepsSectionView: View {
         return min(Double(steps) / Double(dailyGoal), 1.0)
     }
     
+    // Función para obtener el color basado en el progreso por fases
+    private func getProgressColor() -> Color {
+        let percentage = progressPercentage
+        
+        switch percentage {
+        case 0.0..<0.25:
+            return .red
+        case 0.25..<0.50:
+            return .orange
+        case 0.50..<0.75:
+            return .yellow
+        case 0.75...1.0:
+            return .green
+        default:
+            return .red
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 16) {
             HStack {
                 Image(systemName: "shoe")
-                    .foregroundColor(.green)
+                    .foregroundColor(Color.appYellow)
                     .font(.title2)
                 Text("Daily Steps")
                     .font(.headline)
                     .fontWeight(.semibold)
                 Spacer()
                 
-                // Indicador de estado de HealthKit
+                // Indicador de estado para hoy
                 if Calendar.current.isDateInToday(date) {
                     HStack(spacing: 4) {
                         Circle()
@@ -708,81 +725,46 @@ struct StepsSectionView: View {
                 }
             }
             
-            VStack(spacing: 12) {
-                // Pasos actuales
-                HStack {
-                    if isLoadingSteps {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                            .foregroundColor(.green)
-                    } else {
-                        Text("\(steps)")
-                            .font(.system(size: 32, weight: .bold))
-                            .foregroundColor(.green)
-                    }
-                    Text("steps")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                }
-                
-                // Explicación del promedio recomendado
-                HStack {
-                    Text("Daily goal based on your profile:")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Spacer()
-                    Text("\(dailyGoal) steps/day")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.blue)
-                }
-                
-                // Barra de progreso
+            VStack(spacing: 16) {
+                // Pasos actuales con progreso visual
                 VStack(spacing: 8) {
                     HStack {
-                        Text("Goal: \(dailyGoal)")
-                            .font(.caption)
+                        Text("\(steps)")
+                            .font(.system(size: 36, weight: .bold))
+                            .foregroundColor(getProgressColor())
+                        Text("of \(dailyGoal)")
+                            .font(.title3)
                             .foregroundColor(.secondary)
                         Spacer()
                         Text("\(Int(progressPercentage * 100))%")
-                            .font(.caption)
-                            .foregroundColor(.green)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundColor(getProgressColor())
                     }
                     
+                    // Barra de progreso
                     GeometryReader { geometry in
                         ZStack(alignment: .leading) {
                             Rectangle()
                                 .fill(Color.white.opacity(0.1))
-                                .frame(height: 8)
-                                .cornerRadius(4)
+                                .frame(height: 10)
+                                .cornerRadius(5)
                             
                             Rectangle()
-                                .fill(Color.green)
-                                .frame(width: geometry.size.width * progressPercentage, height: 8)
-                                .cornerRadius(4)
+                                .fill(getProgressColor())
+                                .frame(width: geometry.size.width * progressPercentage, height: 10)
+                                .cornerRadius(5)
                                 .animation(.easeInOut(duration: 0.5), value: progressPercentage)
                         }
                     }
-                    .frame(height: 8)
+                    .frame(height: 10)
                 }
                 
-                // Estadísticas adicionales
-                HStack(spacing: 20) {
-                    VStack(spacing: 4) {
-                        Text("\(dailyGoal)")
-                            .font(.title3)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.blue)
-                        Text("Daily Goal")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(spacing: 4) {
-                        if steps >= dailyGoal {
+                // Solo mostrar "Extra!" si se superó la meta
+                if steps >= dailyGoal {
+                    HStack {
+                        Spacer()
+                        VStack(spacing: 4) {
                             Text("+\(steps - dailyGoal)")
                                 .font(.title3)
                                 .fontWeight(.semibold)
@@ -790,43 +772,34 @@ struct StepsSectionView: View {
                             Text("Extra!")
                                 .font(.caption)
                                 .foregroundColor(.green)
-                        } else {
-                            Text("\(dailyGoal - steps)")
-                                .font(.title3)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.orange)
-                            Text("Remaining")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
                         }
                     }
                 }
+                
+                // Explicación de cómo se calculan los pasos recomendados
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(Color.appYellow)
+                            .font(.caption)
+                        Text("How we calculate your daily steps:")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    
+                    Text("Based on your age, weight, height, activity level, and fitness goals, we recommend \(dailyGoal) steps per day to maintain a healthy lifestyle and achieve your fitness objectives.")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(.top, 8)
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
             .background(Color.white.opacity(0.05))
             .cornerRadius(12)
-        }
-        .onAppear {
-            loadStepsData()
-        }
-    }
-    
-    private func loadStepsData() {
-        // ✅ SIMPLIFICADO: StepsSectionView ahora usa la misma lógica que el card
-        print("🔄 STEPS SECTION: Cargando datos...")
-        
-        // Para el día actual, los datos se obtienen automáticamente de todaySteps
-        // Para días pasados, se obtienen de getStepsForDate
-        // No necesitamos lógica adicional aquí
-    }
-    
-    // ✅ Función para limpiar datos irreales del almacenamiento
-    private func cleanUnrealisticData() {
-        let savedSteps = workoutViewModel.getStepsForDate(date)
-        if savedSteps > 50000 || savedSteps < 0 {
-            print("🧹 STEPS: Limpiando datos irreales del almacenamiento - \(savedSteps)")
-            // Resetear datos irreales
-            workoutViewModel.saveTodaySteps(0)
         }
     }
 }
@@ -837,9 +810,19 @@ struct DetailedChartsView: View {
     @ObservedObject var workoutViewModel: WorkoutViewModel
     
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(alignment: .leading, spacing: 20) {
             // Gráfico de progreso de peso hacia BMI ideal
             WeightProgressChart(workoutViewModel: workoutViewModel)
+            
+            // Weekly Progress Label fuera del card
+            HStack(spacing: 8) {
+                Image(systemName: "chart.line.uptrend.xyaxis")
+                    .foregroundColor(Color.appYellow)
+                    .font(.headline)
+                Text("Weekly Progress")
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
             
             // Gráfico de progreso semanal
             WeeklyProgressChart()
@@ -955,60 +938,40 @@ struct WeightProgressChart: View {
     private var weightProgress: Double {
         guard idealWeight > 0 else { return 0 }
         
-        // Obtener el peso inicial (peso de partida) desde UserDefaults
-        let startingWeight = UserDefaults.standard.object(forKey: "startingWeightKg") as? Double ?? currentWeight
+        // ✅ Obtener el peso inicial del onboarding (NO cambia nunca)
+        let onboardingInitialWeight = UserDefaults.standard.object(forKey: "onboardingInitialWeightKg") as? Double ?? currentWeight
         
         print("🎯 WEIGHT PROGRESS BAR - Cálculo de progreso:")
         print("   • Peso actual: \(currentWeight) kg")
-        print("   • Peso inicial: \(startingWeight) kg")
+        print("   • Peso inicial (onboarding): \(onboardingInitialWeight) kg")
         print("   • Peso ideal: \(idealWeight) kg")
         
-        // Si el peso actual es mayor al ideal (necesita perder peso)
-        if currentWeight > idealWeight {
-            let totalToLose = startingWeight - idealWeight
-            let alreadyLost = startingWeight - currentWeight
-            
-            print("   • Objetivo: Perder peso")
-            print("   • Total a perder: \(totalToLose) kg")
-            print("   • Ya perdido: \(alreadyLost) kg")
-            
-            // Si ya perdió todo lo necesario, mostrar 100%
-            if alreadyLost >= totalToLose {
-                print("   • Progreso: 100% (meta alcanzada)")
-                return 1.0
-            }
-            
-            // Calcular progreso basado en cuánto ha perdido vs cuánto necesita perder
-            let progress = max(0, min(alreadyLost / totalToLose, 1.0))
-            print("   • Progreso: \(Int(progress * 100))%")
-            return progress
-            
-        } else if currentWeight < idealWeight {
-            // Si el peso actual es menor al ideal (necesita ganar peso)
-            let totalToGain = idealWeight - startingWeight
-            let alreadyGained = currentWeight - startingWeight
-            
-            print("   • Objetivo: Ganar peso")
-            print("   • Total a ganar: \(totalToGain) kg")
-            print("   • Ya ganado: \(alreadyGained) kg")
-            
-            // Si ya ganó todo lo necesario, mostrar 100%
-            if alreadyGained >= totalToGain {
-                print("   • Progreso: 100% (meta alcanzada)")
-                return 1.0
-            }
-            
-            // Calcular progreso basado en cuánto ha ganado vs cuánto necesita ganar
-            let progress = max(0, min(alreadyGained / totalToGain, 1.0))
-            print("   • Progreso: \(Int(progress * 100))%")
-            return progress
-            
-        } else {
-            // Si está en el peso ideal
+        // ✅ LÓGICA MEJORADA: Calcular progreso basado en la distancia al peso ideal desde el peso inicial del onboarding
+        let distanceToIdeal = abs(currentWeight - idealWeight)
+        let totalDistance = abs(onboardingInitialWeight - idealWeight)
+        
+        // Si ya está en el peso ideal o muy cerca (dentro de 0.5 kg)
+        if distanceToIdeal <= 0.5 {
             print("   • Objetivo: Mantener peso (ya en peso ideal)")
             print("   • Progreso: 100%")
             return 1.0
         }
+        
+        // Si no hay distancia total que recorrer (peso inicial = peso ideal)
+        if totalDistance <= 0.1 {
+            print("   • Objetivo: Mantener peso (peso inicial ya era ideal)")
+            print("   • Progreso: 100%")
+            return 1.0
+        }
+        
+        // Calcular progreso basado en cuánto se ha acercado al peso ideal desde el peso inicial del onboarding
+        let progress = max(0, min(1 - (distanceToIdeal / totalDistance), 1.0))
+        
+        print("   • Distancia al ideal: \(distanceToIdeal) kg")
+        print("   • Distancia total desde onboarding: \(totalDistance) kg")
+        print("   • Progreso: \(Int(progress * 100))%")
+        
+        return progress
     }
     
     private var bmiProgress: Double {
@@ -1035,11 +998,14 @@ struct WeightProgressChart: View {
             HStack(spacing: 8) {
                 Image(systemName: "scalemass.fill")
                     .font(.title2)
-                    .foregroundColor(.purple)
+                    .foregroundColor(Color.appYellow)
                 
                 Text("Weight Progress")
                     .font(.headline)
                     .foregroundColor(.white)
+            }
+            .onAppear {
+                ensureStartingWeightIsSaved()
             }
             
             VStack(spacing: 12) {
@@ -1052,7 +1018,7 @@ struct WeightProgressChart: View {
                         Text("\(formatWeight(currentWeight)) kg")
                             .font(.title3)
                             .fontWeight(.bold)
-                            .foregroundColor(.white)
+                            .foregroundColor(getProgressBarColor(weightProgress))
                     }
                     
                     Spacer()
@@ -1077,7 +1043,7 @@ struct WeightProgressChart: View {
                         Spacer()
                         Text("\(Int(weightProgress * 100))%")
                             .font(.caption)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.appYellow)
                     }
                     
                     GeometryReader { geometry in
@@ -1088,7 +1054,7 @@ struct WeightProgressChart: View {
                                 .cornerRadius(4)
                             
                             Rectangle()
-                                .fill(Color.blue)
+                                .fill(getProgressBarColor(weightProgress))
                                 .frame(width: geometry.size.width * weightProgress, height: 8)
                                 .cornerRadius(4)
                                 .animation(.easeInOut(duration: 0.5), value: weightProgress)
@@ -1106,7 +1072,7 @@ struct WeightProgressChart: View {
                         Text(String(format: "%.1f", currentBMI))
                             .font(.title3)
                             .fontWeight(.bold)
-                            .foregroundColor(.white)
+                            .foregroundColor(getProgressBarColor(bmiProgress))
                     }
                     
                     Spacer()
@@ -1131,7 +1097,7 @@ struct WeightProgressChart: View {
                         Spacer()
                         Text("\(Int(bmiProgress * 100))%")
                             .font(.caption)
-                            .foregroundColor(.purple)
+                            .foregroundColor(.appYellow)
                     }
                     
                     GeometryReader { geometry in
@@ -1142,7 +1108,7 @@ struct WeightProgressChart: View {
                                 .cornerRadius(4)
                             
                             Rectangle()
-                                .fill(Color.purple)
+                                .fill(getProgressBarColor(bmiProgress))
                                 .frame(width: geometry.size.width * bmiProgress, height: 8)
                                 .cornerRadius(4)
                                 .animation(.easeInOut(duration: 0.5), value: bmiProgress)
@@ -1160,7 +1126,7 @@ struct WeightProgressChart: View {
                         Text("\(String(format: "%.1f", abs(currentWeight - idealWeight))) kg")
                             .font(.title3)
                             .fontWeight(.bold)
-                            .foregroundColor(currentWeight > idealWeight ? .orange : .blue)
+                            .foregroundColor(getDifferenceColor(abs(currentWeight - idealWeight)))
                             .onAppear {
                                 print("🎯 WEIGHT DIFFERENCE DEBUG:")
                                 print("   • Current Weight: \(currentWeight) kg")
@@ -1179,11 +1145,12 @@ struct WeightProgressChart: View {
                         Text(workoutViewModel.userPreferencesService.bmiCategory.rawValue.capitalized)
                             .font(.title3)
                             .fontWeight(.bold)
-                            .foregroundColor(.yellow)
+                            .foregroundColor(getBMICategoryColor(workoutViewModel.userPreferencesService.bmiCategory))
                     }
                 }
             }
-            .padding(16)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
             .background(Color.white.opacity(0.05))
             .cornerRadius(12)
         }
@@ -1191,6 +1158,64 @@ struct WeightProgressChart: View {
             // ✅ SINCRONIZACIÓN: Forzar actualización cuando se cambie el peso
             print("🔄 WEIGHT PROGRESS: Recibida notificación de peso actualizado")
             refreshTrigger.toggle()
+        }
+    }
+    
+    // ✅ Función helper para obtener el color de la barra basado en el progreso
+    private func getProgressBarColor(_ progress: Double) -> Color {
+        let percentage = progress * 100
+        
+        switch percentage {
+        case 0.0..<25.0:
+            return .red
+        case 25.0..<50.0:
+            return .orange
+        case 50.0..<75.0:
+            return .appYellow
+        case 75.0...100.0:
+            return .green
+        default:
+            return .red
+        }
+    }
+    
+    // ✅ Función helper para obtener el color de la diferencia basado en la distancia al peso ideal
+    private func getDifferenceColor(_ difference: Double) -> Color {
+        switch difference {
+        case 0.0..<2.0:
+            return .green // Muy cerca del ideal
+        case 2.0..<5.0:
+            return .appYellow // Moderadamente lejos
+        default:
+            return .red // Muy lejos del ideal
+        }
+    }
+    
+    // ✅ Función helper para obtener el color de la categoría BMI
+    private func getBMICategoryColor(_ category: BMICategoryWorkout) -> Color {
+        switch category {
+        case .underweight:
+            return .blue // Azul para bajo peso
+        case .normal:
+            return .green // Verde para peso normal
+        case .overweight:
+            return .orange // Naranja para sobrepeso
+        case .obese:
+            return .red // Rojo para obesidad
+        }
+    }
+    
+    // ✅ Función para asegurar que el peso inicial del onboarding esté guardado
+    private func ensureStartingWeightIsSaved() {
+        let onboardingInitialWeight = UserDefaults.standard.object(forKey: "onboardingInitialWeightKg") as? Double
+        
+        if onboardingInitialWeight == nil {
+            // Si no hay peso inicial del onboarding guardado, usar el peso actual como inicial
+            let currentWeight = UserDefaults.standard.object(forKey: "selectedWeightKg") as? Double ?? workoutViewModel.userPreferencesService.userWeight
+            UserDefaults.standard.set(currentWeight, forKey: "onboardingInitialWeightKg")
+            print("✅ WEIGHT PROGRESS: Peso inicial del onboarding guardado - \(currentWeight) kg")
+        } else {
+            print("✅ WEIGHT PROGRESS: Peso inicial del onboarding ya existe - \(onboardingInitialWeight!) kg")
         }
     }
 }
@@ -1209,10 +1234,6 @@ struct WeeklyProgressChart: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 15) {
-            Text("Weekly Progress")
-                .font(.headline)
-                .foregroundColor(.white)
-            
             Chart(weekData, id: \.day) { item in
                 LineMark(
                     x: .value("Día", item.day),
@@ -1253,7 +1274,7 @@ struct WeeklyProgressChart: View {
                 }
             }
         }
-        .padding()
+        .padding(.vertical, 16)
         .background(Color.white.opacity(0.05))
         .cornerRadius(12)
     }
@@ -1268,6 +1289,236 @@ struct ChartDataPoint {
 // MARK: - Notification Extensions
 extension Notification.Name {
     static let weightUpdated = Notification.Name("weightUpdated")
+}
+
+// MARK: - Date Selector View
+struct DateSelectorView: View {
+    @Binding var selectedDate: Date
+    @Binding var currentMonth: Date
+    
+    @State private var scrollOffset: CGFloat = 0
+    @State private var isScrolling = false
+    
+    private var monthDays: [Date] {
+        let calendar = Calendar.current
+        let startOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
+        let endOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.end ?? currentMonth
+        
+        var days: [Date] = []
+        var currentDate = startOfMonth
+        
+        while currentDate < endOfMonth {
+            days.append(currentDate)
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? currentDate
+        }
+        
+        return days
+    }
+    
+    // Calcular la posición inicial para mostrar la semana actual
+    private var initialScrollPosition: CGFloat {
+        let calendar = Calendar.current
+        let today = Date()
+        
+        // Si estamos en el mes actual, calcular la posición de la semana actual
+        if calendar.isDate(today, equalTo: currentMonth, toGranularity: .month) {
+            let startOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
+            let daysFromStart = calendar.dateComponents([.day], from: startOfMonth, to: today).day ?? 0
+            let weekOfMonth = daysFromStart / 7
+            return CGFloat(weekOfMonth * 7) * 43 // 43 = 35 (width) + 8 (spacing)
+        }
+        
+        return 0
+    }
+    
+    private var monthYearString: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM yyyy"
+        formatter.locale = Locale(identifier: "en_US")
+        return formatter.string(from: currentMonth)
+    }
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            // Month Navigation
+            HStack {
+                Button(action: previousMonth) {
+                    Image(systemName: "chevron.left")
+                        .font(.title2)
+                        .foregroundColor(Color.appYellow)
+                }
+                
+                Spacer()
+                
+                Text(monthYearString)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color.appYellow)
+                
+                Spacer()
+                
+                Button(action: nextMonth) {
+                    Image(systemName: "chevron.right")
+                        .font(.title2)
+                        .foregroundColor(Color.appYellow)
+                }
+            }
+            .padding(.horizontal, 20)
+            
+            // Month Days Selector - Muestra exactamente 7 días visualmente
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(monthDays, id: \.self) { date in
+                            DayCircleView(
+                                date: date,
+                                isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate),
+                                onTap: {
+                                    selectedDate = date
+                                }
+                            )
+                            .id(date)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear
+                                .preference(key: ScrollOffsetPreferenceKey.self, value: geometry.frame(in: .named("scroll")).minX)
+                        }
+                    )
+                }
+                .coordinateSpace(name: "scroll")
+                .onPreferenceChange(ScrollOffsetPreferenceKey.self) { value in
+                    handleScrollOffset(value)
+                }
+                .frame(width: 7 * 48 + 32, height: 60) // Ancho fijo para mostrar exactamente 7 días (40 + 8 spacing) + padding horizontal
+                .clipped() // Oculta el contenido que se sale del frame
+                .onAppear {
+                    // Posicionar automáticamente en la semana actual
+                    let calendar = Calendar.current
+                    let today = Date()
+                    
+                    if calendar.isDate(today, equalTo: currentMonth, toGranularity: .month) {
+                        // Calcular cuántos días desde el inicio del mes hasta hoy
+                        let startOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
+                        let daysFromStart = calendar.dateComponents([.day], from: startOfMonth, to: today).day ?? 0
+                        
+                        // Calcular la semana actual (0-indexed)
+                        let currentWeek = daysFromStart / 7
+                        
+                        // Calcular la posición del primer día de la semana actual
+                        let firstDayOfWeek = calendar.date(byAdding: .day, value: currentWeek * 7, to: startOfMonth) ?? startOfMonth
+                        
+                        // Hacer scroll a esa posición
+                        withAnimation(.easeInOut(duration: 0.5)) {
+                            proxy.scrollTo(firstDayOfWeek, anchor: .leading)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 16)
+        .background(Color.white.opacity(0.05))
+        .cornerRadius(12)
+        .onAppear {
+            // Asegurar que siempre se muestre la semana actual del mes al abrir
+            if !Calendar.current.isDate(selectedDate, inSameDayAs: Date()) {
+                selectedDate = Date()
+            }
+        }
+    }
+    
+    private func handleScrollOffset(_ offset: CGFloat) {
+        guard !isScrolling else { return }
+        
+        // Detectar si el scroll está cerca del final del mes
+        let calendar = Calendar.current
+        let daysInMonth = monthDays.count
+        let dayWidth: CGFloat = 48 // 40 (width) + 8 (spacing)
+        let totalWidth = CGFloat(daysInMonth) * dayWidth
+        let visibleWidth: CGFloat = 7 * dayWidth // 7 días visibles
+        
+        // Si estamos cerca del final del mes, avanzar al siguiente
+        if offset < -(totalWidth - visibleWidth + 50) {
+            isScrolling = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                nextMonth()
+                isScrolling = false
+            }
+        }
+        // Si estamos cerca del inicio del mes, retroceder al anterior
+        else if offset > 50 {
+            isScrolling = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                previousMonth()
+                isScrolling = false
+            }
+        }
+    }
+    
+    private func previousMonth() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = Calendar.current.date(byAdding: .month, value: -1, to: currentMonth) ?? currentMonth
+        }
+    }
+    
+    private func nextMonth() {
+        withAnimation(.easeInOut(duration: 0.3)) {
+            currentMonth = Calendar.current.date(byAdding: .month, value: 1, to: currentMonth) ?? currentMonth
+        }
+    }
+}
+
+
+
+// MARK: - Day Circle View
+struct DayCircleView: View {
+    let date: Date
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    private var dayInitial: String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale.current
+        formatter.setLocalizedDateFormatFromTemplate("EEE")
+        return String(formatter.string(from: date).prefix(1))
+    }
+    
+    private var dayNumber: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d"
+        return formatter.string(from: date)
+    }
+    
+    private var isToday: Bool {
+        Calendar.current.isDateInToday(date)
+    }
+    
+    var body: some View {
+        Button(action: onTap) {
+            VStack(spacing: 2) {
+                Text(dayInitial)
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(isSelected ? .white : .white.opacity(0.7))
+                
+                Text(dayNumber)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(isSelected ? .white : .white)
+            }
+            .frame(width: 40, height: 50)
+            .background(
+                Circle()
+                    .fill(isSelected ? Color.appYellow : Color.clear)
+                    .overlay(
+                        Circle()
+                            .stroke(isToday && !isSelected ? Color.appYellow.opacity(0.5) : Color.clear, lineWidth: 1)
+                    )
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
 }
 
 // MARK: - Preview

@@ -96,7 +96,7 @@ private extension SettingsView {
                     icon: "person.crop.circle",
                     title: "Edit Profile",
                     subtitle: "Update your personal information",
-                    color: .blue
+                    color: .appYellow
                 )
             }
             .buttonStyle(PlainButtonStyle())
@@ -118,7 +118,7 @@ private extension SettingsView {
                         icon: "globe",
                         title: "Language",
                         subtitle: "English (US)",
-                        color: .green
+                        color: .appYellow
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -127,7 +127,7 @@ private extension SettingsView {
                     icon: "bell.fill",
                     title: "Notifications",
                     subtitle: "Get workout reminders",
-                    color: .orange,
+                    color: .appYellow,
                     isOn: $isNotificationsEnabled
                 )
                 
@@ -135,7 +135,7 @@ private extension SettingsView {
                     icon: "moon.fill",
                     title: "Dark Mode",
                     subtitle: "Always enabled for fitness focus",
-                    color: .purple,
+                    color: .appYellow,
                     isOn: $isDarkModeEnabled
                 )
             }
@@ -155,7 +155,7 @@ private extension SettingsView {
                 icon: "heart.fill",
                 title: "Apple Health",
                 subtitle: "Sync workouts and health data",
-                color: .red,
+                color: .appYellow,
                 isOn: $isAppleHealthEnabled
             )
         }
@@ -176,7 +176,7 @@ private extension SettingsView {
                         icon: "questionmark.circle",
                         title: "FAQ",
                         subtitle: "Frequently asked questions",
-                        color: .cyan
+                        color: .appYellow
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -186,7 +186,7 @@ private extension SettingsView {
                         icon: "headphones",
                         title: "Contact Support",
                         subtitle: "Get help from our team",
-                        color: .orange
+                        color: .appYellow
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -208,7 +208,7 @@ private extension SettingsView {
                     icon: "info.circle",
                     title: "App Version",
                     subtitle: "1.0.0 (Latest)",
-                    color: .gray,
+                    color: .appYellow,
                     showChevron: false
                 )
                 
@@ -217,7 +217,7 @@ private extension SettingsView {
                         icon: "doc.text",
                         title: "Privacy Policy",
                         subtitle: "How we protect your data",
-                        color: .blue
+                        color: .appYellow
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -227,7 +227,7 @@ private extension SettingsView {
                         icon: "doc.text",
                         title: "Terms of Service",
                         subtitle: "Our terms and conditions",
-                        color: .purple
+                        color: .appYellow
                     )
                 }
                 .buttonStyle(PlainButtonStyle())

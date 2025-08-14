@@ -37,7 +37,7 @@
         <string>Swansong-0v5gd.ttf</string>
     </array>
     <key>UILaunchStoryboardName</key>
-    <string>LaunchSamson</string>
+    <string>LaunchScreen</string>
     <key>NSHealthShareUsageDescription</key>
     <string>WNH needs access to your health data to display your heart rate and workout information.</string>
     <key>NSHealthUpdateUsageDescription</key>

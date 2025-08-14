@@ -7,6 +7,7 @@ struct MeView: View {
     @State private var showLoginView = false
     @State private var profileImageScale: CGFloat = 1.0
     @State private var showLogoutConfirmation = false
+    @State private var navigateToProfile = false
     
     var body: some View {
         NavigationView {
@@ -32,6 +33,9 @@ struct MeView: View {
         .accentColor(.appYellow)
         .fullScreenCover(isPresented: $showLoginView) {
             LoginView()
+        }
+        .sheet(isPresented: $navigateToProfile) {
+            ProfileView()
         }
         .alert("Logout", isPresented: $showLogoutConfirmation) {
             Button("Cancel", role: .cancel) { }
@@ -65,39 +69,36 @@ private extension MeView {
                     .rotationEffect(.degrees(viewModel.ringRotation))
                 
                 // Profile image placeholder
-                ZStack {
-                    Circle()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
-                        .frame(width: 110, height: 110)
-                    
-                    Image(systemName: "person.crop.circle.fill")
-                        .font(.system(size: 60))
-                        .foregroundColor(.appYellow)
-                }
-                .scaleEffect(profileImageScale)
-                .onTapGesture {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                        profileImageScale = 1.1
-                    }
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
-                            profileImageScale = 1.0
-                        }
-                    }
+                Button(action: {
                     // Haptic feedback
                     let generator = UIImpactFeedbackGenerator(style: .light)
                     generator.impactOccurred()
+                    
+                    // Navigate to ProfileView immediately
+                    navigateToProfile = true
+                }) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 110, height: 110)
+                        
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundColor(.appYellow)
+                    }
+                    .scaleEffect(profileImageScale)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
             
             VStack(spacing: 8) {
-                Text("Welcome back!")
+                Text("Jean Paul")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.appYellow)
                 
@@ -124,7 +125,7 @@ private extension MeView {
                     value: "\(viewModel.workoutCount)",
                     subtitle: "completed",
                     icon: "flame.fill",
-                    color: .orange
+                    color: .appYellow
                 )
                 
                 StatCardMe(
@@ -132,7 +133,7 @@ private extension MeView {
                     value: "\(viewModel.streakDays)",
                     subtitle: "days",
                     icon: "calendar.badge.checkmark",
-                    color: .green
+                    color: .appYellow
                 )
                 
                 StatCardMe(
@@ -186,15 +187,15 @@ private extension MeView {
                 showLogoutConfirmation = true
             }) {
                 HStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.red.opacity(0.2))
-                            .frame(width: 44, height: 44)
-                        
-                        Image(systemName: "arrow.right.square")
-                            .font(.system(size: 18))
-                            .foregroundColor(.red)
-                    }
+                                    ZStack {
+                    Circle()
+                        .fill(Color.appYellow.opacity(0.2))
+                        .frame(width: 44, height: 44)
+                    
+                    Image(systemName: "arrow.right.square")
+                        .font(.system(size: 18))
+                        .foregroundColor(.appYellow)
+                }
                     
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Logout")
@@ -213,7 +214,7 @@ private extension MeView {
                 .cornerRadius(16)
                 .overlay(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.red.opacity(0.3), lineWidth: 1)
+                        .stroke(Color.appYellow.opacity(0.3), lineWidth: 1)
                 )
             }
             .buttonStyle(PlainButtonStyle())

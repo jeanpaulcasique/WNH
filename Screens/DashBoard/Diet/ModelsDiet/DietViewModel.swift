@@ -204,11 +204,18 @@ class DietViewModel: ObservableObject {
 
     func startWaterRemindersThreeTimes() {
         let rec = calculateRecommendedWaterIntake()
+        print("💧 Programando notificaciones de agua con recomendación: \(rec)")
+        
         NotificationWater.shared.requestAuthorization { granted in
-            guard granted else { return }
+            guard granted else { 
+                print("❌ Permisos de notificación denegados")
+                return 
+            }
+            
             let breakfast = DateComponents(hour: 9, minute: 0)
             let lunch     = DateComponents(hour: 13, minute: 0)
             let dinner    = DateComponents(hour: 19, minute: 0)
+            
             NotificationWater.shared.scheduleThreeDailyReminders(
                 at: [breakfast, lunch, dinner],
                 dailyRecommendation: rec
@@ -218,6 +225,17 @@ class DietViewModel: ObservableObject {
 
     func stopWaterRemindersThreeTimes() {
         NotificationWater.shared.cancelThreeDailyReminders()
+    }
+    
+    /// Limpia todas las notificaciones existentes y las reprograma
+    func resetWaterNotifications() {
+        let rec = calculateRecommendedWaterIntake()
+        NotificationWater.shared.resetAndRescheduleNotifications(dailyRecommendation: rec)
+    }
+    
+    /// Verifica el estado de las notificaciones de agua
+    func checkWaterNotificationStatus() {
+        NotificationWater.shared.checkNotificationStatus()
     }
 
     // MARK: - Private Helpers

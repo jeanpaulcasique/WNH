@@ -13,6 +13,11 @@ class ShopCategoryViewModel: ObservableObject {
         self.title = title
         self.products = products
         self.viewModel = viewModel
+        
+        print("🏪 ShopCategoryViewModel initialized")
+        print("📦 Title: \(title)")
+        print("📦 Products count: \(products.count)")
+        print("📦 Products: \(products.map { $0.name })")
     }
     
     // MARK: - Public Methods

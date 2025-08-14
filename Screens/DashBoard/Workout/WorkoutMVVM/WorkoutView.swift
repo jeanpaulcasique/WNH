@@ -8,11 +8,9 @@ import Combine
 struct WorkoutView: View {
     // MARK: - ViewModels
     @StateObject private var headerVM = WorkoutHeaderViewModel()
-    @StateObject private var searchBarVM = SearchBarWorkoutViewModel()
     @StateObject private var viewModel = WorkoutViewModel()
     
     // MARK: - State
-    @State private var showSearchResults: Bool = false
     @State private var showLocationMenu: Bool = false
     @State private var selectedLocation: WorkoutLocation = .atHome
     @State private var animatingSelection: Bool = false
@@ -22,42 +20,21 @@ struct WorkoutView: View {
     
     var body: some View {
         NavigationView {
-            // Fondo gradiente + ultraThinMaterial igual que el menú de localización
             ZStack {
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            Color.black.opacity(0.95),
-                            Color.gray.opacity(0.2),
-                            Color.black.opacity(0.95)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    Rectangle()
-                        .fill(.ultraThinMaterial)
-                        .opacity(0.1)
-                }
-                .ignoresSafeArea()
+                // Fondo igual que MeView
+                Color.appBackgroundGradient
+                    .ignoresSafeArea()
                 
                 // Contenido principal
                 VStack(spacing: 5) {
-                    // Header
-                    WorkoutHeaderView(viewModel: headerVM)
-                        .padding(.top, 12)
+                    // Header con page indicator
+                    WorkoutHeaderWithPageIndicator()
+                        .padding(.top, 5)
                         .padding(.horizontal, 20)
                     // Card de progreso de días
                     WorkoutCalendarView(workoutViewModel: viewModel)
+                        .padding(.top, 0) // Eliminado el padding para acercar completamente los círculos al header
                         .padding(.horizontal, 20)
-                    // Search bar de ejercicios
-                    SearchBarWorkoutView(
-                        viewModel: searchBarVM,
-                        onExerciseSelected: { _ in },
-                        onFilterChanged: { _ in },
-                        onLocationTapped: { showLocationMenu = true },
-                        showSearchResults: $showSearchResults
-                    )
-                    .padding(.horizontal, 20)
                     
                     // Tira de categorías de músculos
                     MuscleCategoryCards(
@@ -67,7 +44,8 @@ struct WorkoutView: View {
                             selectedMuscleForVideos = group
                         }
                     )
-                    .padding(.vertical, 8)
+                    .padding(.top, -5) // Padding negativo para subir más la tira de scroll horizontal
+                    .padding(.bottom, 8)
                     .padding(.horizontal, 20)
                     
                     // Imagen del personaje
@@ -133,7 +111,7 @@ struct WorkoutView: View {
                 // Indicadores de ritmo cardíaco y pasos como overlay flotante
                 VStack {
                     Spacer()
-                        .frame(height: 280) // ← 30 puntos más abajo (250 + 30)
+                        .frame(height: 255) // ← Aumentado de 250 a 255 para bajar 5 puntos más los indicadores de ritmo cardíaco y steps
                     HStack {
                         HeartRateIndicator(
                             bpm: viewModel.heartRate,
@@ -158,9 +136,36 @@ struct WorkoutView: View {
                     Spacer()
                 }
                 
-                // Botón para cambiar imagen del personaje
+                // Botón de localización y botón para cambiar imagen del personaje
                 VStack {
                     Spacer()
+                    
+                    // Botón de localización
+                    HStack {
+                        Spacer()
+                        
+                        Button(action: {
+                            showLocationMenu = true
+                        }) {
+                            Image(systemName: "location.fill")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.yellow)
+                                .frame(width: 40, height: 40)
+                                .background(
+                                    Circle()
+                                        .fill(Color.black.opacity(0.7))
+                                        .overlay(
+                                            Circle()
+                                                .stroke(Color.yellow.opacity(0.6), lineWidth: 1.5)
+                                        )
+                                )
+                                .shadow(color: Color.black.opacity(0.3), radius: 5, x: 0, y: 2)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.bottom, 10)
+                    }
+                    
+                    // Botón para cambiar imagen del personaje
                     HStack {
                         Spacer()
                         
@@ -214,10 +219,6 @@ struct WorkoutView: View {
             }
             .onAppear {
                 viewModel.loadInitialData()
-                searchBarVM.configure(
-                    exercises: viewModel.allExercises,
-                    muscleGroups: viewModel.muscleGroups
-                )
                 // Iniciar monitoreo de pasos
                 if viewModel.stepsAuthorized {
                     viewModel.stepsService.startStepsMonitoring()

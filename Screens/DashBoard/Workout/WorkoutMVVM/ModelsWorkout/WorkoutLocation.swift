@@ -62,30 +62,30 @@ struct MusclePosition {
 
 /// Configuración de posiciones de botones de músculos
 struct MuscleButtonPositions {
-    // MARK: - Posiciones de Músculos Delanteros
-    static let frontMuscles: [MusclePosition] = [
-        MusclePosition(name: "Cardio", x: 0.19, y: 0.90, isLeftSide: false),
-        MusclePosition(name: "Shoulders", x: 0.36, y: 0.51, isLeftSide: true),
-        MusclePosition(name: "Chest", x: 0.55, y: 0.53, isLeftSide: false),
-        MusclePosition(name: "Biceps", x: 0.65, y: 0.56, isLeftSide: false),
-        MusclePosition(name: "Forearms", x: 0.70, y: 0.62, isLeftSide: false),
-        MusclePosition(name: "Abs", x: 0.46, y: 0.60, isLeftSide: true),
-        MusclePosition(name: "Obliques", x: 0.40, y: 0.62, isLeftSide: true),
-        MusclePosition(name: "Quads", x: 0.40, y: 0.77, isLeftSide: true),
-        MusclePosition(name: "Adductors", x: 0.55, y: 0.74, isLeftSide: false)
-    ]
-    
-    // MARK: - Posiciones de Músculos Traseros
-    static let backMuscles: [MusclePosition] = [
-        MusclePosition(name: "Traps", x: 0.44, y: 0.48, isLeftSide: true),
-        MusclePosition(name: "Upper Back", x: 0.52, y: 0.50, isLeftSide: false),
-        MusclePosition(name: "Lats", x: 0.43, y: 0.58, isLeftSide: true),
-        MusclePosition(name: "Lower Back", x: 0.46, y: 0.61, isLeftSide: false),
-        MusclePosition(name: "Triceps", x: 0.61, y: 0.56, isLeftSide: false),
-        MusclePosition(name: "Glutes", x: 0.52, y: 0.68, isLeftSide: false),
-        MusclePosition(name: "Hamstrings", x: 0.39, y: 0.75, isLeftSide: true),
-        MusclePosition(name: "Calves", x: 0.30, y: 0.85, isLeftSide: true)
-    ]
+                    // MARK: - Posiciones de Músculos Delanteros
+                static let frontMuscles: [MusclePosition] = [
+                    MusclePosition(name: "Cardio", x: 0.19, y: 0.87, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Shoulders", x: 0.36, y: 0.48, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Chest", x: 0.55, y: 0.50, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Biceps", x: 0.65, y: 0.53, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Forearms", x: 0.70, y: 0.59, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Abs", x: 0.46, y: 0.57, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Obliques", x: 0.40, y: 0.59, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Quads", x: 0.40, y: 0.76, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Adductors", x: 0.55, y: 0.71, isLeftSide: false) // Bajado 0.02 más
+                ]
+
+                // MARK: - Posiciones de Músculos Traseros
+                static let backMuscles: [MusclePosition] = [
+                    MusclePosition(name: "Traps", x: 0.44, y: 0.46, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Upper Back", x: 0.52, y: 0.48, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Lats", x: 0.43, y: 0.56, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Lower Back", x: 0.46, y: 0.59, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Triceps", x: 0.61, y: 0.54, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Glutes", x: 0.52, y: 0.67, isLeftSide: false), // Bajado 0.02 más
+                    MusclePosition(name: "Hamstrings", x: 0.39, y: 0.74, isLeftSide: true), // Bajado 0.02 más
+                    MusclePosition(name: "Calves", x: 0.30, y: 0.85, isLeftSide: true) // Bajado 0.02 más
+                ]
     
     // MARK: - Configuración de Líneas de Texto
     struct LineConfig {

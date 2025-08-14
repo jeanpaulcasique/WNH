@@ -163,29 +163,29 @@ class GroceryListViewModel: ObservableObject {
     
     // MARK: - Agrupación por categorías
     enum GroceryCategory: String, CaseIterable {
-        case vegetales = "Vegetales"
-        case frutas = "Frutas"
-        case proteinas = "Proteínas"
-        case lacteos = "Lácteos"
-        case granos = "Granos y Cereales"
-        case legumbres = "Legumbres"
-        case frutosSecos = "Frutos Secos y Semillas"
-        case aceites = "Aceites y Líquidos"
-        case condimentos = "Condimentos y Especias"
-        case otros = "Otros"
+        case vegetales = "Vegetables"
+        case frutas = "Fruits"
+        case proteinas = "Proteins"
+        case lacteos = "Dairy"
+        case granos = "Grains & Cereals"
+        case legumbres = "Legumes"
+        case frutosSecos = "Nuts & Seeds"
+        case aceites = "Oils & Liquids"
+        case condimentos = "Condiments & Spices"
+        case otros = "Others"
         
         var color: Color {
             switch self {
-            case .vegetales: return Color.green
-            case .frutas: return Color.pink
-            case .proteinas: return Color.orange
-            case .lacteos: return Color.cyan
-            case .granos: return Color.brown
-            case .legumbres: return Color.purple
-            case .frutosSecos: return Color.yellow
-            case .aceites: return Color.blue
-            case .condimentos: return Color.gray
-            case .otros: return Color.appSurface
+            case .vegetales: return Color.appYellow
+            case .frutas: return Color.appYellow
+            case .proteinas: return Color.appYellow
+            case .lacteos: return Color.appYellow
+            case .granos: return Color.appYellow
+            case .legumbres: return Color.appYellow
+            case .frutosSecos: return Color.appYellow
+            case .aceites: return Color.appYellow
+            case .condimentos: return Color.appYellow
+            case .otros: return Color.appYellow
             }
         }
     }
@@ -198,6 +198,51 @@ class GroceryListViewModel: ObservableObject {
     // ✅ NUEVO: Cache para optimizar rendimiento
     private var filteredIngredientsCache: [GroceryCategory: [Ingredient]] = [:]
     private var lastFilterState: Bool = false
+    
+    // ✅ PERFORMANCE: Cache para lazy loading
+    private var preloadedItems: [GroceryCategory: [Ingredient]] = [:]
+    private var isOfflineMode: Bool = false
+    private var lastSyncDate: Date = Date()
+    
+    // MARK: - Performance Optimization Methods
+    
+    /// Preload next items for smooth scrolling
+    func preloadNextItems(for category: GroceryCategory, currentIndex: Int) {
+        let items = getFilteredIngredients(for: category, showOnlyUnchecked: false)
+        let nextItems = Array(items.dropFirst(currentIndex + 1).prefix(10))
+        preloadedItems[category] = nextItems
+    }
+    
+    /// Check if we can work offline
+    func checkOfflineMode() -> Bool {
+        let timeSinceLastSync = Date().timeIntervalSince(lastSyncDate)
+        isOfflineMode = timeSinceLastSync > 300 // 5 minutes
+        return isOfflineMode
+    }
+    
+    /// Get cached ingredients for better performance
+    func getCachedIngredients(for category: GroceryCategory, showOnlyUnchecked: Bool) -> [Ingredient] {
+        let cacheKey = "\(category.rawValue)_\(showOnlyUnchecked)"
+        
+        // Check if we have cached data
+        if let cached = filteredIngredientsCache[category], lastFilterState == showOnlyUnchecked {
+            return cached
+        }
+        
+        // Get fresh data and cache it
+        let freshData = getFilteredIngredients(for: category, showOnlyUnchecked: showOnlyUnchecked)
+        filteredIngredientsCache[category] = freshData
+        lastFilterState = showOnlyUnchecked
+        
+        return freshData
+    }
+    
+    /// Clear cache when data changes
+    func clearCache() {
+        filteredIngredientsCache.removeAll()
+        preloadedItems.removeAll()
+        print("🧹 Cache cleared for better performance")
+    }
     
     init() {
         loadExpandedCategoriesState()
@@ -234,6 +279,7 @@ class GroceryListViewModel: ObservableObject {
         
         // ✅ NUEVO: Limpiar cache cuando cambia la lista
         clearCache()
+        lastSyncDate = Date() // Update sync timestamp
         
         print("✅ Lista actualizada:")
         print("   📊 Total: \(totalCount) ingredientes")
@@ -456,10 +502,7 @@ class GroceryListViewModel: ObservableObject {
         return sorted
     }
     
-    // ✅ NUEVO: Método para limpiar cache cuando cambia la lista
-    private func clearCache() {
-        filteredIngredientsCache.removeAll()
-    }
+
 
     // Devuelve todos los ingredientes filtrados según el toggle global
     func getFilteredIngredientsForAll(showOnlyUnchecked: Bool) -> [Ingredient] {

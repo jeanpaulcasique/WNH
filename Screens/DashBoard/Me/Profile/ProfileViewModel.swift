@@ -53,14 +53,25 @@ class ProfileViewModel: ObservableObject {
     private let profileImageKey = "profile_image_data"
     private let userStatsKey = "user_stats"
     
+    // Measurement settings
+    @Published var weightUnit: String = "kg" // "kg" or "lbs"
+    @Published var heightUnit: String = "cm" // "cm" or "ft"
+    
     init() {
         loadData()
         loadProfileImage()
         loadUserStats()
+        loadMeasurementSettings()
         generateAchievements()
     }
     
     // MARK: - Data Loading
+    func loadMeasurementSettings() {
+        let defaults = UserDefaults.standard
+        weightUnit = defaults.string(forKey: "weight_unit") ?? "kg"
+        heightUnit = defaults.string(forKey: "height_unit") ?? "cm"
+    }
+    
     func loadData() {
         let defaults = UserDefaults.standard
         
@@ -82,8 +93,6 @@ class ProfileViewModel: ObservableObject {
         let goal = defaults.string(forKey: "selectedGoal") ?? "Not Set"
         let target = defaults.string(forKey: "selectedTarget") ?? "Not Set"
         let equipmentPreference = defaults.string(forKey: "equipmentPreference") ?? "Not Set"
-        let bodyCurrent = defaults.string(forKey: "bodyCurrentImage") ?? "Not Set"
-        let desiredBody = defaults.string(forKey: "desiredBodyImage") ?? "Not Set"
         let birthYear = defaults.string(forKey: "selectedBirthYear") ?? "Not Set"
         let workoutLevel = defaults.string(forKey: "selectedWorkoutLevel") ?? "Not Set"
         let levelActivity = defaults.string(forKey: "selectedLevelActivity") ?? "Not Set"
@@ -101,17 +110,14 @@ class ProfileViewModel: ObservableObject {
             ProfileItem(text: "Current Weight", value: String(format: "%.1f kg", weight), icon: "scalemass", iconColor: .orange, category: .personal),
             
             // Fitness Goals
-            ProfileItem(text: "Target Weight", value: String(format: "%.1f kg", targetWeight), icon: "target", iconColor: .red, category: .fitness),
+            ProfileItem(text: "Target Weight", value: target, icon: "target", iconColor: .red, category: .fitness),
             ProfileItem(text: "Primary Goal", value: goal, icon: "flag.fill", iconColor: .appYellow, category: .fitness),
-            ProfileItem(text: "Target Area", value: target, icon: "scope", iconColor: .cyan, category: .fitness),
             ProfileItem(text: "Workout Level", value: workoutLevel, icon: "figure.strengthtraining.traditional", iconColor: .red, category: .fitness),
             ProfileItem(text: "Activity Level", value: levelActivity, icon: "heart.fill", iconColor: .pink, category: .fitness),
             
             // Preferences
             ProfileItem(text: "Workout Frequency", value: howOften, icon: "clock.fill", iconColor: .blue, category: .preferences),
-            ProfileItem(text: "Equipment Preference", value: equipmentPreference, icon: "dumbbell.fill", iconColor: .gray, category: .preferences),
-            ProfileItem(text: "Current Body Type", value: bodyCurrent, icon: "figure.walk", iconColor: .green, category: .preferences),
-            ProfileItem(text: "Desired Body Type", value: desiredBody, icon: "figure.run", iconColor: .blue, category: .preferences)
+            ProfileItem(text: "Equipment Preference", value: equipmentPreference, icon: "dumbbell.fill", iconColor: .gray, category: .preferences)
         ]
     }
     
@@ -249,6 +255,20 @@ class ProfileViewModel: ObservableObject {
                 let heightStr = item.value.replacingOccurrences(of: " cm", with: "")
                 if let height = Int(heightStr) {
                     defaults.set(height, forKey: "selectedHeightCm")
+                    defaults.removeObject(forKey: "selectedHeightFt")
+                    defaults.removeObject(forKey: "selectedHeightInch")
+                }
+            } else if item.value.contains("ft") {
+                let components = item.value.components(separatedBy: " ")
+                if components.count >= 3 {
+                    let ftStr = components[0]
+                    let inchStr = components[2].replacingOccurrences(of: " in", with: "")
+                    
+                    if let ft = Int(ftStr), let inch = Int(inchStr) {
+                        defaults.set(ft, forKey: "selectedHeightFt")
+                        defaults.set(inch, forKey: "selectedHeightInch")
+                        defaults.removeObject(forKey: "selectedHeightCm")
+                    }
                 }
             }
         case "Current Weight":
@@ -408,9 +428,9 @@ class ProfileViewModel: ObservableObject {
         let defaults = UserDefaults.standard
         let keys = [
             "gender", "selectedHeightCm", "selectedWeightKg", "selectedGoal",
-            "selectedTarget", "equipmentPreference", "bodyCurrentImage",
-            "desiredBodyImage", "selectedBirthYear", "selectedWorkoutLevel",
-            "selectedLevelActivity", "selectedHowOften", "selectedTargetWeight"
+            "selectedTarget", "equipmentPreference", "selectedBirthYear", 
+            "selectedWorkoutLevel", "selectedLevelActivity", 
+            "selectedHowOften", "selectedTargetWeight"
         ]
         
         keys.forEach { defaults.removeObject(forKey: $0) }
@@ -444,6 +464,53 @@ extension ProfileViewModel {
                 }
             }
         )
+    }
+    
+    // MARK: - Onboarding Data Methods
+    func getOnboardingPersonalItems() -> [ProfileItem] {
+        return infoItems.filter { $0.category == .personal }
+    }
+    
+    func getOnboardingFitnessItems() -> [ProfileItem] {
+        return infoItems.filter { $0.category == .fitness }
+    }
+    
+    func getOnboardingPreferenceItems() -> [ProfileItem] {
+        return infoItems.filter { $0.category == .preferences }
+    }
+    
+    func getMeasurementItems() -> [ProfileItem] {
+        return [
+            ProfileItem(
+                text: "Weight Unit",
+                value: weightUnit.uppercased(),
+                icon: "scalemass",
+                iconColor: .orange,
+                category: .preferences
+            ),
+            ProfileItem(
+                text: "Height Unit", 
+                value: heightUnit.uppercased(),
+                icon: "ruler",
+                iconColor: .purple,
+                category: .preferences
+            )
+        ]
+    }
+    
+    func updateMeasurementUnit(type: String, newUnit: String) {
+        let defaults = UserDefaults.standard
+        
+        switch type {
+        case "weight":
+            weightUnit = newUnit
+            defaults.set(newUnit, forKey: "weight_unit")
+        case "height":
+            heightUnit = newUnit
+            defaults.set(newUnit, forKey: "height_unit")
+        default:
+            break
+        }
     }
 }
 

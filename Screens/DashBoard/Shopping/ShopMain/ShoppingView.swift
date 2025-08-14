@@ -3,15 +3,13 @@ import SwiftUI
 struct ShoppingView: View {
     @StateObject private var viewModel = ShoppingViewModel()
     @State private var searchText = ""
-    @State private var selectedCategory: ProductCategory = .all
+    @State private var selectedOrderSection: OrderSection = .myOrders
     @State private var showingCart = false
     @State private var showingProductDetail: ShopProduct?
-    @State private var showingCategoryView = false
-    @State private var selectedCategoryTitle = ""
-    @State private var selectedCategoryProducts: [ShopProduct] = []
+
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Background gradient
                 LinearGradient(
@@ -34,13 +32,6 @@ struct ShoppingView: View {
         }
         .sheet(item: $showingProductDetail) { product in
             ProductDetailView(product: product, viewModel: viewModel)
-        }
-        .sheet(isPresented: $showingCategoryView) {
-            ShopCategoryView(
-                title: selectedCategoryTitle,
-                products: selectedCategoryProducts,
-                shoppingViewModel: viewModel
-            )
         }
         .onAppear {
             viewModel.loadProducts()
@@ -70,40 +61,11 @@ private extension ShoppingView {
         }
         .padding(.top, 20)
         .padding(.bottom, 16)
-        .overlay(
-            // TODO: MOVER ESTE BOTÓN DE LA CESTA A LA ESQUINA SUPERIOR DERECHA (20px del top, 20px de la derecha)
-            // Cart button with badge - positioned in top right corner
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: { showingCart = true }) {
-                        ZStack {
-                            Image(systemName: "bag.fill")
-                                .font(.system(size: 24))
-                                .foregroundColor(.yellow)
-                            
-                            if viewModel.cartItemCount > 0 {
-                                Text("\(viewModel.cartItemCount)")
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundColor(.white)
-                                    .frame(width: 20, height: 20)
-                                    .background(Color.red)
-                                    .clipShape(Circle())
-                                    .offset(x: 12, y: -12)
-                            }
-                        }
-                    }
-                }
-                Spacer()
-            }
-            .padding(.top, 25)
-            .padding(.trailing, -20)
-        )
     }
     
     var searchAndFilterSection: some View {
         VStack(spacing: 16) {
-            // Search bar
+            // Search bar with cart button
             HStack(spacing: 12) {
                 HStack(spacing: 8) {
                     Image(systemName: "magnifyingglass")
@@ -112,22 +74,43 @@ private extension ShoppingView {
                         .textFieldStyle(PlainTextFieldStyle())
                         .foregroundColor(.white)
                 }
-                .padding(.vertical, 12)
+                .padding(.vertical, 10)
                 .padding(.horizontal, 16)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.gray.opacity(0.2))
                 )
+                
+                // Cart button
+                Button(action: { showingCart = true }) {
+                    ZStack {
+                        Image(systemName: "bag.fill")
+                            .font(.system(size: 28))
+                            .foregroundColor(.yellow)
+                        
+                        if viewModel.cartItemCount > 0 {
+                            Text("\(viewModel.cartItemCount)")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                                .frame(width: 16, height: 16)
+                                .background(Color.red)
+                                .clipShape(Circle())
+                                .offset(x: 8, y: -8)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
+                }
             }
             
-            // Category filters
+            // Order sections
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    ForEach(ProductCategory.allCases, id: \.self) { category in
-                        CategoryFilterButton(
-                            category: category,
-                            isSelected: selectedCategory == category,
-                            onTap: { selectedCategory = category }
+                    ForEach(OrderSection.allCases, id: \.self) { section in
+                        OrderSectionButton(
+                            section: section,
+                            isSelected: selectedOrderSection == section,
+                            onTap: { selectedOrderSection = section }
                         )
                     }
                 }
@@ -149,8 +132,8 @@ private extension ShoppingView {
                     // Recommended for you
                     if !viewModel.recommendedProducts.isEmpty {
                         productSection(
-                            title: "Recomendados para ti",
-                            subtitle: "Basado en tus preferencias",
+                            title: "Recommended for you",
+                            subtitle: "Based on your preferences",
                             products: viewModel.recommendedProducts
                         )
                     }
@@ -158,8 +141,8 @@ private extension ShoppingView {
                     // Weight Gain Products
                     if !viewModel.weightGainProducts.isEmpty {
                         productSection(
-                            title: "Gana más peso",
-                            subtitle: "Suplementos y nutrición",
+                            title: "Weight Gain",
+                            subtitle: "Supplements and nutrition",
                             products: viewModel.weightGainProducts
                         )
                     }
@@ -167,8 +150,8 @@ private extension ShoppingView {
                     // Fitness Equipment
                     if !viewModel.fitnessEquipment.isEmpty {
                         productSection(
-                            title: "Equipamiento fitness",
-                            subtitle: "Todo para tu entrenamiento",
+                            title: "Fitness Equipment",
+                            subtitle: "Everything for your training",
                             products: viewModel.fitnessEquipment
                         )
                     }
@@ -176,8 +159,8 @@ private extension ShoppingView {
                     // Nutrition Products
                     if !viewModel.nutritionProducts.isEmpty {
                         productSection(
-                            title: "Nutrición premium",
-                            subtitle: "Alimentos saludables",
+                            title: "Premium Nutrition",
+                            subtitle: "Healthy foods",
                             products: viewModel.nutritionProducts
                         )
                     }
@@ -185,8 +168,8 @@ private extension ShoppingView {
                     // Trending Products
                     if !viewModel.trendingProducts.isEmpty {
                         productSection(
-                            title: "Tendencias",
-                            subtitle: "Productos populares",
+                            title: "Trending",
+                            subtitle: "Popular products",
                             products: viewModel.trendingProducts
                         )
                     }
@@ -213,11 +196,11 @@ private extension ShoppingView {
                 
                 Spacer()
                 
-                Button(action: {
-                    selectedCategoryTitle = title
-                    selectedCategoryProducts = products
-                    showingCategoryView = true
-                }) {
+                NavigationLink(destination: ShopCategoryView(
+                    title: title,
+                    products: products,
+                    shoppingViewModel: viewModel
+                )) {
                     HStack(spacing: 4) {
                         Text("See more")
                             .font(.system(size: 14, weight: .medium))
@@ -228,6 +211,7 @@ private extension ShoppingView {
                             .foregroundColor(.yellow)
                     }
                 }
+                .offset(y: -8)
             }
             .padding(.horizontal, 4)
             
@@ -418,7 +402,35 @@ struct HorizontalProductCard: View {
 
 
 
-// MARK: - Category Filter Button
+// MARK: - Order Section Button
+struct OrderSectionButton: View {
+    let section: OrderSection
+    let isSelected: Bool
+    let onTap: () -> Void
+    
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: 6) {
+                Image(systemName: section.icon)
+                    .font(.system(size: 12))
+                    .foregroundColor(isSelected ? .black : .yellow)
+                Text(section.displayName)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(isSelected ? .black : .white)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(
+                isSelected ? Color.yellow : Color.white.opacity(0.08)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
+        }
+        .animation(.easeInOut(duration: 0.2), value: isSelected)
+    }
+}
+
+// MARK: - Category Filter Button (Legacy - keeping for reference)
 struct CategoryFilterButton: View {
     let category: ProductCategory
     let isSelected: Bool
@@ -440,18 +452,7 @@ struct CategoryFilterButton: View {
                 isSelected ? Color.yellow : Color.white.opacity(0.08)
             )
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(
-                        LinearGradient(
-                            colors: [Color.yellow.opacity(0.6), Color.yellow.opacity(0.2), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.5
-                    )
-            )
-            .shadow(color: Color.yellow.opacity(0.15), radius: 8, x: 0, y: 4)
+            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }

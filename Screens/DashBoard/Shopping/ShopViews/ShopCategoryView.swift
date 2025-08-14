@@ -1,19 +1,23 @@
 import SwiftUI
 
 struct ShopCategoryView: View {
-    @StateObject private var viewModel: ShopCategoryViewModel
+    let title: String
+    let products: [ShopProduct]
+    @ObservedObject var shoppingViewModel: ShoppingViewModel
+    @State private var showingProductDetail: ShopProduct?
+    @State private var showingCart = false
     @Environment(\.dismiss) private var dismiss
     
     init(title: String, products: [ShopProduct], shoppingViewModel: ShoppingViewModel) {
-        self._viewModel = StateObject(wrappedValue: ShopCategoryViewModel(
-            title: title,
-            products: products,
-            viewModel: shoppingViewModel
-        ))
+        print("🛍️ ShopCategoryView init called with title: \(title), products: \(products.count)")
+        print("📦 Products in init: \(products.map { $0.name })")
+        self.title = title
+        self.products = products
+        self._shoppingViewModel = ObservedObject(wrappedValue: shoppingViewModel)
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 // Background gradient
                 LinearGradient(
@@ -24,20 +28,56 @@ struct ShopCategoryView: View {
                 .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
+                    HStack {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 32))
+                                .foregroundColor(.yellow)
+                                .background(Color.black.opacity(0.4))
+                                .clipShape(Circle())
+                        }
+                        .padding(.leading, 20)
+
+                        Spacer()
+                        
+                        // Cart button (sincronizado con ShoppingView)
+                        Button(action: { 
+                            showingCart = true
+                        }) {
+                            ZStack {
+                                Image(systemName: "bag.fill")
+                                    .font(.system(size: 28))
+                                    .foregroundColor(.yellow)
+                                
+                                if shoppingViewModel.cartItemCount > 0 {
+                                    Text("\(shoppingViewModel.cartItemCount)")
+                                        .font(.system(size: 10, weight: .bold))
+                                        .foregroundColor(.white)
+                                        .frame(width: 16, height: 16)
+                                        .background(Color.red)
+                                        .clipShape(Circle())
+                                        .offset(x: 8, y: -8)
+                                    }
+                            }
+                        }
+                        .padding(.trailing, 20)
+                    }
+                    .padding(.top, 10)
+                    
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(viewModel.title)
+                        Text(title)
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
                         
-                        Text(viewModel.productsAvailableText)
+                        Text("\(products.count) products available")
                             .font(.system(size: 16))
                             .foregroundColor(.gray)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
-                    .padding(.top, 20)
-                    .padding(.bottom, 16)
+                    .padding(.top, 10)
+                    .padding(.bottom, 20)
                     
                     // Products grid
                     ScrollView(showsIndicators: false) {
@@ -45,43 +85,36 @@ struct ShopCategoryView: View {
                             GridItem(.flexible(), spacing: 16),
                             GridItem(.flexible(), spacing: 16)
                         ], spacing: 16) {
-                            ForEach(viewModel.products) { product in
-                                ProductCard(
+                            ForEach(products) { product in
+                                HorizontalProductCard(
                                     product: product,
-                                    onTap: { viewModel.selectProduct(product) },
-                                    onAddToCart: { viewModel.addToCart(product) }
+                                    onTap: { showingProductDetail = product },
+                                    onAddToCart: { shoppingViewModel.addToCart(product) }
                                 )
+                                .frame(width: UIScreen.main.bounds.width / 2 - 28, height: 300)
                             }
                         }
                         .padding(.horizontal, 20)
-                        .padding(.bottom, 100)
+                        .padding(.bottom, 120)
                     }
                 }
             }
             .navigationBarHidden(true)
         }
-        .sheet(item: $viewModel.showingProductDetail) { product in
-            ProductDetailView(product: product, viewModel: viewModel.viewModel)
+        .sheet(item: $showingProductDetail) { product in
+            ProductDetailView(product: product, viewModel: shoppingViewModel)
+                .transition(.move(edge: .bottom))
         }
-        .overlay(
-            // Close button
-            VStack {
-                HStack {
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 32))
-                            .foregroundColor(.gray)
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Circle())
-                    }
-                    .padding(.top, 20)
-                    .padding(.leading, 20)
-                    
-                    Spacer()
-                }
-                Spacer()
-            }
-        )
+        .sheet(isPresented: $showingCart) {
+            CartView(viewModel: shoppingViewModel)
+        }
+        .onAppear {
+            print("🛍️ ShopCategoryView appeared")
+            print("📦 Title: \(title)")
+            print("📦 Products count: \(products.count)")
+            print("📦 Products: \(products.map { $0.name })")
+            print("✅ View ready with \(products.count) products")
+        }
     }
 }
 
@@ -99,7 +132,7 @@ struct ProductCard: View {
                     AsyncImage(url: URL(string: product.imageURL)) { image in
                         image
                             .resizable()
-                            .aspectRatio(contentMode: .fill)
+                            .aspectRatio(contentMode: .fit)
                     } placeholder: {
                         Rectangle()
                             .fill(Color.gray.opacity(0.3))
@@ -133,8 +166,8 @@ struct ProductCard: View {
                         Text(product.name)
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
+                            .fixedSize(horizontal: false, vertical: true)
                             .lineLimit(2)
-                            .frame(height: 44, alignment: .top) // Fixed height for 2 lines
                         
                         Spacer()
                         
@@ -153,8 +186,8 @@ struct ProductCard: View {
                     Text(product.description)
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
+                        .fixedSize(horizontal: false, vertical: true)
                         .lineLimit(2)
-                        .frame(height: 36, alignment: .top) // Fixed height for 2 lines
                     
                     // Price and rating - Fixed height
                     HStack {
@@ -169,6 +202,7 @@ struct ProductCard: View {
                             Text("$\(String(format: "%.2f", product.currentPrice))")
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.yellow)
+                                .padding(.top, 4)
                         }
                         
                         Spacer()
@@ -186,7 +220,13 @@ struct ProductCard: View {
                     .frame(height: 40) // Fixed height
                     
                     // Add to cart button - Fixed height
-                    Button(action: onAddToCart) {
+                    Button(action: {
+                        let generator = UIImpactFeedbackGenerator(style: .medium)
+                        generator.impactOccurred()
+                        withAnimation(.spring()) {
+                            onAddToCart()
+                        }
+                    }) {
                         HStack(spacing: 8) {
                             Image(systemName: "bag.badge.plus")
                                 .font(.system(size: 16))
@@ -201,8 +241,8 @@ struct ProductCard: View {
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
-                .padding(16)
-                .frame(height: 200) // Fixed total height for info section
+                .padding(18)
+                .frame(height: 220) // Fixed total height for info section
             }
         }
         .buttonStyle(PlainButtonStyle())
@@ -220,7 +260,6 @@ struct ProductCard: View {
                 )
         )
         .shadow(color: Color.black.opacity(0.3), radius: 10, x: 0, y: 5)
-        .frame(height: 400) // Fixed total card height
     }
 }
 

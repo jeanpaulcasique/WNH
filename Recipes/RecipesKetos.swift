@@ -6,7 +6,8 @@ struct RecipesKeto {
     static func getWeeklyRecipes() -> [Recipe] {
         return [
         // DÍA 1
-        Recipe(title: "Keto Breakfast Bowl", mealType: .Breakfast, imageName: "keto_breakfast_bowl",
+            //"RecipeK1"
+        Recipe(title: "Keto Breakfast Bowl", mealType: .Breakfast, imageName: "RecipeK1",
                ingredients: [
                 Ingredient(name: "huevos revueltos", quantity: "120g"),
                 Ingredient(name: "rodajas de aguacate", quantity: "50g"),
@@ -15,8 +16,8 @@ struct RecipesKeto {
                ],
                instructions: "Whisk eggs and cook in a pan until fluffy. Transfer to a bowl and top with sliced avocado, grated cheddar cheese, and crumbled bacon.",
                calories: 500),
-
-        Recipe(title: "Zucchini Noodle Chicken", mealType: .Lunch, imageName: "keto_zucchini_chicken",
+        //"RecipeK2"
+        Recipe(title: "Zucchini Noodle Chicken", mealType: .Lunch, imageName: "RecipeK2",
                ingredients: [
                 Ingredient(name: "calabacitas en tiras", quantity: "100g"),
                 Ingredient(name: "pechuga de pollo a la plancha", quantity: "150g"),
@@ -26,8 +27,8 @@ struct RecipesKeto {
                ],
                instructions: "Sauté zucchini noodles in olive oil until al dente. Add grilled chicken and halved cherry tomatoes. Cook for 2 more minutes. Serve with freshly grated parmesan on top.",
                calories: 600),
-
-        Recipe(title: "Salmon with Creamed Spinach", mealType: .Dinner, imageName: "keto_salmon_spinach",
+        //"RecipeK3"
+        Recipe(title: "Salmon with Creamed Spinach", mealType: .Dinner, imageName: "RecipeK3",
                ingredients: [
                 Ingredient(name: "filete de salmón", quantity: "160g"),
                 Ingredient(name: "espinacas", quantity: "100g"),
@@ -39,7 +40,8 @@ struct RecipesKeto {
                calories: 650),
 
         // DÍA 2
-        Recipe(title: "Keto Omelette", mealType: .Breakfast, imageName: "keto_omelette",
+        //"RecipeK4"
+        Recipe(title: "Keto Omelette", mealType: .Breakfast, imageName: "RecipeK4",
                ingredients: [
                 Ingredient(name: "huevos", quantity: "3 units"),
                 Ingredient(name: "espinacas", quantity: "40g"),
@@ -49,8 +51,8 @@ struct RecipesKeto {
                ],
                instructions: "Beat eggs with salt and pepper. Heat olive oil in a pan. Pour eggs and cook until edges set. Add spinach, diced red pepper, and crumbled feta. Fold omelette and cook until eggs are set but still moist.",
                calories: 450),
-
-        Recipe(title: "Cauliflower Rice Bowl", mealType: .Lunch, imageName: "keto_cauliflower_bowl",
+        //"RecipeK5"
+        Recipe(title: "Cauliflower Rice Bowl", mealType: .Lunch, imageName: "RecipeK5",
                ingredients: [
                 Ingredient(name: "arroz de coliflor", quantity: "120g"),
                 Ingredient(name: "carne molida de res", quantity: "150g"),
@@ -61,8 +63,8 @@ struct RecipesKeto {
                ],
                instructions: "Sauté cauliflower rice in avocado oil until tender. In another pan, cook ground beef with taco seasoning. Serve beef over cauliflower rice, topped with sliced avocado and a dollop of sour cream.",
                calories: 700),
-
-        Recipe(title: "Grilled Pork Chops", mealType: .Dinner, imageName: "keto_pork_chops",
+        //"RecipeK6"
+        Recipe(title: "Grilled Pork Chops", mealType: .Dinner, imageName: "RecipeK6",
                ingredients: [
                 Ingredient(name: "chuletas de cerdo", quantity: "180g"),
                 Ingredient(name: "brócoli", quantity: "100g"),
@@ -74,7 +76,8 @@ struct RecipesKeto {
                calories: 600),
 
         // DÍA 3
-        Recipe(title: "Avocado Baked Eggs", mealType: .Breakfast, imageName: "keto_avocado_eggs",
+        //"RecipeK7"
+        Recipe(title: "Avocado Baked Eggs", mealType: .Breakfast, imageName: "RecipeK7",
                ingredients: [
                 Ingredient(name: "aguacate", quantity: "1 unit"),
                 Ingredient(name: "huevos", quantity: "2 units"),
@@ -84,8 +87,8 @@ struct RecipesKeto {
                ],
                instructions: "Halve avocado and remove pit. Scoop out some flesh to make room for eggs. Crack an egg into each half, sprinkle with cheese. Bake at 200°C for 15 minutes until whites are set. Top with crumbled bacon and chives.",
                calories: 520),
-
-        Recipe(title: "Keto Cobb Salad", mealType: .Lunch, imageName: "keto_cobb_salad",
+        //"RecipeK8"
+        Recipe(title: "Keto Cobb Salad", mealType: .Lunch, imageName: "RecipeK8",
                ingredients: [
                 Ingredient(name: "lechuga romana", quantity: "100g"),
                 Ingredient(name: "pechuga de pollo a la plancha", quantity: "120g"),
@@ -98,8 +101,8 @@ struct RecipesKeto {
                ],
                instructions: "Arrange chopped lettuce on a plate. Top with sliced grilled chicken, crumbled bacon, quartered hard-boiled eggs, diced avocado, and crumbled blue cheese. Drizzle with olive oil and lemon juice.",
                calories: 680),
-
-        Recipe(title: "Butter Garlic Shrimp", mealType: .Dinner, imageName: "keto_garlic_shrimp",
+        //"RecipeK9" - IMAGEN FALTANTE: Necesitas agregar RecipeK9.png al proyecto
+        Recipe(title: "Butter Garlic Shrimp", mealType: .Dinner, imageName: "RecipeK9",
                ingredients: [
                 Ingredient(name: "camarón", quantity: "200g"),
                 Ingredient(name: "mantequilla", quantity: "30g"),
@@ -112,7 +115,8 @@ struct RecipesKeto {
                calories: 580),
 
         // DÍA 4
-        Recipe(title: "Coconut Chia Pudding", mealType: .Breakfast, imageName: "keto_chia_pudding",
+            //"RecipeK10" - IMAGEN FALTANTE: Necesitas agregar RecipeK10.png al proyecto
+        Recipe(title: "Coconut Chia Pudding", mealType: .Breakfast, imageName: "RecipeK10",
                ingredients: [
                 Ingredient(name: "semillas de chía", quantity: "30g"),
                 Ingredient(name: "leche de coco", quantity: "200ml"),
@@ -123,7 +127,8 @@ struct RecipesKeto {
                instructions: "Mix chia seeds, coconut milk, and vanilla extract. Refrigerate overnight. In the morning, top with berries and shredded coconut.",
                calories: 420),
 
-        Recipe(title: "Keto Cheeseburger Wrap", mealType: .Lunch, imageName: "keto_cheeseburger_wrap",
+            //"RecipeK11" - IMAGEN FALTANTE: Necesitas agregar RecipeK11.png al proyecto
+        Recipe(title: "Keto Cheeseburger Wrap", mealType: .Lunch, imageName: "RecipeK11",
                ingredients: [
                 Ingredient(name: "carne molida de res", quantity: "150g"),
                 Ingredient(name: "queso cheddar", quantity: "30g"),
@@ -137,7 +142,8 @@ struct RecipesKeto {
                instructions: "Cook ground beef until browned. Season with salt and pepper. Melt cheese on top. Use large lettuce leaves as wraps, fill with meat and cheese. Add sliced tomato, onion, pickle, and condiments.",
                calories: 620),
 
-        Recipe(title: "Baked Cod with Herb Butter", mealType: .Dinner, imageName: "keto_cod_herbs",
+            //"RecipeK12" - IMAGEN FALTANTE: Necesitas agregar RecipeK12.png al proyecto
+        Recipe(title: "Baked Cod with Herb Butter", mealType: .Dinner, imageName: "RecipeK12",
                ingredients: [
                 Ingredient(name: "filetes de bacalao", quantity: "180g"),
                 Ingredient(name: "mantequilla", quantity: "25g"),
@@ -150,7 +156,8 @@ struct RecipesKeto {
                calories: 550),
 
         // DÍA 5
-        Recipe(title: "Greek Yogurt with Berries", mealType: .Breakfast, imageName: "keto_yogurt_berries",
+            //"RecipeK13" - IMAGEN FALTANTE: Necesitas agregar RecipeK13.png al proyecto
+        Recipe(title: "Greek Yogurt with Berries", mealType: .Breakfast, imageName: "RecipeK13",
                ingredients: [
                 Ingredient(name: "yogur griego (entero)", quantity: "150g"),
                 Ingredient(name: "frutos rojos", quantity: "50g"),
@@ -161,7 +168,8 @@ struct RecipesKeto {
                instructions: "Place yogurt in a bowl. Top with berries, chopped almonds, a sprinkle of cinnamon, and chia seeds. Mix gently before eating.",
                calories: 380),
 
-        Recipe(title: "Tuna Salad Stuffed Avocado", mealType: .Lunch, imageName: "keto_tuna_avocado",
+            //"RecipeK14" - IMAGEN FALTANTE: Necesitas agregar RecipeK14.png al proyecto
+        Recipe(title: "Tuna Salad Stuffed Avocado", mealType: .Lunch, imageName: "RecipeK14",
                ingredients: [
                 Ingredient(name: "atún en lata", quantity: "120g"),
                 Ingredient(name: "aguacate", quantity: "1 unit"),
@@ -174,7 +182,8 @@ struct RecipesKeto {
                instructions: "Mix tuna with mayonnaise, diced celery, minced red onion, lemon juice, and dill. Cut avocado in half, remove pit. Fill avocado halves with tuna salad mixture.",
                calories: 550),
 
-        Recipe(title: "Garlic Butter Steak", mealType: .Dinner, imageName: "keto_garlic_steak",
+            //"RecipeK15"
+        Recipe(title: "Garlic Butter Steak", mealType: .Dinner, imageName: "RecipeK15",
                ingredients: [
                 Ingredient(name: "bistec ribeye", quantity: "200g"),
                 Ingredient(name: "mantequilla", quantity: "30g"),
@@ -187,7 +196,8 @@ struct RecipesKeto {
                calories: 700),
 
         // DÍA 6
-        Recipe(title: "Ham and Cheese Egg Cups", mealType: .Breakfast, imageName: "keto_egg_cups",
+            //"RecipeK16"
+        Recipe(title: "Ham and Cheese Egg Cups", mealType: .Breakfast, imageName: "RecipeK16",
                ingredients: [
                 Ingredient(name: "huevos", quantity: "4 units"),
                 Ingredient(name: "rebanadas de jamón", quantity: "60g"),
@@ -199,7 +209,8 @@ struct RecipesKeto {
                instructions: "Line muffin tin cups with ham slices. Mix eggs with cream, salt, and pepper. Add chopped spinach and diced bell pepper. Pour mixture into ham cups, top with cheese. Bake at 180°C for 15 minutes until set.",
                calories: 480),
 
-        Recipe(title: "Chicken Caesar Salad", mealType: .Lunch, imageName: "keto_caesar_salad",
+            //"RecipeK17"
+        Recipe(title: "Chicken Caesar Salad", mealType: .Lunch, imageName: "RecipeK17",
                ingredients: [
                 Ingredient(name: "lechuga romana", quantity: "100g"),
                 Ingredient(name: "pechuga de pollo a la plancha", quantity: "150g"),
@@ -211,7 +222,8 @@ struct RecipesKeto {
                instructions: "Tear lettuce into bite-sized pieces. Top with sliced grilled chicken, crumbled bacon, shaved parmesan, and diced avocado. Drizzle with keto-friendly Caesar dressing.",
                calories: 650),
 
-        Recipe(title: "Beef and Broccoli Stir-Fry", mealType: .Dinner, imageName: "keto_beef_broccoli",
+            //"RecipeK18"
+        Recipe(title: "Beef and Broccoli Stir-Fry", mealType: .Dinner, imageName: "RecipeK18",
                ingredients: [
                 Ingredient(name: "tiras de res", quantity: "180g"),
                 Ingredient(name: "ramilletes de brócoli", quantity: "120g"),
@@ -225,7 +237,8 @@ struct RecipesKeto {
                calories: 580),
 
         // DÍA 7
-        Recipe(title: "Keto Pancakes", mealType: .Breakfast, imageName: "keto_pancakes",
+            //"RecipeK19"
+        Recipe(title: "Keto Pancakes", mealType: .Breakfast, imageName: "RecipeK19",
                ingredients: [
                 Ingredient(name: "harina de almendra", quantity: "60g"),
                 Ingredient(name: "queso crema", quantity: "60g"),
@@ -237,7 +250,8 @@ struct RecipesKeto {
                instructions: "Blend almond flour, cream cheese, eggs, and vanilla until smooth. Heat butter in a pan. Pour small portions of batter to make pancakes. Cook until bubbles form, then flip. Serve with a few berries on top.",
                calories: 520),
 
-        Recipe(title: "Keto Italian Sub Roll-Ups", mealType: .Lunch, imageName: "keto_rollups",
+            //"RecipeK20"
+        Recipe(title: "Keto Italian Sub Roll-Ups", mealType: .Lunch, imageName: "RecipeK20",
                ingredients: [
                 Ingredient(name: "embutidos italianos", quantity: "100g"),
                 Ingredient(name: "queso provolone", quantity: "40g"),
@@ -250,7 +264,8 @@ struct RecipesKeto {
                instructions: "Layer deli meats on a plate. Top with slices of provolone. Add lettuce, sliced tomato, red onion rings, and olives. Drizzle with Italian dressing. Roll up tightly and slice into pinwheels.",
                calories: 560),
 
-        Recipe(title: "Lemon Butter Chicken Thighs", mealType: .Dinner, imageName: "keto_lemon_chicken",
+            //"RecipeK21"
+        Recipe(title: "Lemon Butter Chicken Thighs", mealType: .Dinner, imageName: "RecipeK21",
                ingredients: [
                 Ingredient(name: "muslos de pollo", quantity: "200g"),
                 Ingredient(name: "mantequilla", quantity: "30g"),

@@ -91,7 +91,7 @@ private extension FAQView {
                     searchText = ""
                 }) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundColor(.appWhite.opacity(0.6))
+                        .foregroundColor(.appYellow)
                         .font(.system(size: 16))
                 }
             }

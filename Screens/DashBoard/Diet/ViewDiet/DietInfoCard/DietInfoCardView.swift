@@ -7,36 +7,25 @@ struct DietInfoCardView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Cards ScrollView with auto-scroll
-            ScrollViewReader { proxy in
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 40) { // 40 points spacing between cards
-                        ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
-                            DietInfoCardItem(
-                                card: card,
-                                onTap: {
-                                    viewModel.selectCard(card)
-                                },
-                                onDismiss: {
-                                    viewModel.dismissCard(card)
-                                }
-                            )
-                            .frame(width: UIScreen.main.bounds.width - 60) // Card width
-                            .id(index) // Add ID for ScrollViewReader
+            // Cards TabView for reliable auto-scroll
+            TabView(selection: $selectedIndex) {
+                ForEach(Array(viewModel.cards.enumerated()), id: \.element.id) { index, card in
+                    DietInfoCardItem(
+                        card: card,
+                        onTap: {
+                            viewModel.selectCard(card)
+                        },
+                        onDismiss: {
+                            viewModel.dismissCard(card)
                         }
-                    }
-                    .padding(.horizontal, 20)
-                }
-                .frame(height: 100) // Height for promotional banners
-                .padding(.bottom, 0)
-                .onChange(of: selectedIndex) { newIndex in
-                    print("🔄 Scrolling to index: \(newIndex)")
-                    // Scroll to the selected card
-                    withAnimation(.easeInOut(duration: 0.5)) {
-                        proxy.scrollTo(newIndex, anchor: .center)
-                    }
+                    )
+                    .frame(width: UIScreen.main.bounds.width - 60) // Card width
+                    .tag(index)
                 }
             }
+            .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+            .frame(height: 100) // Height for promotional banners
+            .padding(.bottom, 0)
             
             // Custom page indicators with proper spacing
             if viewModel.cards.count > 1 {

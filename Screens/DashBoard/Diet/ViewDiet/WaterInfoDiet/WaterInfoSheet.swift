@@ -5,8 +5,8 @@ struct WaterInfoSheet: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
+            ScrollView(.vertical, showsIndicators: false) {
+                LazyVStack(spacing: 20) {
                     // Header
                     headerSection
                     
@@ -31,6 +31,7 @@ struct WaterInfoSheet: View {
                     startPoint: .top,
                     endPoint: .bottom
                 )
+                .ignoresSafeArea()
             )
             .navigationTitle("Water Intake Science")
             .navigationBarTitleDisplayMode(.inline)
@@ -101,17 +102,12 @@ struct WaterInfoSheet: View {
             sectionHeader("Benefits of Proper Hydration", icon: "heart.fill")
             
             LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
             ], spacing: 12) {
-                benefitCard("Enhanced cognitive function", "brain.head.profile")
-                benefitCard("Improved physical performance", "figure.strengthtraining.traditional")
-                benefitCard("Better temperature regulation", "thermometer")
-                benefitCard("Optimal kidney function", "heart.circle.fill")
-                benefitCard("Reduced risk of kidney stones", "shield.checkered")
-                benefitCard("Improved skin health", "face.smiling")
-                benefitCard("Better digestion", "stomach.fill")
-                benefitCard("Enhanced nutrient absorption", "leaf.fill")
+                ForEach(benefitsData, id: \.title) { benefit in
+                    benefitCard(benefit.title, benefit.icon)
+                }
             }
         }
     }
@@ -121,23 +117,9 @@ struct WaterInfoSheet: View {
             sectionHeader("Scientific Sources", icon: "book.fill")
             
             VStack(spacing: 12) {
-                sourceCard(
-                    "Institute of Medicine (2004)",
-                    "Dietary Reference Intakes",
-                    "🏛️"
-                )
-                
-                sourceCard(
-                    "American College of Sports Medicine (2007)",
-                    "Exercise and Fluid Replacement",
-                    "🏃‍♂️"
-                )
-                
-                sourceCard(
-                    "European Food Safety Authority (2010)",
-                    "Scientific Opinion on Dietary Reference Values",
-                    "🇪🇺"
-                )
+                ForEach(sourcesData, id: \.title) { source in
+                    sourceCard(source.title, source.subtitle, source.emoji)
+                }
             }
         }
     }
@@ -152,15 +134,14 @@ struct WaterInfoSheet: View {
                     .foregroundColor(.white)
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    researchPoint("Cognitive performance")
-                    researchPoint("Mood and mental clarity")
-                    researchPoint("Physical endurance")
-                    researchPoint("Reaction time")
+                    ForEach(researchPoints, id: \.self) { point in
+                        researchPoint(point)
+                    }
                 }
                 
                 Text("The IOM's comprehensive review of over 200 studies established these guidelines as the gold standard for hydration recommendations.")
                     .font(.system(size: 14))
-                    .foregroundColor(.gray)
+                    .foregroundColor(.cyan)
                     .padding(.top, 8)
             }
             .padding(16)
@@ -192,46 +173,49 @@ struct WaterInfoSheet: View {
             Image(systemName: icon)
                 .font(.system(size: 20))
                 .foregroundColor(.cyan)
-                .frame(width: 30)
+                .frame(width: 30, height: 30)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                 
-                Text(description)
+                Text(highlightedText(description))
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
             }
             
             Spacer()
         }
-        .padding(12)
+        .padding(16)
         .background(Color.white.opacity(0.05))
-        .cornerRadius(8)
+        .cornerRadius(12)
     }
     
     private func benefitCard(_ title: String, _ icon: String) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 24))
                 .foregroundColor(.cyan)
+                .frame(height: 24)
             
             Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
+                .lineLimit(3)
         }
-        .padding(12)
-        .frame(maxWidth: .infinity)
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 100)
         .background(Color.cyan.opacity(0.1))
-        .cornerRadius(8)
+        .cornerRadius(12)
     }
     
     private func sourceCard(_ title: String, _ subtitle: String, _ emoji: String) -> some View {
         HStack(spacing: 12) {
             Text(emoji)
                 .font(.system(size: 24))
+                .frame(width: 30)
             
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
@@ -245,9 +229,9 @@ struct WaterInfoSheet: View {
             
             Spacer()
         }
-        .padding(12)
+        .padding(16)
         .background(Color.white.opacity(0.05))
-        .cornerRadius(8)
+        .cornerRadius(12)
     }
     
     private func researchPoint(_ text: String) -> some View {
@@ -255,6 +239,7 @@ struct WaterInfoSheet: View {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 14))
                 .foregroundColor(.cyan)
+                .frame(width: 14, height: 14)
             
             Text(text)
                 .font(.system(size: 14))
@@ -262,6 +247,47 @@ struct WaterInfoSheet: View {
             
             Spacer()
         }
+    }
+    
+    // MARK: - Data Arrays for Better Performance
+    private let benefitsData = [
+        (title: "Enhanced cognitive function", icon: "brain.head.profile"),
+        (title: "Improved physical performance", icon: "figure.strengthtraining.traditional"),
+        (title: "Better temperature regulation", icon: "thermometer"),
+        (title: "Optimal kidney function", icon: "heart.circle.fill"),
+        (title: "Reduced risk of kidney stones", icon: "shield.checkered"),
+        (title: "Improved skin health", icon: "face.smiling"),
+        (title: "Better digestion", icon: "heart.fill"),
+        (title: "Enhanced nutrient absorption", icon: "leaf.fill")
+    ]
+    
+    private let sourcesData = [
+        (title: "Institute of Medicine (2004)", subtitle: "Dietary Reference Intakes", emoji: "🏛️"),
+        (title: "American College of Sports Medicine (2007)", subtitle: "Exercise and Fluid Replacement", emoji: "🏃‍♂️"),
+        (title: "European Food Safety Authority (2010)", subtitle: "Scientific Opinion on Dietary Reference Values", emoji: "🇪🇺")
+    ]
+    
+    private let researchPoints = [
+        "Cognitive performance",
+        "Mood and mental clarity",
+        "Physical endurance",
+        "Reaction time"
+    ]
+    
+    // MARK: - Helper Functions
+    private func highlightedText(_ text: String) -> AttributedString {
+        var attributedString = AttributedString(text)
+        
+        // Buscar y resaltar los números específicos
+        let numbersToHighlight = ["3.7L", "2.7L", "+0.5L", "+0.033L"]
+        
+        for number in numbersToHighlight {
+            if let range = attributedString.range(of: number) {
+                attributedString[range].foregroundColor = .cyan
+            }
+        }
+        
+        return attributedString
     }
 }
 

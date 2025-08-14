@@ -11,7 +11,8 @@ struct DietInfoCardView: View {
                 DietInfoCardItem(card: card) {
                     viewModel.selectCard(card)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 2)
+                .frame(maxWidth: .infinity)
                 .tag(index)
             }
         }
@@ -19,6 +20,11 @@ struct DietInfoCardView: View {
         .padding(.bottom, 12)
         .padding(.top, 5)
         .frame(height: 180)
+        .onReceive(Timer.publish(every: 4, on: .main, in: .common).autoconnect()) { _ in
+            withAnimation {
+                selectedIndex = (selectedIndex + 1) % viewModel.cards.count
+            }
+        }
     }
 }
 
@@ -96,7 +102,7 @@ struct DietInfoCardItem: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .frame(width: 380, height: getCardHeight())
+            .frame(maxWidth: .infinity, minHeight: getCardHeight(), maxHeight: getCardHeight())
             .background(.ultraThinMaterial)
             .cornerRadius(18)
             .overlay(
