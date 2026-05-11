@@ -492,7 +492,7 @@ struct QuickActionButton: View {
                     .foregroundColor(.appYellow)
                     .frame(width: 20)
                 
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .foregroundColor(.appWhite)
                     .font(.system(size: 14, weight: .medium))
                 

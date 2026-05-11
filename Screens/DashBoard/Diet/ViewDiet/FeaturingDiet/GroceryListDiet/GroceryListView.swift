@@ -9,7 +9,7 @@ struct GroceryListSheetView2: View {
     @State private var showOnlyUnchecked = false
     @State private var resetTrigger: Int = 0
     @State private var showResetToast = false
-    @State private var showFloatingButtonText = true
+
     @State private var isOfflineMode = false
     
     // Filtrar ingredientes según el toggle
@@ -27,7 +27,8 @@ struct GroceryListSheetView2: View {
             VStack(spacing: 0) {
                 topCardSection
                 if !groceryListViewModel.groceryList.isEmpty {
-                    glovoPromoBanner
+                    GlovoCardView()
+                        .padding(.horizontal, 8)
                 }
                 if groceryListViewModel.groceryList.isEmpty {
                     VStack(spacing: 20) {
@@ -49,6 +50,7 @@ struct GroceryListSheetView2: View {
                     }
                 }
             }
+            .padding(.horizontal, 8)
             .background(
                 LinearGradient(
                     colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
@@ -60,126 +62,18 @@ struct GroceryListSheetView2: View {
             .onAppear {
                 isOfflineMode = groceryListViewModel.checkOfflineMode()
             }
-            .overlay(
-                Group {
-                    if !groceryListViewModel.groceryList.isEmpty {
-                        glovoFloatingButton
-                            .padding(.trailing, 20)
-                            .padding(.bottom, 100)
-                    }
-                },
-                alignment: .bottomTrailing
-            )
+            
             .navigationBarHidden(true)
         }
         .preferredColorScheme(.dark)
     }
     
-    // MARK: - Glovo Logo Component
-    private var glovoLogo: some View {
-        ZStack {
-            Circle()
-                .fill(Color.yellow)
-                .frame(width: 44, height: 44)
-            
-            Image(systemName: "cart.fill")
-                .font(.system(size: 20, weight: .bold))
-                .foregroundColor(.green)
-        }
-    }
+
     
-    // MARK: - Glovo Promo Banner
-    private var glovoPromoBanner: some View {
-        HStack(spacing: 12) {
-            // Logo de Glovo real
-            glovoLogo
-                .frame(width: 44, height: 44)
-            
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Get groceries delivered")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.green)
-                Text("Order via Glovo in minutes")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.black)
-            }
-            
-            Spacer()
-            
-            Button("Order Now") {
-                openGlovoApp()
-            }
-            .font(.system(size: 14, weight: .semibold))
-            .foregroundColor(.black)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 10)
-            .background(Color.green)
-            .cornerRadius(22)
-            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
-        }
-        .padding(18)
-        .background(Color.yellow)
-        .cornerRadius(18)
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.green.opacity(0.3), lineWidth: 1)
-        )
-        .shadow(color: .yellow.opacity(0.3), radius: 8, x: 0, y: 4)
-        .padding(.horizontal, 24)
-        .padding(.vertical, 12)
-    }
+
     
     // MARK: - Glovo Floating Button
-    private var glovoFloatingButton: some View {
-        Button(action: {
-            openGlovoApp()
-        }) {
-            HStack(spacing: showFloatingButtonText ? 8 : 0) {
-                glovoLogo
-                    .frame(width: 24, height: 24)
-                
-                if showFloatingButtonText {
-                    Text("Order via Glovo")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(.green)
-                        .transition(.opacity.combined(with: .scale))
-                }
-            }
-            .padding(.horizontal, showFloatingButtonText ? 16 : 12)
-            .padding(.vertical, showFloatingButtonText ? 12 : 12)
-            .background(Color.yellow)
-            .cornerRadius(showFloatingButtonText ? 25 : 20)
-            .overlay(
-                RoundedRectangle(cornerRadius: showFloatingButtonText ? 25 : 20)
-                    .stroke(Color.green.opacity(0.3), lineWidth: 1)
-            )
-            .shadow(color: .yellow.opacity(0.3), radius: 8, x: 0, y: 4)
-        }
-        .animation(.easeInOut(duration: 0.3), value: showFloatingButtonText)
-        .onAppear {
-            // Ocultar el texto después de 5 segundos
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                withAnimation(.easeInOut(duration: 0.3).speed(1.2)) {
-                    showFloatingButtonText = false
-                }
-            }
-        }
-    }
-    
-    // MARK: - Glovo App Integration
-    private func openGlovoApp() {
-        // Intentar abrir Glovo app
-        if let glovoURL = URL(string: "glovo://") {
-            if UIApplication.shared.canOpenURL(glovoURL) {
-                UIApplication.shared.open(glovoURL)
-            } else {
-                // Abrir App Store si no está instalado
-                if let appStoreURL = URL(string: "https://apps.apple.com/app/glovo/id740189189") {
-                    UIApplication.shared.open(appStoreURL)
-                }
-            }
-        }
-    }
+
     
     // MARK: - Card superior moderna
     private var topCardSection: some View {
@@ -219,17 +113,17 @@ struct GroceryListSheetView2: View {
                 }
             }
             HStack(spacing: 12) {
-                Label("\(groceryListViewModel.totalCount) items", systemImage: "list.bullet")
+                Label("\(groceryListViewModel.totalCount) \(LanguageManager.localizedString("items"))", systemImage: "list.bullet")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.appWhite)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .background(Color.gray.opacity(0.18))
                     .cornerRadius(12)
-                Label("\(groceryListViewModel.checkedCount) completed", systemImage: "checkmark.circle.fill")
+                Label("\(groceryListViewModel.checkedCount) \(LanguageManager.localizedString("completed"))", systemImage: "checkmark.circle.fill")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.appYellow)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 8)
                     .padding(.vertical, 6)
                     .background(Color.appYellow.opacity(0.13))
                     .cornerRadius(12)
@@ -247,7 +141,7 @@ struct GroceryListSheetView2: View {
                 }
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 8)
         .padding(.vertical, 18)
         .background(Color.gray.opacity(0.10))
         .cornerRadius(20)
@@ -258,7 +152,7 @@ struct GroceryListSheetView2: View {
         .overlay(
             Group {
                 if showResetToast {
-                                            ToastView(message: "List reset")
+                    ToastView(message: LanguageManager.localizedString("List reset"))
                         .transition(.move(edge: .top).combined(with: .opacity))
                         .zIndex(2)
                         .onAppear {
@@ -293,7 +187,7 @@ struct GroceryListSheetView2: View {
             }
             .buttonStyle(PlainButtonStyle())
             VStack(alignment: .leading, spacing: 2) {
-                Text(ingredient.name)
+                Text(LanguageManager.localizedString(ingredient.name))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(ingredient.isChecked ? .appWhite.opacity(0.6) : .appWhite)
                     .strikethrough(ingredient.isChecked)
@@ -310,13 +204,13 @@ struct GroceryListSheetView2: View {
                     .foregroundColor(.appYellow.opacity(0.8))
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 8)
         .padding(.vertical, 10)
         .background(Color.gray.opacity(0.10))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(ingredient.isChecked ? Color.appYellow.opacity(0.4) : Color.gray.opacity(0.15), lineWidth: ingredient.isChecked ? 1.5 : 1)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
         )
         .shadow(color: Color.appYellow.opacity(ingredient.isChecked ? 0.10 : 0.04), radius: 4, x: 0, y: 2)
         .opacity(ingredient.isChecked ? 0.7 : 1.0)
@@ -356,7 +250,7 @@ struct GroceryListSheetView2: View {
                     .foregroundColor(.appYellow)
                     .font(.system(size: 18, weight: .bold))
             }
-            Text(category.rawValue)
+            Text(category.displayName)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.appWhite)
             Spacer()
@@ -369,17 +263,17 @@ struct GroceryListSheetView2: View {
                 .cornerRadius(8)
             Image(systemName: "chevron.down")
                 .rotationEffect(.degrees(isExpanded ? 0 : -90))
-                .foregroundColor(.appWhite.opacity(0.7))
+                .foregroundColor(.appYellow)
                 .font(.system(size: 13, weight: .medium))
                 .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 8)
         .padding(.vertical, 10)
         .background(Color.gray.opacity(0.10))
         .cornerRadius(16)
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.appYellow.opacity(isExpanded ? 0.4 : 0.15), lineWidth: isExpanded ? 2 : 1)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
         )
         .shadow(color: Color.appYellow.opacity(0.10), radius: 6, x: 0, y: 2)
         .contentShape(Rectangle())
@@ -468,6 +362,7 @@ struct GroceryListScrollView: View {
                         }
                     }
                 }
+                .padding(.horizontal, 8)
             }
             .scrollIndicators(.hidden)
             .id(resetTrigger)
@@ -486,7 +381,7 @@ struct GroceryListScrollView: View {
                     .foregroundColor(.appYellow)
                     .font(.system(size: 18, weight: .bold))
             }
-            Text(category.rawValue)
+            Text(category.displayName)
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.appWhite)
             Spacer()
@@ -499,26 +394,19 @@ struct GroceryListScrollView: View {
                 .cornerRadius(8)
             Image(systemName: "chevron.down")
                 .rotationEffect(.degrees(isExpanded ? 0 : -90))
-                .foregroundColor(.appWhite.opacity(0.7))
+                .foregroundColor(.appYellow)
                 .font(.system(size: 13, weight: .medium))
                 .animation(.easeInOut(duration: 0.2), value: isExpanded)
         }
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 8)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color.gray.opacity(0.10))
+        .cornerRadius(16)
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.gray.opacity(0.6), Color.gray.opacity(0.2), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1.5
-                )
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
         )
-        .shadow(color: Color.gray.opacity(0.15), radius: 8, x: 0, y: 4)
+        .shadow(color: Color.appYellow.opacity(0.10), radius: 6, x: 0, y: 2)
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -547,9 +435,15 @@ struct GroceryListScrollView: View {
         let items = groceryListViewModel.getFilteredIngredients(for: category, showOnlyUnchecked: showOnlyUnchecked)
         return Group {
             if isExpanded && !items.isEmpty {
-                VStack(spacing: 0) {
-                    ForEach(items, id: \.id) { ingredient in
+                LazyVStack(spacing: 4) {
+                    ForEach(Array(items.enumerated()), id: \.element.id) { index, ingredient in
                         ingredientRow(ingredient: ingredient)
+                            .onAppear {
+                                // Preload next items for smooth scrolling
+                                if index >= items.count - 3 {
+                                    groceryListViewModel.preloadNextItems(for: category, currentIndex: index)
+                                }
+                            }
                     }
                 }
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -557,6 +451,7 @@ struct GroceryListScrollView: View {
         }
     }
     
+    // MARK: - Fila de ingrediente optimizada
     private func ingredientRow(ingredient: Ingredient) -> some View {
         HStack(spacing: 12) {
             Button(action: {
@@ -578,7 +473,7 @@ struct GroceryListScrollView: View {
             }
             .buttonStyle(PlainButtonStyle())
             VStack(alignment: .leading, spacing: 2) {
-                Text(ingredient.name)
+                Text(LanguageManager.localizedString(ingredient.name))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(ingredient.isChecked ? .appWhite.opacity(0.6) : .appWhite)
                     .strikethrough(ingredient.isChecked)
@@ -595,13 +490,13 @@ struct GroceryListScrollView: View {
                     .foregroundColor(.appYellow.opacity(0.8))
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, 8)
         .padding(.vertical, 10)
         .background(Color.gray.opacity(0.10))
         .cornerRadius(12)
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(ingredient.isChecked ? Color.appYellow.opacity(0.4) : Color.gray.opacity(0.15), lineWidth: ingredient.isChecked ? 1.5 : 1)
+                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
         )
         .shadow(color: Color.appYellow.opacity(ingredient.isChecked ? 0.10 : 0.04), radius: 4, x: 0, y: 2)
         .opacity(ingredient.isChecked ? 0.7 : 1.0)
@@ -611,4 +506,5 @@ struct GroceryListScrollView: View {
             groceryListViewModel.toggleCheck(for: ingredient)
         }
     }
+    
 }

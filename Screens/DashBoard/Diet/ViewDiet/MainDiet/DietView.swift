@@ -70,7 +70,7 @@ struct DietView: View {
                             
                             Spacer(minLength: 50)
                         }
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, 8)
                         .padding(.bottom, 100)
                     }
                 }
@@ -100,7 +100,7 @@ struct DietView: View {
                         
                         Spacer()
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 8)
                     .padding(.bottom, 20)
                 }
             }
@@ -121,7 +121,7 @@ struct DietView: View {
         .alert("Calorie Target", isPresented: $showCalorieAlert) {
             Button("OK", role: .cancel) { }
         } message: {
-            Text("Your daily target is \(Int(vm.getDailyCaloriesTarget())) calories")
+            Text("\(LanguageManager.localizedString("Your daily target is")) \(Int(vm.getDailyCaloriesTarget())) \(LanguageManager.localizedString("calories"))")
         }
         .onAppear {
             Task {
@@ -129,6 +129,14 @@ struct DietView: View {
             }
             setupViewModels()
             animateViewIn()
+            
+            // ✅ NUEVO: Iniciar notificaciones de agua con el valor correcto
+            vm.startWaterRemindersThreeTimes()
+            
+            // ✅ DEBUG: Verificar y corregir notificaciones de agua
+            vm.verifyAndFixWaterNotifications()
+            
+            // Debug silenciado para evitar spam en consola
         }
     }
     
@@ -203,7 +211,11 @@ private extension DietView {
                     value: vm.calculateRecommendedWaterIntake(),
                     subtitle: "recommended",
                     color: .cyan,
-                    action: { activeSheet = .water }
+                    action: { 
+                        // ✅ NUEVO: Actualizar notificaciones antes de mostrar el sheet
+                        vm.forceUpdateWaterNotifications()
+                        activeSheet = .water 
+                    }
                 )
             }
             .opacity(vm.showNutritionCards ? 1 : 0)
@@ -263,14 +275,14 @@ private extension DietView {
                 .clipShape(Circle())
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.appWhite)
                 
                 (Text(value)
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(color) +
-                 Text(" \(subtitle)")
+                 Text(" \(LanguageManager.localizedString(subtitle))")
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.appWhite.opacity(0.7)))
             }

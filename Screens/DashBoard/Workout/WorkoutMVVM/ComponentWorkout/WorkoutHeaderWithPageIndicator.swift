@@ -204,12 +204,12 @@ struct WorkoutHeaderCardItem: View {
             
             // Content section
             VStack(alignment: .leading, spacing: 4) {
-                Text(card.title)
+                Text(LanguageManager.localizedString(card.title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(WorkoutColors.textAccent)
                     .lineLimit(1)
                 
-                Text(card.content)
+                Text(LanguageManager.localizedString(card.content))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(WorkoutColors.textSecondary)
                     .lineLimit(2)

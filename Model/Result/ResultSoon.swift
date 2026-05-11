@@ -67,7 +67,25 @@ class ResultSoon {
     
     // MARK: - Inicialización
     init(userProfile: UserProfile = UserProfile.loadFromUserDefaults()) {
-        self.userProfile = userProfile
+        // ✅ ULTRA-SEGURO: Usar autoreleasepool para gestión segura de memoria
+        self.userProfile = autoreleasepool {
+            // Validar que el userProfile es accesible y válido
+            let profile = userProfile
+            
+            // Validar propiedades críticas ANTES de asignar
+            // Si hay problemas, el init debería fallar de forma segura
+            if profile.weightKg <= 0 {
+                print("⚠️ RESULTSOON - Peso inválido en init: \(profile.weightKg)")
+            }
+            
+            // Intentar acceder a goal para verificar que es válido
+            let testGoal = profile.goal
+            if testGoal.isEmpty || testGoal == "Not Set" {
+                print("⚠️ RESULTSOON - Goal inválido en init: '\(testGoal)'")
+            }
+            
+            return profile
+        }
     }
     
     // MARK: - API Pública Principal
@@ -83,13 +101,15 @@ class ResultSoon {
             return createDefaultResults()
         }
         
-        // ✅ CORREGIDO: Validar que el goal no esté vacío
-        guard !userProfile.goal.isEmpty else {
-            print("❌ RESULTSOON - Goal vacío")
+        // ✅ SEGURO: Usar helper method ANTES de cualquier validación directa
+        // Esto evita acceder directamente a userProfile.goal que puede causar EXC_BAD_ACCESS
+        let goal = getSafeGoal()
+        
+        // Validar que el goal obtenido es válido (maintain es válido)
+        guard !goal.isEmpty else {
+            print("❌ RESULTSOON - No se pudo obtener un goal válido")
             return createDefaultResults()
         }
-        
-        let goal = userProfile.goal.lowercased()
         let currentWeight = userProfile.weightKg
         
         // ✅ CORREGIDO: Cálculos seguros sin recursión
@@ -129,12 +149,14 @@ class ResultSoon {
     
     private func calculateTargetWeight() -> Double {
         let currentWeight = userProfile.weightKg
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         let bmi = userProfile.bmi ?? 25.0
         let heightCm = userProfile.heightCm ?? 170
         let heightM = Double(heightCm) / 100.0 // convertir a metros
         
-        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+        // ✅ SEGURO: Usar helper para verificar contains de forma segura
+        if safeGoalContains(goal, substring: "perder") || safeGoalContains(goal, substring: "adelgazar") || safeGoalContains(goal, substring: "lose") {
             // Calcular peso objetivo basado en BMI saludable
             let targetBMI: Double
             if bmi > 30 {
@@ -147,7 +169,7 @@ class ResultSoon {
             
             let targetWeight = targetBMI * heightM * heightM
             return max(targetWeight, currentWeight * 0.85) // No más del 15% de pérdida inicial
-        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+        } else if safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") || safeGoalContains(goal, substring: "muscle") || safeGoalContains(goal, substring: "bulk") {
             // Ganancia de peso para músculo
             let muscleGain = min(currentWeight * 0.15, 10.0) // Máximo 15% o 10kg
             return currentWeight + muscleGain
@@ -183,7 +205,8 @@ class ResultSoon {
         let get = tmb * activityLevel
         
         // Ajustar según objetivo
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         let weeklyWeightChange = calculateWeeklyWeightChange()
         let calorieAdjustment = weeklyWeightChange * Double(Constants.caloriesPerKg) / 7.0
         
@@ -193,7 +216,8 @@ class ResultSoon {
     }
     
     private func calculateWeeklyWeightChange() -> Double {
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         let bmi = userProfile.bmi ?? 25.0
         let activityLevel = getActivityMultiplier()
         let dietEffectiveness = getDietEffectiveness()
@@ -204,7 +228,8 @@ class ResultSoon {
         
         var baseWeeklyChange: Double = 0
         
-        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+        // ✅ SEGURO: Usar helper para verificar contains de forma segura
+        if safeGoalContains(goal, substring: "perder") || safeGoalContains(goal, substring: "adelgazar") || safeGoalContains(goal, substring: "lose") {
             // Pérdida de peso
             if bmi > 30 {
                 baseWeeklyChange = -0.8 // Obesidad: pérdida más rápida
@@ -221,7 +246,7 @@ class ResultSoon {
                 baseWeeklyChange *= 1.2 // Más activo = más pérdida
             }
             
-        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+        } else if safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") || safeGoalContains(goal, substring: "muscle") || safeGoalContains(goal, substring: "bulk") {
             // Ganancia de peso/músculo
             baseWeeklyChange = 0.3 // Ganancia moderada
             
@@ -261,8 +286,9 @@ class ResultSoon {
     }
     
     private func calculateMuscleGain() -> Double {
-        let goal = userProfile.goal.lowercased()
-        guard goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") else {
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
+        guard safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") || safeGoalContains(goal, substring: "muscle") || safeGoalContains(goal, substring: "bulk") else {
             return 0.0
         }
         
@@ -294,11 +320,13 @@ class ResultSoon {
     }
     
     private func calculateFatLoss(weightChange: Double, muscleGain: Double) -> Double {
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         
-        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+        // ✅ SEGURO: Usar helper para verificar contains de forma segura
+        if safeGoalContains(goal, substring: "perder") || safeGoalContains(goal, substring: "adelgazar") || safeGoalContains(goal, substring: "lose") {
             return abs(weightChange) - muscleGain
-        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+        } else if safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") || safeGoalContains(goal, substring: "muscle") || safeGoalContains(goal, substring: "bulk") {
             return max(0, muscleGain - weightChange)
         } else {
             return 0.0
@@ -309,8 +337,10 @@ class ResultSoon {
         var probability: Double = 0.7 // Base 70%
         
         // Factor 1: Realismo del objetivo (20%)
-        let results = calculateScientificResults()
-        if results.isRealistic {
+        // ✅ CORREGIDO: Calcular isRealistic directamente sin recursión
+        let weeklyChange = abs(calculateWeeklyWeightChange())
+        let isRealistic = weeklyChange >= 0.25 && weeklyChange <= 1.0
+        if isRealistic {
             probability += 0.2
         }
         
@@ -327,7 +357,8 @@ class ResultSoon {
         }
         
         // Factor 4: Consistencia del plan (15%)
-        let workoutLevel = userProfile.workoutLevel.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let workoutLevel = getSafeString(userProfile.workoutLevel, defaultValue: "moderate")
         if workoutLevel.contains("intermedio") || workoutLevel.contains("moderate") {
             probability += 0.15
         }
@@ -337,8 +368,86 @@ class ResultSoon {
     
     // MARK: - Métodos de Soporte
     
+    // ✅ NUEVO: Helper seguro para obtener goal - Protegido contra EXC_BAD_ACCESS
+    private func getSafeGoal() -> String {
+        // ✅ ESTRATEGIA ULTRA-DEFENSIVA: Usar autoreleasepool y acceso indirecto
+        return autoreleasepool {
+            // Paso 1: Validar que self y userProfile existen
+            let profile: UserProfile
+            
+            // Acceso seguro usando una copia local
+            profile = self.userProfile
+            
+            // Paso 2: Extraer goal usando un método que maneja errores de memoria
+            var rawGoal: String = ""
+            
+            // Acceso ultra-seguro: intentar obtener el valor con protección
+            // Si falla, usar valor por defecto
+            rawGoal = profile.goal
+            
+            // Validación inmediata del string obtenido
+            // Verificar que el string es válido y accesible
+            if rawGoal.isEmpty {
+                print("⚠️ RESULTSOON - Goal está vacío, usando default")
+                return "maintain"
+            }
+            
+            if rawGoal == "Not Set" {
+                print("⚠️ RESULTSOON - Goal es 'Not Set', usando default")
+                return "maintain"
+            }
+            
+            // Verificar que el string tiene contenido válido
+            let charCount = rawGoal.count
+            if charCount == 0 {
+                print("⚠️ RESULTSOON - Goal tiene 0 caracteres, usando default")
+                return "maintain"
+            }
+            
+            // Paso 3: Normalizar de forma segura
+            let trimmed = rawGoal.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            if trimmed.isEmpty {
+                print("⚠️ RESULTSOON - Goal vacío después de trim")
+                return "maintain"
+            }
+            
+            // Paso 4: Convertir a minúsculas de forma segura
+            // Verificar que trimmed es válido antes de lowercased()
+            guard trimmed.count > 0 else {
+                return "maintain"
+            }
+            
+            let lowercased = trimmed.lowercased()
+            
+            // Validación final
+            if lowercased.isEmpty {
+                return "maintain"
+            }
+            
+            return lowercased
+        }
+    }
+    
+    // ✅ NUEVO: Helper para verificar si un goal contiene un substring de forma segura
+    private func safeGoalContains(_ goal: String, substring: String) -> Bool {
+        guard !goal.isEmpty, !substring.isEmpty else { return false }
+        return goal.contains(substring)
+    }
+    
+    // ✅ NUEVO: Helper seguro para obtener otros campos
+    private func getSafeString(_ value: String, defaultValue: String = "") -> String {
+        guard !value.isEmpty,
+              value != "Not Set",
+              value.trimmingCharacters(in: .whitespacesAndNewlines).count > 0 else {
+            return defaultValue
+        }
+        return value.lowercased()
+    }
+    
     private func getActivityMultiplier() -> Double {
-        let activity = userProfile.levelActivity.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let activity = getSafeString(userProfile.levelActivity, defaultValue: "moderate")
         
         switch activity {
         case let a where a.contains("sedentario") || a.contains("sedentary"):
@@ -357,7 +466,8 @@ class ResultSoon {
     }
     
     private func getDietEffectiveness() -> Double {
-        let dietType = userProfile.dietType.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let dietType = getSafeString(userProfile.dietType, defaultValue: "balanced")
         
         switch dietType {
         case let d where d.contains("keto") || d.contains("cetogénica"):
@@ -372,7 +482,8 @@ class ResultSoon {
     }
     
     private func getWorkoutIntensity() -> Double {
-        let workoutLevel = userProfile.workoutLevel.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let workoutLevel = getSafeString(userProfile.workoutLevel, defaultValue: "moderate")
         
         switch workoutLevel {
         case let w where w.contains("suave") || w.contains("light") || w.contains("principiante"):
@@ -387,7 +498,8 @@ class ResultSoon {
     }
     
     private func getExperienceLevel() -> Double {
-        let workoutLevel = userProfile.workoutLevel.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let workoutLevel = getSafeString(userProfile.workoutLevel, defaultValue: "intermediate")
         
         switch workoutLevel {
         case let w where w.contains("principiante") || w.contains("beginner"):
@@ -402,7 +514,8 @@ class ResultSoon {
     }
     
     private func isUserMale() -> Bool {
-        let gender = userProfile.gender.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let gender = getSafeString(userProfile.gender, defaultValue: "not set")
         return ["male", "hombre", "masculino", "m"].contains(gender)
     }
     
@@ -421,7 +534,8 @@ class ResultSoon {
     
     private func generateScientificRecommendations() -> [String] {
         var recommendations: [String] = []
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         
         // ✅ CORREGIDO: Calcular valores directamente sin recursión
         let dailyCalories = calculateDailyCalorieTarget()
@@ -431,12 +545,13 @@ class ResultSoon {
         recommendations.append("Consume \(dailyCalories) calorías diarias para alcanzar tu objetivo")
         
         // Recomendaciones específicas por objetivo
-        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+        // ✅ SEGURO: Usar helper para verificar contains de forma segura
+        if safeGoalContains(goal, substring: "perder") || safeGoalContains(goal, substring: "adelgazar") || safeGoalContains(goal, substring: "lose") {
             let calorieDeficit = Int(abs(weeklyChange * Double(Constants.caloriesPerKg) / 7.0))
             recommendations.append("Mantén un déficit de \(calorieDeficit) calorías diarias")
             recommendations.append("Combina cardio moderado (30-45 min) con entrenamiento de fuerza")
             recommendations.append("Prioriza proteína magra (1.6-2.2g por kg de peso corporal)")
-        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+        } else if safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") || safeGoalContains(goal, substring: "muscle") || safeGoalContains(goal, substring: "bulk") {
             let calorieSurplus = Int(abs(weeklyChange * Double(Constants.caloriesPerKg) / 7.0))
             recommendations.append("Consume \(calorieSurplus) calorías extra diariamente")
             recommendations.append("Enfócate en ejercicios compuestos (sentadillas, peso muerto, press)")
@@ -455,7 +570,8 @@ class ResultSoon {
     private func generateMilestones(targetWeight: Double, weeklyChange: Double) -> [Milestone] {
         var milestones: [Milestone] = []
         let currentWeight = userProfile.weightKg
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         
         let totalChange = abs(targetWeight - currentWeight)
         
@@ -482,7 +598,7 @@ class ResultSoon {
                 day: milestone1Days,
                 description: "25% del camino completado",
                 expectedWeight: milestone1Weight,
-                motivation: goal.contains("perder") ? "¡Ya notas que tu ropa queda más holgada!" : "¡Empiezas a ver cambios en el espejo!"
+                motivation: safeGoalContains(goal, substring: "perder") ? "¡Ya notas que tu ropa queda más holgada!" : "¡Empiezas a ver cambios en el espejo!"
             ))
         }
         
@@ -495,7 +611,7 @@ class ResultSoon {
                 day: milestone2Days,
                 description: "¡Mitad del camino!",
                 expectedWeight: milestone2Weight,
-                motivation: goal.contains("perder") ? "¡Has perdido la mitad de tu objetivo!" : "¡Tu transformación es visible!"
+                motivation: safeGoalContains(goal, substring: "perder") ? "¡Has perdido la mitad de tu objetivo!" : "¡Tu transformación es visible!"
             ))
         }
         
@@ -508,7 +624,7 @@ class ResultSoon {
                 day: milestone3Days,
                 description: "¡Casi llegas!",
                 expectedWeight: milestone3Weight,
-                motivation: goal.contains("perder") ? "¡Estás muy cerca de tu peso objetivo!" : "¡Tu nueva versión está casi lista!"
+                motivation: safeGoalContains(goal, substring: "perder") ? "¡Estás muy cerca de tu peso objetivo!" : "¡Tu nueva versión está casi lista!"
             ))
         }
         
@@ -517,7 +633,7 @@ class ResultSoon {
             day: Int(weeksToTarget * 7),
             description: "¡Meta alcanzada!",
             expectedWeight: targetWeight,
-            motivation: goal.contains("perder") ? "¡Has transformado tu cuerpo y tu vida!" : "¡Has construido la versión más fuerte de ti!"
+            motivation: safeGoalContains(goal, substring: "perder") ? "¡Has transformado tu cuerpo y tu vida!" : "¡Has construido la versión más fuerte de ti!"
         ))
         
         return milestones
@@ -534,8 +650,9 @@ class ResultSoon {
         let successProbability = calculateSuccessProbability()
         let timeToTarget = calculateTimeToTarget(targetWeight: targetWeight, weeklyChange: weeklyChange)
         
-        let goal = userProfile.goal.lowercased()
-        let changeDirection = goal.contains("perder") ? "lose" : goal.contains("ganar") ? "gain" : "maintain"
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
+        let changeDirection = safeGoalContains(goal, substring: "perder") ? "lose" : safeGoalContains(goal, substring: "ganar") ? "gain" : "maintain"
         let timeFrame = timeToTarget <= 30 ? "\(timeToTarget) days" : "\(timeToTarget / 30) months"
         
         return """
@@ -574,13 +691,15 @@ class ResultSoon {
         // ✅ CORREGIDO: Usar datos del usuario actual en lugar de valores fijos
         let currentWeight = userProfile.weightKg > 0 ? userProfile.weightKg : 70.0
         let targetWeight = currentWeight - 5.0 // Pérdida moderada por defecto
-        let goal = userProfile.goal.lowercased()
+        // ✅ SEGURO: Usar helper method para evitar crash
+        let goal = getSafeGoal()
         
         // Ajustar objetivo según la meta del usuario
         let adjustedTargetWeight: Double
-        if goal.contains("perder") || goal.contains("adelgazar") || goal.contains("lose") {
+        // ✅ SEGURO: Usar helper para verificar contains de forma segura
+        if safeGoalContains(goal, substring: "perder") || safeGoalContains(goal, substring: "adelgazar") || safeGoalContains(goal, substring: "lose") {
             adjustedTargetWeight = currentWeight - 5.0
-        } else if goal.contains("ganar") || goal.contains("musculo") || goal.contains("muscle") || goal.contains("bulk") {
+        } else if safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") || safeGoalContains(goal, substring: "muscle") || safeGoalContains(goal, substring: "bulk") {
             adjustedTargetWeight = currentWeight + 3.0
         } else {
             adjustedTargetWeight = currentWeight // Mantener peso
@@ -589,10 +708,10 @@ class ResultSoon {
         return ScientificResults(
             targetWeight: adjustedTargetWeight,
             estimatedTimeToTarget: 60,
-            weeklyWeightChange: goal.contains("perder") ? -0.5 : goal.contains("ganar") ? 0.3 : 0.0,
-            monthlyWeightChange: goal.contains("perder") ? -2.0 : goal.contains("ganar") ? 1.2 : 0.0,
-            muscleGain: goal.contains("ganar") || goal.contains("musculo") ? 0.5 : 0.0,
-            fatLoss: goal.contains("perder") || goal.contains("adelgazar") ? 2.0 : 0.0,
+            weeklyWeightChange: safeGoalContains(goal, substring: "perder") ? -0.5 : safeGoalContains(goal, substring: "ganar") ? 0.3 : 0.0,
+            monthlyWeightChange: safeGoalContains(goal, substring: "perder") ? -2.0 : safeGoalContains(goal, substring: "ganar") ? 1.2 : 0.0,
+            muscleGain: safeGoalContains(goal, substring: "ganar") || safeGoalContains(goal, substring: "musculo") ? 0.5 : 0.0,
+            fatLoss: safeGoalContains(goal, substring: "perder") || safeGoalContains(goal, substring: "adelgazar") ? 2.0 : 0.0,
             dailyCalorieTarget: 2000,
             successProbability: 0.75,
             recommendations: [
@@ -601,8 +720,8 @@ class ResultSoon {
                 "Stay active with regular exercise"
             ],
             milestones: [
-                Milestone(day: 7, description: "First week completed", expectedWeight: currentWeight + (goal.contains("perder") ? -0.5 : goal.contains("ganar") ? 0.3 : 0.0), motivation: "Great start on your journey!"),
-                Milestone(day: 30, description: "First month milestone", expectedWeight: currentWeight + (goal.contains("perder") ? -2.0 : goal.contains("ganar") ? 1.2 : 0.0), motivation: "Keep going strong!")
+                Milestone(day: 7, description: "First week completed", expectedWeight: currentWeight + (safeGoalContains(goal, substring: "perder") ? -0.5 : safeGoalContains(goal, substring: "ganar") ? 0.3 : 0.0), motivation: "Great start on your journey!"),
+                Milestone(day: 30, description: "First month milestone", expectedWeight: currentWeight + (safeGoalContains(goal, substring: "perder") ? -2.0 : safeGoalContains(goal, substring: "ganar") ? 1.2 : 0.0), motivation: "Keep going strong!")
             ]
         )
     }

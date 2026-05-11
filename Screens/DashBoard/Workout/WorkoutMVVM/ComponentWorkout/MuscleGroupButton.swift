@@ -96,7 +96,7 @@ struct MuscleGroupButton: View {
                                lineOffsetForMuscle, y: 0)
                     
                     // Texto del músculo solo para músculos que no son cardio
-                    Text(muscleGroup.name)
+                    Text(LanguageManager.localizedString(muscleGroup.name))
                         .font(.system(size: 10, weight: .medium))
                         .foregroundColor(.white)
                         .offset(x: muscleGroup.isLeftSide ? 

@@ -25,7 +25,7 @@ struct AnalyticsView: View {
                 .padding(.bottom, 100)
             }
         }
-        .navigationTitle("Analytics")
+        .navigationTitle(LanguageManager.localizedString("Analytics"))
         .navigationBarTitleDisplayMode(.inline)
         .foregroundColor(.appWhite)
         .onAppear {
@@ -44,11 +44,11 @@ private extension AnalyticsView {
         VStack(spacing: 12) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Your Progress")
+                    Text(LanguageManager.localizedString("Your Progress"))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.appYellow)
                     
-                    Text("Keep tracking your journey")
+                    Text(LanguageManager.localizedString("Keep tracking your journey"))
                         .font(.system(size: 16))
                         .foregroundColor(.appWhite.opacity(0.8))
                 }
@@ -130,11 +130,11 @@ private extension AnalyticsView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
                     VStack(alignment: .leading) {
-                        Text("Current: \(String(format: "%.1f", viewModel.currentWeight)) kg")
+                        Text("\(LanguageManager.localizedString("Current")): \(String(format: "%.1f", viewModel.currentWeight)) kg")
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.appWhite)
                         
-                        Text("Goal: \(String(format: "%.1f", viewModel.goalWeight)) kg")
+                        Text("\(LanguageManager.localizedString("Goal")): \(String(format: "%.1f", viewModel.goalWeight)) kg")
                             .font(.system(size: 14))
                             .foregroundColor(.appWhite.opacity(0.7))
                     }
@@ -330,7 +330,7 @@ private extension AnalyticsView {
                 }
                 
                 if viewModel.recentAchievements.isEmpty {
-                    Text("Keep working towards your first achievement!")
+                    Text(LanguageManager.localizedString("Keep working towards your first achievement!"))
                         .font(.system(size: 14))
                         .foregroundColor(.appWhite.opacity(0.6))
                         .padding(.vertical, 20)
@@ -358,7 +358,7 @@ struct AnalyticsCard<Content: View>: View {
                     .foregroundColor(.appYellow)
                     .font(.system(size: 18))
                 
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(.appWhite)
                 
@@ -399,12 +399,12 @@ struct OverviewCard: View {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.appWhite)
                 
-                Text(unit)
+                Text(LanguageManager.localizedString(unit))
                     .font(.system(size: 12))
                     .foregroundColor(.appWhite.opacity(0.7))
             }
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.8))
         }

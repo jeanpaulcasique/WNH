@@ -15,19 +15,31 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="samsonLogo" translatesAutoresizingMaskIntoConstraints="NO" id="YRO-k0-Ey4">
-                                <rect key="frame" x="71.5" y="301" width="250" height="250"/>
+                            <!-- Fondo fondonegro -->
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="fondonegro" translatesAutoresizingMaskIntoConstraints="NO" id="background-imageview">
+                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="250" id="1Gr-wE-Ags"/>
-                                    <constraint firstAttribute="height" constant="250" id="Q3B-4B-g5h"/>
+                                    <constraint firstItem="background-imageview" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="bg-leading"/>
+                                    <constraint firstItem="background-imageview" firstAttribute="trailing" secondItem="Ze5-6b-2t3" secondAttribute="trailing" id="bg-trailing"/>
+                                    <constraint firstItem="background-imageview" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="bg-top"/>
+                                    <constraint firstItem="background-imageview" firstAttribute="bottom" secondItem="Ze5-6b-2t3" secondAttribute="bottom" id="bg-bottom"/>
+                                </constraints>
+                            </imageView>
+                            
+                            <!-- Logo de Samson más grande -->
+                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="samsonLogo" translatesAutoresizingMaskIntoConstraints="NO" id="logo-imageview">
+                                <rect key="frame" x="46.666666666666686" y="276" width="300" height="300"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="300" id="logo-width"/>
+                                    <constraint firstAttribute="height" constant="300" id="logo-height"/>
                                 </constraints>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="Bcu-3y-fUS"/>
-                        <color key="backgroundColor" red="0.02" green="0.02" blue="0.02" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <constraints>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="3p8-FC-h6j"/>
-                            <constraint firstItem="YRO-k0-Ey4" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="MfP-vx-nX0"/>
+                            <constraint firstItem="logo-imageview" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="logo-centerX"/>
+                            <constraint firstItem="logo-imageview" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" id="logo-centerY"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -37,6 +49,7 @@
         </scene>
     </scenes>
     <resources>
-        <image name="samsonLogo" width="166.66667175292969" height="166.66667175292969"/>
+        <image name="fondonegro" width="393" height="852"/>
+        <image name="samsonLogo" width="300" height="300"/>
     </resources>
 </document>

@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "samsonLogo.png",
+      "filename" : "LogoSamson1.PNG",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "samsonLogo copia 2.png",
+      "filename" : "LogoSamson1 1.PNG",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "samsonLogo copia.png",
+      "filename" : "LogoSamson1 2.PNG",
       "idiom" : "universal",
       "scale" : "3x"
     }
@@ -21,3 +21,4 @@
     "version" : 1
   }
 }
+

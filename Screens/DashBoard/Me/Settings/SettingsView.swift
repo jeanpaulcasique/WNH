@@ -5,6 +5,7 @@ struct SettingsView: View {
     @AppStorage("isNotificationsEnabled") private var isNotificationsEnabled = true
     @AppStorage("isDarkModeEnabled") private var isDarkModeEnabled = true
     @Environment(\.presentationMode) var presentationMode
+    @EnvironmentObject private var languageManager: LanguageManager
     
     var body: some View {
         ZStack {
@@ -70,11 +71,11 @@ private extension SettingsView {
             }
             
             VStack(spacing: 8) {
-                Text("Settings")
+                Text(languageManager.text(.settingsTitle))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.appYellow)
                 
-                Text("Customize your experience")
+                Text(languageManager.text(.settingsSubtitle))
                     .font(.system(size: 16))
                     .foregroundColor(.appWhite.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -85,19 +86,19 @@ private extension SettingsView {
     var profileSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Profile")
+                Text(languageManager.text(.settingsProfile))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
             }
             
             NavigationLink(destination: ProfileView()) {
-                SettingsRowView(
-                    icon: "person.crop.circle",
-                    title: "Edit Profile",
-                    subtitle: "Update your personal information",
-                    color: .appYellow
-                )
+                    SettingsRowView(
+                        icon: "person.crop.circle",
+                        title: languageManager.text(.settingsEditProfile),
+                        subtitle: languageManager.text(.settingsEditProfileSubtitle),
+                        color: .appYellow
+                    )
             }
             .buttonStyle(PlainButtonStyle())
         }
@@ -106,18 +107,18 @@ private extension SettingsView {
     var preferencesSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Preferences")
+                Text(languageManager.text(.settingsPreferences))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
             }
             
             VStack(spacing: 12) {
-                NavigationLink(destination: PlaceholderView(title: "Language")) {
+                NavigationLink(destination: LanguageSelectionView()) {
                     SettingsRowView(
                         icon: "globe",
-                        title: "Language",
-                        subtitle: "English (US)",
+                        title: languageManager.text(.settingsLanguage),
+                        subtitle: languageManager.languageName(languageManager.currentLanguage),
                         color: .appYellow
                     )
                 }
@@ -125,16 +126,16 @@ private extension SettingsView {
                 
                 SettingsToggleRow(
                     icon: "bell.fill",
-                    title: "Notifications",
-                    subtitle: "Get workout reminders",
+                    title: languageManager.text(.settingsNotifications),
+                    subtitle: languageManager.text(.settingsNotificationsSubtitle),
                     color: .appYellow,
                     isOn: $isNotificationsEnabled
                 )
                 
                 SettingsToggleRow(
                     icon: "moon.fill",
-                    title: "Dark Mode",
-                    subtitle: "Always enabled for fitness focus",
+                    title: languageManager.text(.settingsDarkMode),
+                    subtitle: languageManager.text(.settingsDarkModeSubtitle),
                     color: .appYellow,
                     isOn: $isDarkModeEnabled
                 )
@@ -145,7 +146,7 @@ private extension SettingsView {
     var healthSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Health & Fitness")
+                Text(languageManager.text(.settingsHealthFitness))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
@@ -153,8 +154,8 @@ private extension SettingsView {
             
             SettingsToggleRow(
                 icon: "heart.fill",
-                title: "Apple Health",
-                subtitle: "Sync workouts and health data",
+                title: languageManager.text(.settingsAppleHealth),
+                subtitle: languageManager.text(.settingsAppleHealthSubtitle),
                 color: .appYellow,
                 isOn: $isAppleHealthEnabled
             )
@@ -164,7 +165,7 @@ private extension SettingsView {
     var supportSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Support")
+                Text(languageManager.text(.settingsSupport))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
@@ -174,8 +175,8 @@ private extension SettingsView {
                 NavigationLink(destination: FAQView()) {
                     SettingsRowView(
                         icon: "questionmark.circle",
-                        title: "FAQ",
-                        subtitle: "Frequently asked questions",
+                        title: languageManager.text(.settingsFAQ),
+                        subtitle: languageManager.text(.settingsFAQSubtitle),
                         color: .appYellow
                     )
                 }
@@ -184,8 +185,8 @@ private extension SettingsView {
                 NavigationLink(destination: WriteTSView()) {
                     SettingsRowView(
                         icon: "headphones",
-                        title: "Contact Support",
-                        subtitle: "Get help from our team",
+                        title: languageManager.text(.settingsContactSupport),
+                        subtitle: languageManager.text(.settingsContactSupportSubtitle),
                         color: .appYellow
                     )
                 }
@@ -197,7 +198,7 @@ private extension SettingsView {
     var aboutSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("About")
+                Text(languageManager.text(.settingsAbout))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
@@ -206,27 +207,27 @@ private extension SettingsView {
             VStack(spacing: 12) {
                 SettingsRowView(
                     icon: "info.circle",
-                    title: "App Version",
-                    subtitle: "1.0.0 (Latest)",
+                    title: languageManager.text(.settingsAppVersion),
+                    subtitle: languageManager.text(.settingsLatest),
                     color: .appYellow,
                     showChevron: false
                 )
                 
-                NavigationLink(destination: PlaceholderView(title: "Privacy Policy")) {
+                NavigationLink(destination: PlaceholderViewSettings(title: languageManager.text(.settingsPrivacyPolicy))) {
                     SettingsRowView(
                         icon: "doc.text",
-                        title: "Privacy Policy",
-                        subtitle: "How we protect your data",
+                        title: languageManager.text(.settingsPrivacyPolicy),
+                        subtitle: languageManager.text(.settingsPrivacyPolicySubtitle),
                         color: .appYellow
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
                 
-                NavigationLink(destination: PlaceholderView(title: "Terms of Service")) {
+                NavigationLink(destination: PlaceholderViewSettings(title: languageManager.text(.settingsTerms))) {
                     SettingsRowView(
                         icon: "doc.text",
-                        title: "Terms of Service",
-                        subtitle: "Our terms and conditions",
+                        title: languageManager.text(.settingsTerms),
+                        subtitle: languageManager.text(.settingsTermsSubtitle),
                         color: .appYellow
                     )
                 }
@@ -265,11 +266,11 @@ struct SettingsRowView: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.appWhite)
                 
-                Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                     .font(.system(size: 12))
                     .foregroundColor(.appWhite.opacity(0.6))
             }
@@ -308,11 +309,11 @@ struct SettingsToggleRow: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.appWhite)
                 
-                Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                     .font(.system(size: 12))
                     .foregroundColor(.appWhite.opacity(0.6))
             }
@@ -329,9 +330,149 @@ struct SettingsToggleRow: View {
     }
 }
 
+struct LanguageSelectionView: View {
+    @EnvironmentObject private var languageManager: LanguageManager
+
+    var body: some View {
+        ZStack {
+            LinearGradient(
+                colors: [Color.appBlack, Color.gray.opacity(0.3), Color.appBlack],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    header
+                    languageOptions
+                    currentLanguageNote
+                    Spacer(minLength: 40)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+                .padding(.bottom, 80)
+            }
+        }
+        .navigationTitle(languageManager.text(.languageTitle))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var header: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.appYellow.opacity(0.3), Color.appYellow.opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 86, height: 86)
+
+                Image(systemName: "globe")
+                    .font(.system(size: 42, weight: .semibold))
+                    .foregroundColor(.appYellow)
+            }
+
+            VStack(spacing: 8) {
+                Text(languageManager.text(.languageTitle))
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(.appYellow)
+
+                Text(languageManager.text(.languageSubtitle))
+                    .font(.system(size: 15))
+                    .foregroundColor(.appWhite.opacity(0.75))
+                    .multilineTextAlignment(.center)
+            }
+        }
+    }
+
+    private var languageOptions: some View {
+        VStack(spacing: 12) {
+            ForEach(AppLanguage.allCases) { language in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        languageManager.setLanguage(language)
+                    }
+                } label: {
+                    HStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.appYellow.opacity(0.18))
+                                .frame(width: 44, height: 44)
+
+                            Text(language.rawValue.uppercased())
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(.appYellow)
+                        }
+
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(languageManager.languageName(language))
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.appWhite)
+
+                            Text(language.nativeName)
+                                .font(.system(size: 12))
+                                .foregroundColor(.appWhite.opacity(0.6))
+                        }
+
+                        Spacer()
+
+                        if language == languageManager.currentLanguage {
+                            HStack(spacing: 6) {
+                                Text(languageManager.text(.languageSelected))
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.appYellow)
+
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.appYellow)
+                            }
+                        }
+                    }
+                    .padding(16)
+                    .background(language == languageManager.currentLanguage ? Color.appYellow.opacity(0.12) : Color.gray.opacity(0.1))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16)
+                            .stroke(language == languageManager.currentLanguage ? Color.appYellow.opacity(0.5) : Color.gray.opacity(0.2), lineWidth: 1)
+                    )
+                    .cornerRadius(16)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+    }
+
+    private var currentLanguageNote: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: "checkmark.seal.fill")
+                .font(.system(size: 18))
+                .foregroundColor(.appYellow)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(languageManager.text(.languageCurrent)): \(languageManager.languageName(languageManager.currentLanguage))")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.appWhite)
+
+                Text(languageManager.text(.languageInstant))
+                    .font(.system(size: 12))
+                    .foregroundColor(.appWhite.opacity(0.65))
+            }
+
+            Spacer()
+        }
+        .padding(16)
+        .background(Color.gray.opacity(0.08))
+        .cornerRadius(16)
+    }
+}
+
 // MARK: - PlaceholderView for missing screens
 struct PlaceholderViewSettings: View {
     let title: String
+    @EnvironmentObject private var languageManager: LanguageManager
 
     var body: some View {
         ZStack {
@@ -354,16 +495,16 @@ struct PlaceholderViewSettings: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text(title)
+                    Text(LanguageManager.localizedString(title))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.appYellow)
                     
-                    Text("Coming Soon")
+                    Text(languageManager.text(.comingSoon))
                         .font(.system(size: 16))
                         .foregroundColor(.appWhite.opacity(0.8))
                         .multilineTextAlignment(.center)
                     
-                    Text("This feature is under development and will be available in a future update.")
+                    Text(languageManager.text(.comingSoonDescription))
                         .font(.system(size: 14))
                         .foregroundColor(.appWhite.opacity(0.6))
                         .multilineTextAlignment(.center)
@@ -395,6 +536,7 @@ struct SettingsView_Previews: PreviewProvider {
         NavigationView {
             SettingsView()
         }
+        .environmentObject(LanguageManager())
         .preferredColorScheme(.dark)
     }
 }

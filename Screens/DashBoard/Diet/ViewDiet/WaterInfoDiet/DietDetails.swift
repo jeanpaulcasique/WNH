@@ -91,11 +91,11 @@ struct EpicDietCard: View {
                 
                 // Título y dificultad
                 VStack(spacing: 4) {
-                    Text(title)
+                    Text(LanguageManager.localizedString(title))
                         .font(.system(size: isExpanded ? 26 : 22, weight: .bold))
                         .foregroundColor(.appWhite)
                         .shadow(color: .black.opacity(0.2), radius: 2, x: 0, y: 1)
-                    Text(dietDetails.difficulty)
+                    Text(LanguageManager.localizedString(dietDetails.difficulty))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(dietDetails.color)
                         .padding(.horizontal, 10)
@@ -440,11 +440,11 @@ private struct StatBox: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.7))
             
-            Text(value)
+            Text(LanguageManager.localizedString(value))
                 .font(.system(size: 13, weight: .bold))
                 .foregroundColor(color)
                 .multilineTextAlignment(.center)
@@ -475,7 +475,7 @@ private struct InfoSection: View {
                     .font(.system(size: 20))
                     .foregroundColor(color)
                 
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 

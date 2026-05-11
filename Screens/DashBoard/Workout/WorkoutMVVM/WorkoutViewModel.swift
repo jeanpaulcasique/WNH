@@ -41,7 +41,7 @@ class WorkoutViewModel: ObservableObject {
     private let healthKitPersistence: HealthKitPersistenceService
     private let performanceOptimizer: PerformanceOptimizer
     private let templateService: WorkoutTemplateService
-    private let dailyProgressService: DailyProgressService
+    let dailyProgressService: DailyProgressService
     
     // MARK: - Private Properties
     private var cancellables = Set<AnyCancellable>()
@@ -154,7 +154,12 @@ class WorkoutViewModel: ObservableObject {
     
     /// Guarda los pasos del día actual
     func saveTodaySteps(_ steps: Int) {
+        // ✅ Actualizar almacenamiento antiguo para compatibilidad
         dailyStepsStorage.saveTodaySteps(steps)
+        // ✅ Actualizar estado vivo
+        self.todaySteps = steps
+        // ✅ Sincronizar con DailyProgressService para mantener consistencia
+        dailyProgressService.updateStepsForToday(steps)
     }
     
     /// Solicita autorización de HealthKit

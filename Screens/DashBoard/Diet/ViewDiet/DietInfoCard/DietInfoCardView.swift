@@ -128,7 +128,7 @@ struct DietInfoCardItem: View {
                         VStack(alignment: .leading, spacing: 2) {
                             // Title with NEW badge
                             HStack {
-                                Text(card.title)
+                                Text(LanguageManager.localizedString(card.title))
                                     .font(.system(size: 16, weight: .semibold))
                                     .foregroundColor(.appWhite)
                                     .lineLimit(1)
@@ -147,7 +147,7 @@ struct DietInfoCardItem: View {
                             }
                             
                             // Content text
-                            Text(card.content)
+                            Text(LanguageManager.localizedString(card.content))
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(.appWhite.opacity(0.7))
                                 .lineLimit(2)

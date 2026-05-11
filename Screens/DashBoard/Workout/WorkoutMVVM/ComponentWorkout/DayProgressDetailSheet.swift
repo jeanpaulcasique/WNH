@@ -1,6 +1,11 @@
 import SwiftUI
 import Charts
 
+private var workoutProgressLocale: Locale {
+    let languageCode = UserDefaults.standard.string(forKey: LanguageManager.storageKey) ?? AppLanguage.english.rawValue
+    return Locale(identifier: languageCode == AppLanguage.spanish.rawValue ? "es_ES" : "en_US")
+}
+
 // MARK: - Day Progress Detail Sheet
 struct DayProgressDetailSheet: View {
     let date: Date
@@ -50,7 +55,7 @@ struct DayProgressDetailSheet: View {
                             Image(systemName: "chart.pie.fill")
                                 .foregroundColor(Color.appYellow)
                                 .font(.headline)
-                            Text("Daily Progress")
+                            Text(LanguageManager.localizedString("Daily Progress"))
                                 .font(.headline)
                                 .foregroundColor(.white)
                         }
@@ -62,7 +67,7 @@ struct DayProgressDetailSheet: View {
                             Image(systemName: "chart.bar.fill")
                                 .foregroundColor(Color.appYellow)
                                 .font(.headline)
-                            Text("Daily Metrics")
+                            Text(LanguageManager.localizedString("Daily Metrics"))
                                 .font(.headline)
                                 .foregroundColor(.white)
                         }
@@ -104,14 +109,34 @@ struct DayProgressDetailSheet: View {
                 hideKeyboard()
             }
             .navigationBarHidden(true)
+            .onAppear {
+                refreshDataForSelectedDate()
+            }
+            .onChange(of: selectedDate) { _, _ in
+                refreshDataForSelectedDate()
+            }
         }
         .preferredColorScheme(.dark)
+    }
+    
+    // ✅ NUEVO: Método para refrescar datos de la fecha seleccionada
+    private func refreshDataForSelectedDate() {
+        print("🔄 DAY PROGRESS SHEET: Refrescando datos para \(selectedDate)")
+        
+        // Forzar actualización de datos de HealthKit para la fecha seleccionada
+        workoutViewModel.getHeartRateForDateFromHealthKit(selectedDate) { heartRate in
+            print("🔄 HEART RATE: Datos actualizados para \(selectedDate) - \(heartRate ?? 0)")
+        }
+        
+        workoutViewModel.getActiveCaloriesForDate(selectedDate) { calories in
+            print("🔄 CALORIES: Datos actualizados para \(selectedDate) - \(calories)")
+        }
     }
     
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
-        formatter.locale = Locale(identifier: "en_US")
+        formatter.locale = workoutProgressLocale
         return formatter.string(from: date)
     }
     
@@ -129,7 +154,7 @@ struct HeaderProgressCard: View {
     private var formattedDate: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
-        formatter.locale = Locale(identifier: "en_US")
+        formatter.locale = workoutProgressLocale
         return formatter.string(from: date)
     }
     
@@ -197,10 +222,12 @@ struct HeaderProgressCard: View {
         VStack(spacing: 8) {
             // Círculo de progreso diario
             ZStack {
+                // ✅ NUEVO: Círculo gris de fondo para que siempre se vea el círculo completo
                 Circle()
-                    .stroke(Color.white.opacity(0.1), lineWidth: 6)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 6)
                     .frame(width: 120, height: 120)
                 
+                // ✅ CORREGIDO: Solo un círculo de progreso, sin círculo de fondo duplicado
                 Circle()
                     .trim(from: 0, to: dailyProgressPercentage)
                     .stroke(
@@ -209,17 +236,19 @@ struct HeaderProgressCard: View {
                     )
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.7), value: dailyProgressPercentage)
+                    .frame(width: 120, height: 120)
                 
                 VStack(spacing: 2) {
                     Text("\(Int(dailyProgressPercentage * 100))%")
                         .font(.title2)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
-                    Text("Daily Goal")
+                    Text(LanguageManager.localizedString("Daily Goal"))
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
             }
+            .padding(.horizontal, 20) // ✅ NUEVO: Agregar padding horizontal para evitar que se corte
         }
         .padding(.vertical, 12)
         .background(Color.clear)
@@ -238,10 +267,12 @@ struct OverallProgressView: View {
     var body: some View {
         VStack(spacing: 6) {
             ZStack {
+                // ✅ NUEVO: Círculo gris de fondo para que siempre se vea el círculo completo
                 Circle()
-                    .stroke(Color.white.opacity(0.1), lineWidth: 6)
+                    .stroke(Color.gray.opacity(0.3), lineWidth: 6)
                     .frame(width: 120, height: 120)
                 
+                // ✅ CORREGIDO: Solo un círculo de progreso, sin círculo de fondo duplicado
                 Circle()
                     .trim(from: 0, to: progress.completionPercentage)
                     .stroke(
@@ -254,6 +285,7 @@ struct OverallProgressView: View {
                     )
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.7), value: progress.completionPercentage)
+                    .frame(width: 120, height: 120)
                 
                 VStack(spacing: 2) {
                     Text("\(Int(progress.completionPercentage * 100))%")
@@ -265,7 +297,7 @@ struct OverallProgressView: View {
                 }
             }
             
-            Text("Overall Progress")
+            Text(LanguageManager.localizedString("Overall Progress"))
                 .font(.caption)
                 .foregroundColor(.white)
         }
@@ -327,22 +359,35 @@ struct MetricsGridView: View {
             
             EditableWeightCard(
                 currentWeight: Binding(
-                    get: { workoutViewModel.userPreferencesService.currentUserWeight },
+                    get: { 
+                        // ✅ Obtener peso con continuidad garantizada para la fecha
+                        return workoutViewModel.dailyProgressService.getWeightWithContinuity(for: date)
+                    },
                     set: { newWeight in
-                        workoutViewModel.userPreferencesService.userWeight = newWeight
-                        // ✅ SINCRONIZACIÓN: Actualizar UserProfile para que WeightProgressChart se actualice
-                        updateUserProfileWithNewWeight(newWeight)
+                        if Calendar.current.isDateInToday(date) {
+                            // ✅ SOLO ACTUALIZAR EL PESO HISTÓRICO DEL DÍA ACTUAL
+                            workoutViewModel.dailyProgressService.updateWeightForToday(newWeight)
+                            print("⚖️ PESO ACTUALIZADO: Solo para el día actual (\(DateFormatter.localizedString(from: date, dateStyle: .short, timeStyle: .none))): \(newWeight) kg")
+                        }
+                        // Para días pasados, NO hacer nada (no se puede modificar el historial)
                     }
                 ),
                 isCurrentDay: Calendar.current.isDateInToday(date),
                 onWeightChanged: { newWeight in
-                    workoutViewModel.userPreferencesService.userWeight = newWeight
-                    // ✅ SINCRONIZACIÓN: Actualizar UserProfile para que WeightProgressChart se actualice
-                    updateUserProfileWithNewWeight(newWeight)
+                    if Calendar.current.isDateInToday(date) {
+                        // ✅ SOLO ACTUALIZAR EL PESO HISTÓRICO DEL DÍA ACTUAL
+                        workoutViewModel.dailyProgressService.updateWeightForToday(newWeight)
+                        print("⚖️ PESO ACTUALIZADO: Solo para el día actual (\(DateFormatter.localizedString(from: date, dateStyle: .short, timeStyle: .none))): \(newWeight) kg")
+                    }
+                    // Para días pasados, NO hacer nada (no se puede modificar el historial)
                 }
             )
         }
         .onAppear {
+            loadHeartRateForDate()
+            loadCaloriesForDate()
+        }
+        .onChange(of: date) { _, _ in
             loadHeartRateForDate()
             loadCaloriesForDate()
         }
@@ -406,7 +451,8 @@ struct MetricsGridView: View {
         print("   • Fecha: \(date)")
         print("   • Es futuro: \(isFutureDate)")
         print("   • Es hoy: \(isToday)")
-        print("   • Datos históricos: \(caloriesForDate)")
+        print("   • Datos históricos de HealthKit: \(caloriesForDate)")
+        print("   • Datos guardados en progress: \(progress.caloriesBurned)")
         
         // ✅ Para días futuros, no mostrar datos
         if isFutureDate {
@@ -414,18 +460,25 @@ struct MetricsGridView: View {
             return "0"
         }
         
+        // ✅ PRIORIDAD 1: Obtener calorías históricas para la fecha específica
+        if let historicalCalories = workoutViewModel.dailyProgressService.getCaloriesForDate(date) {
+            print("✅ CALORIES: Datos históricos específicos para \(date) - \(historicalCalories)")
+            return "\(historicalCalories)"
+        }
+        
+        // ✅ PRIORIDAD 2: Si tenemos datos históricos de HealthKit, usarlos
         if caloriesForDate > 0 {
-            print("✅ CALORIES: Datos históricos - \(caloriesForDate)")
+            print("✅ CALORIES: Datos históricos de HealthKit - \(caloriesForDate)")
             return "\(Int(caloriesForDate))"
         }
         
-        // Si no hay datos de HealthKit, usar los datos del progreso local
+        // ✅ PRIORIDAD 3: Si no hay datos de HealthKit, usar los datos del progreso local guardado
         if progress.caloriesBurned > 0 {
-            print("✅ CALORIES: Datos del progreso local - \(progress.caloriesBurned)")
+            print("✅ CALORIES: Datos del progreso local guardado - \(progress.caloriesBurned)")
             return "\(Int(progress.caloriesBurned))"
         }
         
-        print("❌ CALORIES: Sin datos disponibles")
+        print("❌ CALORIES: Sin datos disponibles (ni HealthKit ni progreso local)")
         return "0"
     }
     
@@ -442,7 +495,8 @@ struct MetricsGridView: View {
         print("   • Fecha: \(date)")
         print("   • Es futuro: \(isFutureDate)")
         print("   • Es hoy: \(isToday)")
-        print("   • Datos históricos: \(heartRateForDate ?? 0)")
+        print("   • Datos históricos de HealthKit: \(heartRateForDate ?? 0)")
+        print("   • Datos guardados en progress: \(progress.heartRate)")
         
         // ✅ Para días futuros, no mostrar datos
         if isFutureDate {
@@ -450,20 +504,33 @@ struct MetricsGridView: View {
             return "--"
         }
         
-        // ✅ Si tenemos datos históricos del día, usarlos
+        // ✅ PRIORIDAD 1: Obtener ritmo cardíaco histórico para la fecha específica
+        if let historicalHeartRate = workoutViewModel.dailyProgressService.getHeartRateForDate(date),
+           let averageHeartRate = historicalHeartRate.average, averageHeartRate > 0 {
+            print("✅ HEART RATE: Datos históricos específicos para \(date) - \(averageHeartRate) bpm")
+            return "\(Int(averageHeartRate)) bpm"
+        }
+        
+        // ✅ PRIORIDAD 2: Si tenemos datos históricos de HealthKit, usarlos
         if let historicalHeartRate = heartRateForDate, historicalHeartRate > 0 {
-            print("✅ HEART RATE: Datos históricos - \(historicalHeartRate) bpm")
+            print("✅ HEART RATE: Datos históricos de HealthKit - \(historicalHeartRate) bpm")
             return "\(Int(historicalHeartRate)) bpm"
         }
         
-        // ✅ Solo para hoy: si no hay datos históricos pero tenemos ritmo actual, usarlo
+        // ✅ PRIORIDAD 3: Si no hay datos de HealthKit, usar los datos del progreso local guardado
+        if progress.heartRate > 0 {
+            print("✅ HEART RATE: Datos del progreso local guardado - \(progress.heartRate) bpm")
+            return "\(progress.heartRate) bpm"
+        }
+        
+        // ✅ PRIORIDAD 3: Solo para hoy: si no hay datos históricos pero tenemos ritmo actual, usarlo
         if isToday, let currentHeartRate = workoutViewModel.heartRate, currentHeartRate > 0 {
             print("✅ HEART RATE: Datos actuales (hoy) - \(currentHeartRate) bpm")
             return "\(Int(currentHeartRate)) bpm"
         }
         
         // ✅ Si no hay datos, mostrar "--"
-        print("❌ HEART RATE: Sin datos disponibles")
+        print("❌ HEART RATE: Sin datos disponibles (ni HealthKit ni progreso local)")
         return "--"
     }
     
@@ -494,8 +561,10 @@ struct MetricsGridView: View {
             print("❌ STEPS: Datos irreales detectados - \(savedSteps)")
             print("❌ STEPS: Mostrando 0 en lugar de datos irreales")
             
-            // ✅ Limpiar datos irreales del almacenamiento
-            cleanUnrealisticStepsData()
+            // ✅ Limpiar datos irreales del almacenamiento solo si es hoy
+            if Calendar.current.isDateInToday(date) {
+                cleanUnrealisticStepsData()
+            }
             
             return "0"
         }
@@ -525,12 +594,12 @@ struct MetricCard: View {
                 .font(.title2)
                 .foregroundColor(Color.appYellow)
             
-            Text(value)
+            Text(LanguageManager.localizedString(value))
                 .font(.title3)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -586,7 +655,7 @@ struct EditableWeightCard: View {
             }
             
             if isEditing {
-                TextField("Weight", text: $editedWeight)
+                TextField(LanguageManager.localizedString("Weight"), text: $editedWeight)
                     .font(.title3)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
@@ -596,7 +665,7 @@ struct EditableWeightCard: View {
                     .toolbar {
                         ToolbarItemGroup(placement: .keyboard) {
                             Spacer()
-                            Button("Done") {
+                            Button(LanguageManager.localizedString("Done")) {
                                 saveWeight()
                             }
                             .foregroundColor(Color.appYellow)
@@ -621,7 +690,7 @@ struct EditableWeightCard: View {
                     }
             }
             
-            Text("Weight")
+            Text(LanguageManager.localizedString("Weight"))
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
@@ -644,6 +713,12 @@ struct EditableWeightCard: View {
                 saveWeight()
             }
         }
+        .onChange(of: isCurrentDay) { oldValue, newValue in
+            // ✅ CORREGIDO: Si cambia el día y no es el día actual, cancelar edición
+            if !newValue && isEditing {
+                cancelEditing()
+            }
+        }
     }
     
     private func startEditing() {
@@ -657,6 +732,13 @@ struct EditableWeightCard: View {
         }
         isEditing = false
         isTextFieldFocused = false
+    }
+    
+    private func cancelEditing() {
+        // ✅ NUEVO: Cancelar edición sin guardar cambios
+        isEditing = false
+        isTextFieldFocused = false
+        editedWeight = String(format: "%.1f", currentWeight) // Resetear al valor original
     }
 }
 
@@ -707,7 +789,7 @@ struct StepsSectionView: View {
                 Image(systemName: "shoe")
                     .foregroundColor(Color.appYellow)
                     .font(.title2)
-                Text("Daily Steps")
+                Text(LanguageManager.localizedString("Daily Steps"))
                     .font(.headline)
                     .fontWeight(.semibold)
                 Spacer()
@@ -718,7 +800,7 @@ struct StepsSectionView: View {
                         Circle()
                             .fill(steps > 0 ? Color.green : Color.gray)
                             .frame(width: 8, height: 8)
-                        Text(steps > 0 ? "Live" : "No Data")
+                        Text(LanguageManager.localizedString(steps > 0 ? "Live" : "No Data"))
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
@@ -732,7 +814,7 @@ struct StepsSectionView: View {
                         Text("\(steps)")
                             .font(.system(size: 36, weight: .bold))
                             .foregroundColor(getProgressColor())
-                        Text("of \(dailyGoal)")
+                        Text("\(LanguageManager.localizedString("of")) \(dailyGoal)")
                             .font(.title3)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -769,7 +851,7 @@ struct StepsSectionView: View {
                                 .font(.title3)
                                 .fontWeight(.semibold)
                                 .foregroundColor(.green)
-                            Text("Extra!")
+                            Text(LanguageManager.localizedString("Extra!"))
                                 .font(.caption)
                                 .foregroundColor(.green)
                         }
@@ -782,13 +864,13 @@ struct StepsSectionView: View {
                         Image(systemName: "info.circle")
                             .foregroundColor(Color.appYellow)
                             .font(.caption)
-                        Text("How we calculate your daily steps:")
+                        Text(LanguageManager.localizedString("How we calculate your daily steps:"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
                     }
                     
-                    Text("Based on your age, weight, height, activity level, and fitness goals, we recommend \(dailyGoal) steps per day to maintain a healthy lifestyle and achieve your fitness objectives.")
+                    Text("\(LanguageManager.localizedString("Based on your age, weight, height, activity level, and fitness goals, we recommend")) \(dailyGoal) \(LanguageManager.localizedString("steps per day to maintain a healthy lifestyle and achieve your fitness objectives."))")
                         .font(.caption)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.leading)
@@ -819,7 +901,7 @@ struct DetailedChartsView: View {
                 Image(systemName: "chart.line.uptrend.xyaxis")
                     .foregroundColor(Color.appYellow)
                     .font(.headline)
-                Text("Weekly Progress")
+                Text(LanguageManager.localizedString("Weekly Progress"))
                     .font(.headline)
                     .foregroundColor(.white)
             }
@@ -834,10 +916,12 @@ struct DetailedChartsView: View {
 struct WeightProgressChart: View {
     @ObservedObject var workoutViewModel: WorkoutViewModel
     @State private var refreshTrigger = false // ✅ Para forzar actualización
+    @State private var currentWeightState: Double? = nil // ✅ Peso vivo para refrescar UI
     
     private var currentWeight: Double {
-        // ✅ Usar UserDefaults directamente para obtener el peso más actualizado
-        UserDefaults.standard.object(forKey: "selectedWeightKg") as? Double ?? workoutViewModel.userPreferencesService.userWeight
+        // ✅ Priorizar estado vivo si existe; fallback a UserDefaults o servicio
+        if let live = currentWeightState { return live }
+        return UserDefaults.standard.object(forKey: "selectedWeightKg") as? Double ?? workoutViewModel.userPreferencesService.userWeight
     }
     
     private var idealWeight: Double {
@@ -1000,7 +1084,7 @@ struct WeightProgressChart: View {
                     .font(.title2)
                     .foregroundColor(Color.appYellow)
                 
-                Text("Weight Progress")
+                Text(LanguageManager.localizedString("Weight Progress"))
                     .font(.headline)
                     .foregroundColor(.white)
             }
@@ -1012,7 +1096,7 @@ struct WeightProgressChart: View {
                 // Información actual
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Current Weight")
+                        Text(LanguageManager.localizedString("Current Weight"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text("\(formatWeight(currentWeight)) kg")
@@ -1024,7 +1108,7 @@ struct WeightProgressChart: View {
                     Spacer()
                     
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text("Ideal Weight")
+                        Text(LanguageManager.localizedString("Ideal Weight"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text("\(formatWeight(idealWeight)) kg")
@@ -1037,7 +1121,7 @@ struct WeightProgressChart: View {
                 // Barra de progreso de peso
                 VStack(spacing: 8) {
                     HStack {
-                        Text("Weight Progress")
+                        Text(LanguageManager.localizedString("Weight Progress"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -1066,7 +1150,7 @@ struct WeightProgressChart: View {
                 // Información de BMI
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Current BMI")
+                        Text(LanguageManager.localizedString("Current BMI"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text(String(format: "%.1f", currentBMI))
@@ -1078,7 +1162,7 @@ struct WeightProgressChart: View {
                     Spacer()
                     
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text("Ideal BMI")
+                        Text(LanguageManager.localizedString("Ideal BMI"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text(String(format: "%.1f", idealBMI))
@@ -1091,7 +1175,7 @@ struct WeightProgressChart: View {
                 // Barra de progreso de BMI
                 VStack(spacing: 8) {
                     HStack {
-                        Text("BMI Progress")
+                        Text(LanguageManager.localizedString("BMI Progress"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Spacer()
@@ -1120,7 +1204,7 @@ struct WeightProgressChart: View {
                 // Información adicional
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Difference")
+                        Text(LanguageManager.localizedString("Difference"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                         Text("\(String(format: "%.1f", abs(currentWeight - idealWeight))) kg")
@@ -1139,10 +1223,10 @@ struct WeightProgressChart: View {
                     Spacer()
                     
                     VStack(alignment: .trailing, spacing: 4) {
-                        Text("Category")
+                        Text(LanguageManager.localizedString("Category"))
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        Text(workoutViewModel.userPreferencesService.bmiCategory.rawValue.capitalized)
+                        Text(LanguageManager.localizedString(workoutViewModel.userPreferencesService.bmiCategory.rawValue))
                             .font(.title3)
                             .fontWeight(.bold)
                             .foregroundColor(getBMICategoryColor(workoutViewModel.userPreferencesService.bmiCategory))
@@ -1154,9 +1238,25 @@ struct WeightProgressChart: View {
             .background(Color.white.opacity(0.05))
             .cornerRadius(12)
         }
-        .onReceive(NotificationCenter.default.publisher(for: .weightUpdated)) { _ in
-            // ✅ SINCRONIZACIÓN: Forzar actualización cuando se cambie el peso
-            print("🔄 WEIGHT PROGRESS: Recibida notificación de peso actualizado")
+        .onAppear {
+            // ✅ Inicializar peso vivo al aparecer
+            let today = Date()
+            let service = workoutViewModel.dailyProgressService
+            let weight = service.getWeightForDate(today) ?? (UserDefaults.standard.object(forKey: "selectedWeightKg") as? Double)
+            currentWeightState = weight
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .weightUpdated).receive(on: RunLoop.main)) { notification in
+            // ✅ Actualizar estado vivo y refrescar
+            if let newWeight = notification.object as? Double {
+                print("🔄 WEIGHT PROGRESS: Peso actualizado recibido -> \(newWeight) kg")
+                currentWeightState = newWeight
+            } else {
+                // Si no viene el objeto, refrescar desde servicio/UserDefaults
+                let today = Date()
+                let service = workoutViewModel.dailyProgressService
+                let weight = service.getWeightForDate(today) ?? (UserDefaults.standard.object(forKey: "selectedWeightKg") as? Double)
+                currentWeightState = weight
+            }
             refreshTrigger.toggle()
         }
     }
@@ -1315,26 +1415,10 @@ struct DateSelectorView: View {
         return days
     }
     
-    // Calcular la posición inicial para mostrar la semana actual
-    private var initialScrollPosition: CGFloat {
-        let calendar = Calendar.current
-        let today = Date()
-        
-        // Si estamos en el mes actual, calcular la posición de la semana actual
-        if calendar.isDate(today, equalTo: currentMonth, toGranularity: .month) {
-            let startOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
-            let daysFromStart = calendar.dateComponents([.day], from: startOfMonth, to: today).day ?? 0
-            let weekOfMonth = daysFromStart / 7
-            return CGFloat(weekOfMonth * 7) * 43 // 43 = 35 (width) + 8 (spacing)
-        }
-        
-        return 0
-    }
-    
     private var monthYearString: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
-        formatter.locale = Locale(identifier: "en_US")
+        formatter.locale = workoutProgressLocale
         return formatter.string(from: currentMonth)
     }
     
@@ -1395,25 +1479,8 @@ struct DateSelectorView: View {
                 .frame(width: 7 * 48 + 32, height: 60) // Ancho fijo para mostrar exactamente 7 días (40 + 8 spacing) + padding horizontal
                 .clipped() // Oculta el contenido que se sale del frame
                 .onAppear {
-                    // Posicionar automáticamente en la semana actual
-                    let calendar = Calendar.current
-                    let today = Date()
-                    
-                    if calendar.isDate(today, equalTo: currentMonth, toGranularity: .month) {
-                        // Calcular cuántos días desde el inicio del mes hasta hoy
-                        let startOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
-                        let daysFromStart = calendar.dateComponents([.day], from: startOfMonth, to: today).day ?? 0
-                        
-                        // Calcular la semana actual (0-indexed)
-                        let currentWeek = daysFromStart / 7
-                        
-                        // Calcular la posición del primer día de la semana actual
-                        let firstDayOfWeek = calendar.date(byAdding: .day, value: currentWeek * 7, to: startOfMonth) ?? startOfMonth
-                        
-                        // Hacer scroll a esa posición
-                        withAnimation(.easeInOut(duration: 0.5)) {
-                            proxy.scrollTo(firstDayOfWeek, anchor: .leading)
-                        }
+                    withAnimation(.easeInOut(duration: 0.5)) {
+                        proxy.scrollTo(visibleWeekAnchorDate, anchor: .leading)
                     }
                 }
             }
@@ -1421,19 +1488,22 @@ struct DateSelectorView: View {
         .padding(.vertical, 16)
         .background(Color.white.opacity(0.05))
         .cornerRadius(12)
-        .onAppear {
-            // Asegurar que siempre se muestre la semana actual del mes al abrir
-            if !Calendar.current.isDate(selectedDate, inSameDayAs: Date()) {
-                selectedDate = Date()
-            }
-        }
+    }
+    
+    private var visibleWeekAnchorDate: Date {
+        let calendar = Calendar.current
+        let referenceDate = calendar.isDate(selectedDate, equalTo: currentMonth, toGranularity: .month) ? selectedDate : currentMonth
+        let startOfMonth = calendar.dateInterval(of: .month, for: currentMonth)?.start ?? currentMonth
+        let daysFromStart = calendar.dateComponents([.day], from: startOfMonth, to: referenceDate).day ?? 0
+        let weekOfMonth = max(daysFromStart, 0) / 7
+        
+        return calendar.date(byAdding: .day, value: weekOfMonth * 7, to: startOfMonth) ?? startOfMonth
     }
     
     private func handleScrollOffset(_ offset: CGFloat) {
         guard !isScrolling else { return }
         
         // Detectar si el scroll está cerca del final del mes
-        let calendar = Calendar.current
         let daysInMonth = monthDays.count
         let dayWidth: CGFloat = 48 // 40 (width) + 8 (spacing)
         let totalWidth = CGFloat(daysInMonth) * dayWidth
@@ -1480,7 +1550,7 @@ struct DayCircleView: View {
     
     private var dayInitial: String {
         let formatter = DateFormatter()
-        formatter.locale = Locale.current
+        formatter.locale = workoutProgressLocale
         formatter.setLocalizedDateFormatFromTemplate("EEE")
         return String(formatter.string(from: date).prefix(1))
     }
@@ -1529,4 +1599,6 @@ struct DayCircleView: View {
         workoutViewModel: WorkoutViewModel()
     )
     .preferredColorScheme(.dark)
-} 
+}
+
+ 

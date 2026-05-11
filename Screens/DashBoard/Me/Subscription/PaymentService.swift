@@ -17,11 +17,11 @@ enum StoreKitError: LocalizedError {
     
     var errorDescription: String? {
         switch self {
-        case .networkError: return "Network connection required"
-        case .userCancelled: return "Purchase cancelled by user"
-        case .paymentNotAllowed: return "Payments not allowed"
-        case .productNotFound: return "Product not found"
-        case .unknown: return "Unknown payment error"
+        case .networkError: return LanguageManager.localizedString("Network connection required")
+        case .userCancelled: return LanguageManager.localizedString("Purchase cancelled by user")
+        case .paymentNotAllowed: return LanguageManager.localizedString("Payments not allowed")
+        case .productNotFound: return LanguageManager.localizedString("Product not found")
+        case .unknown: return LanguageManager.localizedString("Unknown payment error")
         }
     }
 }

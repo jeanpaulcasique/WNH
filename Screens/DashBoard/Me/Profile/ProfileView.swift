@@ -363,7 +363,7 @@ struct ProfileSectionHeader: View {
                 .font(.system(size: 18))
                 .foregroundColor(.appYellow)
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.appYellow)
             
@@ -387,16 +387,16 @@ struct StatCard: View {
                 .foregroundColor(Color.appYellow)
             
             VStack(spacing: 4) {
-                Text(value)
+                Text(LanguageManager.localizedString(value))
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.appWhite)
                 
-                Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                     .font(.system(size: 11))
                     .foregroundColor(.appWhite.opacity(0.6))
             }
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.8))
         }
@@ -468,7 +468,7 @@ struct AchievementCard: View {
             }
             
             VStack(spacing: 4) {
-                Text(achievement.title)
+                Text(LanguageManager.localizedString(achievement.title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.appWhite)
                     .multilineTextAlignment(.center)
@@ -580,11 +580,11 @@ struct DetailedStatCard: View {
                 .font(.system(size: 24))
                 .foregroundColor(Color.appYellow)
             
-            Text(value)
+            Text(LanguageManager.localizedString(value))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.appWhite)
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 12))
                 .foregroundColor(.appWhite.opacity(0.7))
                 .multilineTextAlignment(.center)
@@ -1103,7 +1103,7 @@ struct ProfileGenderOptionCard: View {
                     .font(.system(size: 60))
                     .foregroundColor(Color.appYellow)
                 
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(isSelected ? .appYellow : .appWhite)
             }
@@ -2029,7 +2029,7 @@ struct SimpleOptionCard: View {
     var body: some View {
         Button(action: action) {
             HStack {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 18, weight: .semibold))
                     .foregroundColor(isSelected ? .appYellow : .appWhite)
                 
@@ -2244,8 +2244,6 @@ struct ProfileHeightTapeView: View {
                 
                 // Items de la cinta métrica
                 ForEach(Array(items.enumerated()), id: \.offset) { index, height in
-                    let distance = abs(index - selectedIndex)
-                    
                     HStack(spacing: 0) {
                         Spacer()
                         

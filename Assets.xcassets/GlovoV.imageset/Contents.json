@@ -1,17 +1,19 @@
 {
   "images" : [
     {
-      "filename" : "GlovoV.png",
       "idiom" : "universal",
-      "scale" : "1x"
+      "scale" : "1x",
+      "filename" : "glovoapp_logo_icon_169104.png"
     },
     {
       "idiom" : "universal",
-      "scale" : "2x"
+      "scale" : "2x",
+      "filename" : "glovoapp_logo_icon_169104 1.png"
     },
     {
       "idiom" : "universal",
-      "scale" : "3x"
+      "scale" : "3x",
+      "filename" : "glovoapp_logo_icon_169104 2.png"
     }
   ],
   "info" : {
@@ -19,3 +21,6 @@
     "version" : 1
   }
 }
+
+
+

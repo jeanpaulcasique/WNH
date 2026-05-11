@@ -97,7 +97,7 @@ struct TrainerDetailView: View {
         HStack(spacing: 0) {
             ForEach(DetailTab.allCases, id: \.self) { tab in
                 Button(action: { activeTab = tab }) {
-                    Text(tab.rawValue)
+                    Text(LanguageManager.localizedString(tab.rawValue))
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(activeTab == tab ? .yellow : .gray)
                         .padding(.vertical, 12)
@@ -139,7 +139,7 @@ struct TrainerDetailView: View {
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.yellow)
                 
-                Text(trainer.bio)
+                Text(LanguageManager.localizedString(trainer.bio))
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.8))
                     .lineSpacing(4)
@@ -152,7 +152,7 @@ struct TrainerDetailView: View {
                 
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     ForEach(trainer.certifications, id: \.self) { cert in
-                        Text(cert)
+                        Text(LanguageManager.localizedString(cert))
                             .font(.system(size: 12, weight: .medium))
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
@@ -174,7 +174,7 @@ struct TrainerDetailView: View {
                 
                 HStack {
                     ForEach(trainer.languages, id: \.self) { language in
-                        Text(language)
+                        Text(LanguageManager.localizedString(language))
                             .font(.system(size: 12))
                             .foregroundColor(.white)
                             .padding(.horizontal, 8)
@@ -222,12 +222,12 @@ struct TrainerDetailView: View {
             
             if let slot = selectedTimeSlot {
                 VStack(spacing: 12) {
-                    Text("Selected: \(slot)")
+                    Text("\(LanguageManager.localizedString("Selected")): \(slot)")
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.white)
                     
                     Button(action: { onHire(trainer); dismiss() }) {
-                        Text("Confirm Booking - $\(trainer.pricePerSession)")
+                        Text("\(LanguageManager.localizedString("Confirm Booking")) - $\(trainer.pricePerSession)")
                             .font(.system(size: 16, weight: .bold))
                             .foregroundColor(.black)
                             .frame(maxWidth: .infinity)
@@ -269,7 +269,7 @@ struct StatBox: View {
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(.white)
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 10))
                 .foregroundColor(.white.opacity(0.6))
         }

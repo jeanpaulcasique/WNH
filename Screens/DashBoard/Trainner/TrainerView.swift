@@ -143,7 +143,7 @@ private extension FitnessTrainerApp {
                     HStack(spacing: 6) {
                         Image(systemName: showMap ? "list.bullet" : "map")
                             .font(.system(size: 18, weight: .bold))
-                        Text(showMap ? "List" : "Map")
+                        Text(showMap ? LanguageManager.localizedString("List") : LanguageManager.localizedString("Map"))
                             .font(.system(size: 15, weight: .semibold))
                     }
                     .padding(.horizontal, 14)
@@ -294,10 +294,10 @@ struct TrainerCard: View {
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(.white.opacity(0.8))
                             }
-                            Text("\(trainer.experience)y exp")
+                            Text("\(trainer.experience)y \(LanguageManager.localizedString("exp"))")
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.6))
-                            Text("$\(trainer.pricePerSession)/session")
+                            Text("$\(trainer.pricePerSession)/\(LanguageManager.localizedString("session"))")
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(.yellow)
                         }
@@ -325,7 +325,7 @@ struct TrainerCard: View {
                 // Bio
                 if !trainer.bio.isEmpty {
                     HStack {
-                        Text(trainer.bio)
+                        Text(LanguageManager.localizedString(trainer.bio))
                             .font(.system(size: 12))
                             .foregroundColor(.white.opacity(0.7))
                             .lineLimit(2)

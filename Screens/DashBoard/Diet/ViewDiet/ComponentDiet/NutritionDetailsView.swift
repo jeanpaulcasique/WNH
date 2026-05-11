@@ -410,12 +410,12 @@ struct NutritionDetailsView: View {
                 .frame(width: 20)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundColor(.white)
                 
-                Text(description)
+                Text(LanguageManager.localizedString(description))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.8))
                     .fixedSize(horizontal: false, vertical: true)
@@ -504,7 +504,7 @@ struct MacroBreakdownView: View {
     
     private func macroColumn(title: String, grams: Double, percentage: Double, color: Color) -> some View {
         VStack(spacing: 8) {
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.caption)
                 .foregroundColor(.white.opacity(0.7))
             
@@ -600,12 +600,12 @@ struct MacroBreakdownView: View {
                 .padding(.top, 4)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundColor(.white)
                 
-                Text(description)
+                Text(LanguageManager.localizedString(description))
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.8))
                     .fixedSize(horizontal: false, vertical: true)

@@ -8,9 +8,9 @@ enum WorkoutProgress: String, CaseIterable, Codable {
     
     var displayName: String {
         switch self {
-        case .none: return "Not Started"
-        case .partial: return "In Progress"
-        case .complete: return "Completed"
+        case .none: return LanguageManager.localizedString("Not Started")
+        case .partial: return LanguageManager.localizedString("In Progress")
+        case .complete: return LanguageManager.localizedString("Completed")
         }
     }
     

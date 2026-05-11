@@ -18,7 +18,7 @@ enum WorkoutLocation: String, CaseIterable, Identifiable, Codable {
     }
     
     var displayName: String {
-        return self.rawValue
+        return LanguageManager.localizedString(self.rawValue)
     }
 }
 

@@ -33,7 +33,7 @@ struct StyledRecipeCard: View {
             
             // Recipe info
             VStack(alignment: .leading, spacing: 4) {
-                Text(recipe.title)
+                Text(LanguageManager.localizedString(recipe.title))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.appWhite)
                     .lineLimit(2)
@@ -113,7 +113,7 @@ struct RecipeDetailView: View {
                 .padding(.bottom, 100)
             }
         }
-        .navigationTitle(recipe.title)
+        .navigationTitle(LanguageManager.localizedString(recipe.title))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -129,7 +129,7 @@ struct RecipeDetailView: View {
             }
         }
         .fullScreenCover(isPresented: $showFullScreenImage) {
-            FullScreenImageView(imageName: recipe.imageName, recipeTitle: recipe.title)
+            FullScreenImageView(imageName: recipe.imageName, recipeTitle: LanguageManager.localizedString(recipe.title))
         }
     }
     
@@ -190,7 +190,7 @@ struct RecipeDetailView: View {
     
     private var recipeInfoSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(recipe.title)
+            Text(LanguageManager.localizedString(recipe.title))
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.appYellow)
             
@@ -240,7 +240,7 @@ struct RecipeDetailView: View {
                             .frame(width: 8, height: 8)
                         
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(ingredient.name)
+                            Text(LanguageManager.localizedString(ingredient.name))
                                 .font(.system(size: 15, weight: .medium))
                                 .foregroundColor(.appWhite)
                             
@@ -276,7 +276,7 @@ struct RecipeDetailView: View {
                     .foregroundColor(.appYellow)
             }
             
-            Text(recipe.instructions)
+            Text(LanguageManager.localizedString(recipe.instructions))
                 .font(.system(size: 15))
                 .foregroundColor(.appWhite)
                 .lineSpacing(6)

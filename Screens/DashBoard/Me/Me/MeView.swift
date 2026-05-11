@@ -4,7 +4,7 @@ import SwiftUI
 struct MeView: View {
     @StateObject private var viewModel = MeViewModel()
     @EnvironmentObject var sessionManager: UserSessionManager
-    @State private var showLoginView = false
+    @EnvironmentObject private var languageManager: LanguageManager
     @State private var profileImageScale: CGFloat = 1.0
     @State private var showLogoutConfirmation = false
     @State private var navigateToProfile = false
@@ -31,19 +31,16 @@ struct MeView: View {
             .navigationBarHidden(true)
         }
         .accentColor(.appYellow)
-        .fullScreenCover(isPresented: $showLoginView) {
-            LoginView()
-        }
         .sheet(isPresented: $navigateToProfile) {
             ProfileView()
         }
-        .alert("Logout", isPresented: $showLogoutConfirmation) {
-            Button("Cancel", role: .cancel) { }
-            Button("Logout", role: .destructive) {
+        .alert(languageManager.text(.meLogout), isPresented: $showLogoutConfirmation) {
+            Button(languageManager.text(.meLogoutCancel), role: .cancel) { }
+            Button(languageManager.text(.meLogout), role: .destructive) {
                 performLogout()
             }
         } message: {
-            Text("Are you sure you want to logout?")
+            Text(languageManager.text(.meLogoutMessage))
         }
     }
 }
@@ -102,7 +99,7 @@ private extension MeView {
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.appYellow)
                 
-                Text("Ready to crush your fitness goals?")
+                Text(languageManager.text(.meMotivation))
                     .font(.system(size: 16))
                     .foregroundColor(.appWhite.opacity(0.8))
                     .multilineTextAlignment(.center)
@@ -113,7 +110,7 @@ private extension MeView {
     var statsSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Your Progress")
+                Text(languageManager.text(.meYourProgress))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
@@ -121,25 +118,25 @@ private extension MeView {
             
             HStack(spacing: 16) {
                 StatCardMe(
-                    title: "Workouts",
+                    title: languageManager.text(.meWorkouts),
                     value: "\(viewModel.workoutCount)",
-                    subtitle: "completed",
+                    subtitle: languageManager.text(.meCompleted),
                     icon: "flame.fill",
                     color: .appYellow
                 )
                 
                 StatCardMe(
-                    title: "Streak",
+                    title: languageManager.text(.meStreak),
                     value: "\(viewModel.streakDays)",
-                    subtitle: "days",
+                    subtitle: languageManager.text(.meDays),
                     icon: "calendar.badge.checkmark",
                     color: .appYellow
                 )
                 
                 StatCardMe(
-                    title: "Level",
+                    title: languageManager.text(.meLevel),
                     value: "\(viewModel.userLevel)",
-                    subtitle: "fitness",
+                    subtitle: languageManager.text(.meFitness),
                     icon: "star.fill",
                     color: .appYellow
                 )
@@ -150,7 +147,7 @@ private extension MeView {
     var accountSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Account")
+                Text(languageManager.text(.meAccount))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
@@ -167,7 +164,7 @@ private extension MeView {
     var supportSection: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("Support & More")
+                Text(languageManager.text(.meSupportMore))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appYellow)
                 Spacer()
@@ -198,7 +195,7 @@ private extension MeView {
                 }
                     
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Logout")
+                        Text(languageManager.text(.meLogout))
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.appWhite)
                     }
@@ -236,12 +233,12 @@ private extension MeView {
                 }
                 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(item.title)
+                    Text(languageManager.menuTitle(item.title))
                         .font(.system(size: 16, weight: .medium))
                         .foregroundColor(.appWhite)
                     
                     if item.title == "Subscription" && !viewModel.isPremium {
-                        Text("Upgrade for premium features")
+                        Text(languageManager.text(.meUpgradePremium))
                             .font(.system(size: 12))
                             .foregroundColor(.appYellow.opacity(0.8))
                     }
@@ -278,7 +275,7 @@ private extension MeView {
         case "Subscription":
             SubscriptionView()
         case "Coaches":
-            PlaceholderView(title: title) // Solo esta porque Coaches no existe aún
+            PlaceholderView(title: languageManager.menuTitle(title)) // Solo esta porque Coaches no existe aún
         case "Analytics":
             AnalyticsView()
         case "Write to support":
@@ -290,13 +287,12 @@ private extension MeView {
         case "Settings":
             SettingsView()
         default:
-            PlaceholderView(title: title)
+            PlaceholderView(title: languageManager.menuTitle(title))
         }
     }
     
     // MARK: - Actions
     func performLogout() {
-        showLoginView = true
         sessionManager.logout()
         
         // Haptic feedback
@@ -325,16 +321,16 @@ struct StatCardMe: View {
                     .foregroundColor(color)
             }
             
-            Text(value)
+            Text(LanguageManager.localizedString(value))
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(.appWhite)
             
             VStack(spacing: 2) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.appWhite.opacity(0.8))
                 
-                Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                     .font(.system(size: 10))
                     .foregroundColor(.appWhite.opacity(0.6))
             }
@@ -349,6 +345,7 @@ struct StatCardMe: View {
 // MARK: - PlaceholderView (solo para Coaches que no existe)
 struct PlaceholderView: View {
     let title: String
+    @EnvironmentObject private var languageManager: LanguageManager
 
     var body: some View {
         ZStack {
@@ -379,16 +376,16 @@ struct PlaceholderView: View {
                 }
                 
                 VStack(spacing: 8) {
-                    Text(title)
+                    Text(LanguageManager.localizedString(title))
                         .font(.system(size: 28, weight: .bold))
                         .foregroundColor(.appYellow)
                     
-                    Text("Coming Soon")
+                    Text(languageManager.text(.comingSoon))
                         .font(.system(size: 16))
                         .foregroundColor(.appWhite.opacity(0.8))
                         .multilineTextAlignment(.center)
                     
-                    Text("This feature is under development and will be available in a future update.")
+                    Text(languageManager.text(.comingSoonDescription))
                         .font(.system(size: 14))
                         .foregroundColor(.appWhite.opacity(0.6))
                         .multilineTextAlignment(.center)
@@ -405,6 +402,7 @@ struct MeView_Previews: PreviewProvider {
     static var previews: some View {
         MeView()
             .environmentObject(UserSessionManager()) // Asegúrate de inyectar el sessionManager
+            .environmentObject(LanguageManager())
             .preferredColorScheme(.dark)
     }
 }

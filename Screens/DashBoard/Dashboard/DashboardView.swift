@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DashboardView: View {
     @StateObject private var viewModel = DashboardViewModel()
+    @EnvironmentObject private var languageManager: LanguageManager
     @State private var selectedTab = 0
 
     var body: some View {
@@ -11,7 +12,7 @@ struct DashboardView: View {
                 .tag(0)
                 .tabItem {
                     Image(systemName: "dumbbell.fill")
-                    Text("Workout")
+                    Text(languageManager.text(.tabWorkout))
                 }
 
             // Pestaña Diet
@@ -19,7 +20,7 @@ struct DashboardView: View {
                 .tag(1)
                 .tabItem {
                     Image(systemName: "fork.knife")
-                    Text("Diet")
+                    Text(languageManager.text(.tabDiet))
                 }
 
             // Pestaña Trainer
@@ -27,7 +28,7 @@ struct DashboardView: View {
                 .tag(2)
                 .tabItem {
                     Image(systemName: "person.2.fill")
-                    Text("Trainer")
+                    Text(languageManager.text(.tabTrainer))
                 }
 
             // Pestaña Shop
@@ -35,7 +36,7 @@ struct DashboardView: View {
                 .tag(3)
                 .tabItem {
                     Image(systemName: "cart.fill")
-                    Text("Shop")
+                    Text(languageManager.text(.tabShop))
                 }
 
             // Pestaña Me
@@ -43,7 +44,7 @@ struct DashboardView: View {
                 .tag(4)
                 .tabItem {
                     Image(systemName: "person.fill")
-                    Text("Me")
+                    Text(languageManager.text(.tabMe))
                 }
         }
         .accentColor(.yellow)
@@ -63,7 +64,7 @@ struct DashboardView_Previews: PreviewProvider {
         NavigationView {
             DashboardView()
         }
+        .environmentObject(LanguageManager())
         .preferredColorScheme(.dark)
     }
 }
-

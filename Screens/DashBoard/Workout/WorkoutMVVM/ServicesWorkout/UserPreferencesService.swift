@@ -413,11 +413,9 @@ class UserPreferencesService: ObservableObject {
     }
     
     private static func loadUserProfile() -> UserProfile {
-        guard let data = UserDefaults.standard.data(forKey: Keys.userProfile),
-              let profile = try? JSONDecoder().decode(UserProfile.self, from: data) else {
-            return UserProfile() // UserProfile no tiene .default, usa el init()
-        }
-        return profile
+        // ✅ CORREGIDO: Siempre construir el perfil desde UserDefaults para reflejar el peso actualizado (selectedWeightKg)
+        // Evita cargar un perfil cacheado que pueda tener el peso antiguo del onboarding
+        return UserProfile()
     }
     
     private func saveWorkoutPreferences() {

@@ -38,13 +38,13 @@ enum FAQCategory: String, CaseIterable, Codable {
     
     var displayName: String {
         switch self {
-        case .all: return "All"
-        case .workouts: return "Workouts"
-        case .nutrition: return "Nutrition"
-        case .account: return "Account"
-        case .subscription: return "Subscription"
-        case .technical: return "Technical"
-        case .general: return "General"
+        case .all: return LanguageManager.localizedString("All")
+        case .workouts: return LanguageManager.localizedString("Workouts")
+        case .nutrition: return LanguageManager.localizedString("Nutrition")
+        case .account: return LanguageManager.localizedString("Account")
+        case .subscription: return LanguageManager.localizedString("Subscription")
+        case .technical: return LanguageManager.localizedString("Technical")
+        case .general: return LanguageManager.localizedString("General")
         }
     }
     

@@ -20,10 +20,10 @@ struct ReferralData: Identifiable, Codable {
         
         var displayName: String {
             switch self {
-            case .pending: return "Pending"
-            case .registered: return "Signed Up"
-            case .subscribed: return "Subscribed"
-            case .expired: return "Expired"
+            case .pending: return LanguageManager.localizedString("Pending")
+            case .registered: return LanguageManager.localizedString("Signed Up")
+            case .subscribed: return LanguageManager.localizedString("Subscribed")
+            case .expired: return LanguageManager.localizedString("Expired")
             }
         }
         
@@ -53,9 +53,9 @@ struct ReferralReward: Identifiable, Codable {
         
         var displayName: String {
             switch self {
-            case .oneMonthFree: return "1 Month Free"
-            case .threeMonthsFree: return "3 Months Free"
-            case .bonus: return "Bonus Reward"
+            case .oneMonthFree: return LanguageManager.localizedString("1 Month Free")
+            case .threeMonthsFree: return LanguageManager.localizedString("3 Months Free")
+            case .bonus: return LanguageManager.localizedString("Bonus Reward")
             }
         }
         

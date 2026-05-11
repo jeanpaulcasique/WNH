@@ -45,7 +45,7 @@ struct SubscriptionPlansSection: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .black))
                         .scaleEffect(0.8)
                 } else {
-                    Text("Subscribe to \(plan.name)")
+                    Text("\(LanguageManager.localizedString("Subscribe to")) \(LanguageManager.localizedString(plan.name))")
                         .font(.system(size: 18, weight: .semibold))
                 }
             }

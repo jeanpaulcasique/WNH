@@ -214,7 +214,7 @@ struct LocationMenuView: View {
             
             // Subtexto descriptivo opcional
             if let subtitle = location.subtitle {
-                Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                     .foregroundColor(.gray)
                     .font(.caption)
                     .opacity(0.8)

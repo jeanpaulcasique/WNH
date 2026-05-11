@@ -21,6 +21,8 @@ struct DailySteps: Codable, Identifiable {
     var dayOfWeek: String {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE"
+        let languageCode = UserDefaults.standard.string(forKey: LanguageManager.storageKey) ?? AppLanguage.english.rawValue
+        formatter.locale = Locale(identifier: languageCode == AppLanguage.spanish.rawValue ? "es_ES" : "en_US")
         return formatter.string(from: date)
     }
     

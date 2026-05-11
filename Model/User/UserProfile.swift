@@ -121,9 +121,12 @@ struct UserProfile: Codable {
         heightCm = defaults.value(forKey: "selectedHeightCm") as? Int
         heightFt = defaults.value(forKey: "selectedHeightFt") as? Int
         heightInch = defaults.value(forKey: "selectedHeightInch") as? Int
-        weightKg = defaults.object(forKey: "selectedWeightKg") as? Double ?? 70.0
+        // ✅ CORREGIDO: Leer como Double nativo para evitar fallos de casteo (NSNumber)
+        let storedWeight = defaults.double(forKey: "selectedWeightKg")
+        weightKg = storedWeight > 0 ? storedWeight : 70.0
         unitPreference = WeightUnit(rawValue: defaults.string(forKey: "weightUnitPreference") ?? "kg") ?? .kg
-        targetWeightKg = defaults.object(forKey: "selectedTargetWeight") as? Double ?? 65.0
+        let storedTarget = defaults.double(forKey: "selectedTargetWeight")
+        targetWeightKg = storedTarget > 0 ? storedTarget : 65.0
         birthYear = defaults.string(forKey: "selectedBirthYear") ?? "Not Set"
         
         // Goals & Preferences

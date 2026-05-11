@@ -38,7 +38,7 @@ struct RateAppView: View {
                 }
             }
         }
-        .navigationTitle("Rate Our App")
+        .navigationTitle(LanguageManager.localizedString("Rate Our App"))
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .navigationBarItems(leading: backButton)
@@ -164,7 +164,7 @@ private extension RateAppView {
             
             // Rating feedback text
             if selectedRating > 0 {
-                Text(ratingFeedbackText)
+                Text(LanguageManager.localizedString(ratingFeedbackText))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(ratingFeedbackColor)
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -343,7 +343,7 @@ struct BenefitRow: View {
                 .foregroundColor(color)
                 .frame(width: 30)
             
-            Text(text)
+            Text(LanguageManager.localizedString(text))
                 .font(.system(size: 15))
                 .foregroundColor(.appWhite.opacity(0.8))
             
@@ -377,13 +377,13 @@ struct ThankYouView: View {
             }
             
             VStack(spacing: 16) {
-                Text("Thank You! 🙏")
+                Text(LanguageManager.localizedString("Thank You! 🙏"))
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.appYellow)
                     .opacity(animateText ? 1.0 : 0.0)
                     .animation(.easeInOut(duration: 0.8).delay(0.3), value: animateText)
                 
-                Text("Your feedback helps us create an even better fitness experience for everyone!")
+                Text(LanguageManager.localizedString("Your feedback helps us create an even better fitness experience for everyone!"))
                     .font(.system(size: 16))
                     .foregroundColor(.appWhite.opacity(0.8))
                     .multilineTextAlignment(.center)

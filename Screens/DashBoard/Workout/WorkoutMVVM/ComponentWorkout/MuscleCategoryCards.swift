@@ -13,7 +13,7 @@ struct MuscleCategoryCards: View {
                         onMuscleSelected(group)
                     }) {
                         HStack(spacing: 6) {
-                            Text(group.name)
+                            Text(LanguageManager.localizedString(group.name))
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(.appWhite)
                         }

@@ -1,5 +1,331 @@
 import Foundation
 import SwiftUI
+import UIKit
+import FirebaseAuth
+import FirebaseCore
+import FirebaseFirestore
+#if canImport(GoogleSignIn)
+import GoogleSignIn
+#endif
+#if canImport(FBSDKLoginKit)
+import FBSDKLoginKit
+#endif
+
+final class FirebaseAuthService {
+    enum AuthServiceError: LocalizedError {
+        case firebaseNotConfigured
+        case sdkNotInstalled(provider: String)
+        case missingClientID
+        case couldNotGetPresentingViewController
+        case cancelledByUser
+
+        var errorDescription: String? {
+            switch self {
+            case .firebaseNotConfigured:
+                return "Firebase is not configured. Add GoogleService-Info.plist to the app target."
+            case .sdkNotInstalled(let provider):
+                return "\(provider) SDK is not installed. The app will continue running without that provider."
+            case .missingClientID:
+                return "Missing Firebase clientID for Google Sign-In."
+            case .couldNotGetPresentingViewController:
+                return "Could not present authentication screen."
+            case .cancelledByUser:
+                return "Sign in was cancelled."
+            }
+        }
+    }
+
+    static let shared = FirebaseAuthService()
+
+    private var authStateListener: AuthStateDidChangeListenerHandle?
+    private init() {}
+
+    var isConfigured: Bool {
+        FirebaseApp.app() != nil
+    }
+
+    var currentUser: User? {
+        guard isConfigured else { return nil }
+        return Auth.auth().currentUser
+    }
+
+    func startAuthStateListener(
+        onSignedIn: @escaping (User) -> Void,
+        onSignedOut: @escaping () -> Void
+    ) {
+        guard isConfigured else {
+            onSignedOut()
+            return
+        }
+        stopAuthStateListener()
+        authStateListener = Auth.auth().addStateDidChangeListener { _, user in
+            if let user {
+                onSignedIn(user)
+            } else {
+                onSignedOut()
+            }
+        }
+    }
+
+    func stopAuthStateListener() {
+        guard let authStateListener else { return }
+        Auth.auth().removeStateDidChangeListener(authStateListener)
+        self.authStateListener = nil
+    }
+
+    func register(email: String, password: String) async throws -> User {
+        guard isConfigured else {
+            throw AuthServiceError.firebaseNotConfigured
+        }
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User, Error>) in
+            Auth.auth().createUser(withEmail: email, password: password) { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let user = result?.user else {
+                    continuation.resume(throwing: NSError(
+                        domain: "FirebaseAuthService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Account could not be created."]
+                    ))
+                    return
+                }
+
+                continuation.resume(returning: user)
+            }
+        }
+    }
+
+    func signIn(email: String, password: String) async throws -> User {
+        guard isConfigured else {
+            throw AuthServiceError.firebaseNotConfigured
+        }
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User, Error>) in
+            Auth.auth().signIn(withEmail: email, password: password) { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let user = result?.user else {
+                    continuation.resume(throwing: NSError(
+                        domain: "FirebaseAuthService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Sign in failed."]
+                    ))
+                    return
+                }
+
+                continuation.resume(returning: user)
+            }
+        }
+    }
+
+    func sendPasswordReset(email: String) async throws {
+        guard isConfigured else {
+            throw AuthServiceError.firebaseNotConfigured
+        }
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            Auth.auth().sendPasswordReset(withEmail: email) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                continuation.resume(returning: ())
+            }
+        }
+    }
+
+    func signInWithApple(idToken: String, nonce: String) async throws -> User {
+        guard isConfigured else {
+            throw AuthServiceError.firebaseNotConfigured
+        }
+
+        let credential = OAuthProvider.credential(
+            providerID: .apple,
+            idToken: idToken,
+            rawNonce: nonce
+        )
+
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User, Error>) in
+            Auth.auth().signIn(with: credential) { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let user = result?.user else {
+                    continuation.resume(throwing: NSError(
+                        domain: "FirebaseAuthService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Apple sign in failed."]
+                    ))
+                    return
+                }
+
+                continuation.resume(returning: user)
+            }
+        }
+    }
+
+    func signInWithGoogle() async throws -> User {
+        guard isConfigured else {
+            throw AuthServiceError.firebaseNotConfigured
+        }
+
+        #if canImport(GoogleSignIn)
+        guard let clientID = FirebaseApp.app()?.options.clientID else {
+            throw AuthServiceError.missingClientID
+        }
+        guard let presenting = topViewController() else {
+            throw AuthServiceError.couldNotGetPresentingViewController
+        }
+
+        GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+        let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenting)
+
+        guard let idTokenString = result.user.idToken?.tokenString else {
+            throw NSError(
+                domain: "FirebaseAuthService",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "Could not obtain Google token."]
+            )
+        }
+
+        let credential = GoogleAuthProvider.credential(
+            withIDToken: idTokenString,
+            accessToken: result.user.accessToken.tokenString
+        )
+
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User, Error>) in
+            Auth.auth().signIn(with: credential) { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let user = result?.user else {
+                    continuation.resume(throwing: NSError(
+                        domain: "FirebaseAuthService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Google sign in failed."]
+                    ))
+                    return
+                }
+                continuation.resume(returning: user)
+            }
+        }
+        #else
+        throw AuthServiceError.sdkNotInstalled(provider: "Google")
+        #endif
+    }
+
+    func signInWithFacebook() async throws -> User {
+        guard isConfigured else {
+            throw AuthServiceError.firebaseNotConfigured
+        }
+
+        #if canImport(FBSDKLoginKit)
+        guard let presenting = topViewController() else {
+            throw AuthServiceError.couldNotGetPresentingViewController
+        }
+
+        let manager = LoginManager()
+        let token = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
+            manager.logIn(permissions: ["public_profile", "email"], from: presenting) { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                if let result = result, result.isCancelled {
+                    continuation.resume(throwing: AuthServiceError.cancelledByUser)
+                    return
+                }
+
+                guard let tokenString = AccessToken.current?.tokenString else {
+                    continuation.resume(throwing: NSError(
+                        domain: "FirebaseAuthService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Could not obtain Facebook token."]
+                    ))
+                    return
+                }
+                continuation.resume(returning: tokenString)
+            }
+        }
+
+        let credential = FacebookAuthProvider.credential(withAccessToken: token)
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<User, Error>) in
+            Auth.auth().signIn(with: credential) { result, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+
+                guard let user = result?.user else {
+                    continuation.resume(throwing: NSError(
+                        domain: "FirebaseAuthService",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: "Facebook sign in failed."]
+                    ))
+                    return
+                }
+                continuation.resume(returning: user)
+            }
+        }
+        #else
+        throw AuthServiceError.sdkNotInstalled(provider: "Facebook")
+        #endif
+    }
+
+    func signOut() throws {
+        guard isConfigured else { return }
+        try Auth.auth().signOut()
+    }
+
+    private func topViewController(
+        base: UIViewController? = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first(where: { $0.isKeyWindow })?
+            .rootViewController
+    ) -> UIViewController? {
+        if let nav = base as? UINavigationController {
+            return topViewController(base: nav.visibleViewController)
+        }
+        if let tab = base as? UITabBarController {
+            return topViewController(base: tab.selectedViewController)
+        }
+        if let presented = base?.presentedViewController {
+            return topViewController(base: presented)
+        }
+        return base
+    }
+}
+
+final class FirestoreUserProfileService {
+    static let shared = FirestoreUserProfileService()
+    private init() {}
+
+    func upsertBasicProfile(user: User) async throws {
+        guard FirebaseApp.app() != nil else { return }
+
+        let db = Firestore.firestore()
+        let payload: [String: Any] = [
+            "uid": user.uid,
+            "email": user.email ?? "",
+            "displayName": user.displayName ?? "",
+            "providerIDs": user.providerData.map { $0.providerID },
+            "lastLoginAt": FieldValue.serverTimestamp(),
+            "updatedAt": FieldValue.serverTimestamp()
+        ]
+
+        try await db.collection("users").document(user.uid).setData(payload, merge: true)
+    }
+}
 
 /// Gestiona el estado de sesión del usuario y el progreso de onboarding usando UserDefaults.
 /// Métodos públicos: login(), logout(), completeOnboarding(), resetUserData()
@@ -12,6 +338,7 @@ final class UserSessionManager: ObservableObject {
     private let isLoggedInKey = "isLoggedIn"
     private let hasCompletedOnboardingKey = "hasCompletedOnboarding"
     private let isFirstTimeKey = "isFirstTime"
+    private let authService = FirebaseAuthService.shared
     
     init() {
         // Registrar valores por defecto
@@ -25,20 +352,30 @@ final class UserSessionManager: ObservableObject {
         self.isLoggedIn = UserDefaults.standard.bool(forKey: isLoggedInKey)
         self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: hasCompletedOnboardingKey)
         self.isFirstTime = UserDefaults.standard.bool(forKey: isFirstTimeKey)
+
+        syncAuthStateFromFirebase()
+        startAuthListener()
+    }
+
+    deinit {
+        authService.stopAuthStateListener()
     }
     
     // MARK: - Public Methods
     
     /// Marca al usuario como conectado.
     func login() {
-        UserDefaults.standard.set(true, forKey: isLoggedInKey)
-        isLoggedIn = true
+        persistLoggedInState(true)
     }
     
     /// Cierra la sesión del usuario pero mantiene el progreso de onboarding.
     func logout() {
-        UserDefaults.standard.set(false, forKey: isLoggedInKey)
-        isLoggedIn = false
+        do {
+            try authService.signOut()
+        } catch {
+            print("Error cerrando sesion Firebase: \(error.localizedDescription)")
+        }
+        persistLoggedInState(false)
         // NO borramos hasCompletedOnboarding para que mantenga el progreso
         
         // Limpiar datos de autorización de HealthKit al hacer logout
@@ -70,6 +407,17 @@ final class UserSessionManager: ObservableObject {
         // Limpiar datos de autorización de HealthKit
         let healthKitPersistence = HealthKitPersistenceService()
         healthKitPersistence.clearAuthorizationData()
+    }
+
+    /// Actualiza estado local al autenticar con backend.
+    func handleSuccessfulAuthentication(isNewUser: Bool) {
+        persistLoggedInState(true)
+        if isNewUser {
+            UserDefaults.standard.set(false, forKey: hasCompletedOnboardingKey)
+            UserDefaults.standard.set(true, forKey: isFirstTimeKey)
+            hasCompletedOnboarding = false
+            isFirstTime = true
+        }
     }
     
     /// Resetea solo el onboarding (para forzar que vuelva a pasar por el flujo).
@@ -109,6 +457,34 @@ final class UserSessionManager: ObservableObject {
         userDataKeys.forEach { key in
             UserDefaults.standard.removeObject(forKey: key)
         }
+    }
+
+    private func startAuthListener() {
+        authService.startAuthStateListener(
+            onSignedIn: { [weak self] _ in
+                DispatchQueue.main.async {
+                    self?.persistLoggedInState(true)
+                }
+            },
+            onSignedOut: { [weak self] in
+                DispatchQueue.main.async {
+                    self?.persistLoggedInState(false)
+                }
+            }
+        )
+    }
+
+    private func syncAuthStateFromFirebase() {
+        if authService.currentUser != nil {
+            persistLoggedInState(true)
+        } else {
+            persistLoggedInState(false)
+        }
+    }
+
+    private func persistLoggedInState(_ value: Bool) {
+        UserDefaults.standard.set(value, forKey: isLoggedInKey)
+        isLoggedIn = value
     }
     
     // MARK: - Debug Helpers

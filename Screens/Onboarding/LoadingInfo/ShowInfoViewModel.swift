@@ -18,6 +18,53 @@ struct NutritionSummary {
     let successProbability: Double
 }
 
+// MARK: - New Data Structures for Modern UI
+struct WhatWeDoItem: Identifiable {
+    let id = UUID()
+    let title: String
+    let description: String
+    let icon: String
+    let color: Color
+}
+
+struct WaterBreakdownItem: Identifiable {
+    let id = UUID()
+    let label: String
+    let value: String
+}
+
+struct WaterAnalysis {
+    let recommendedAmount: String
+    let breakdown: [WaterBreakdownItem]
+    let benefits: [String]
+}
+
+struct ForecastData {
+    let targetWeight: Double
+    let estimatedDays: Int
+    let weeklyChange: Double
+    let successRate: Double
+    let dailyCalories: Double
+    let protein: Double
+    let carbs: Double
+    let fat: Double
+}
+
+struct ActionPlanItem: Identifiable {
+    let id = UUID()
+    let stepNumber: Int
+    let title: String
+    let description: String
+    let color: Color
+}
+
+enum InfoSection {
+    case whatWeWillDo
+    case waterAnalysis
+    case forecast
+    case actionPlan
+}
+
 // MARK: - Enhanced ShowInfoViewModel
 @MainActor
 class ShowInfoViewModel: ObservableObject {
@@ -39,6 +86,25 @@ class ShowInfoViewModel: ObservableObject {
         goalAchievement: "3-6 months",
         scienceNote: "Based on your profile and goals"
     )
+    
+    // MARK: - New Published Properties for Modern UI
+    @Published var whatWeWillDoItems: [WhatWeDoItem] = []
+    @Published var waterAnalysis: WaterAnalysis = WaterAnalysis(
+        recommendedAmount: "2.5 L",
+        breakdown: [],
+        benefits: []
+    )
+    @Published var forecastData: ForecastData = ForecastData(
+        targetWeight: 70.0,
+        estimatedDays: 60,
+        weeklyChange: -0.5,
+        successRate: 0.75,
+        dailyCalories: 2000,
+        protein: 150,
+        carbs: 200,
+        fat: 70
+    )
+    @Published var actionPlanItems: [ActionPlanItem] = []
     
     // MARK: - Computed Properties for UI Compatibility
     var dailyCalories: Double {
@@ -88,7 +154,9 @@ class ShowInfoViewModel: ObservableObject {
         print("🔬 SHOWINFO - Inicializando ViewModel...")
         print("   • Peso: \(userProfile.weightKg) kg")
         print("   • Altura: \(userProfile.heightCm ?? 0) cm")
-        print("   • Meta: \(userProfile.goal)")
+        // ✅ SEGURO: Validar goal antes de imprimir para evitar crash
+        let safeGoal = userProfile.goal.isEmpty ? "Not Set" : userProfile.goal
+        print("   • Meta: \(safeGoal)")
         
         // ✅ CORREGIDO: Iniciar animación inmediatamente
         startPulsingAnimation()
@@ -114,28 +182,64 @@ class ShowInfoViewModel: ObservableObject {
     
     // MARK: - Validation Methods
     private func validateUserProfile() -> Bool {
-        let isValid = userProfile.weightKg > 0 && 
-                     userProfile.heightCm != nil && 
-                     userProfile.heightCm! > 0 &&
-                     !userProfile.goal.isEmpty
-        
-        if !isValid {
-            print("❌ SHOWINFO - userProfile inválido:")
-            print("   • Peso: \(userProfile.weightKg)")
-            print("   • Altura: \(userProfile.heightCm ?? -1)")
-            print("   • Meta: '\(userProfile.goal)'")
+        // ✅ SEGURO: Validación defensiva que evita accesos directos que puedan causar crash
+        // Validar peso primero (más seguro)
+        guard userProfile.weightKg > 0 else {
+            print("❌ SHOWINFO - Peso inválido: \(userProfile.weightKg)")
+            return false
         }
         
-        return isValid
+        // Validar altura de forma segura
+        guard let height = userProfile.heightCm, height > 0 else {
+            print("❌ SHOWINFO - Altura inválida")
+            return false
+        }
+        
+        // ✅ SEGURO: Validar goal de forma defensiva
+        // Obtener goal en una variable local primero
+        let goalString = userProfile.goal
+        
+        // Validar que goal no esté vacío y sea válido
+        guard !goalString.isEmpty,
+              goalString != "Not Set",
+              goalString.count > 0 else {
+            print("❌ SHOWINFO - Goal inválido o vacío")
+            return false
+        }
+        
+        return true
     }
     
     func calculateResults() {
         print("🔬 SHOWINFO - Calculando resultados...")
         loadUserData()
         
-        // Crear ResultSoon de manera segura
-        let resultSoon = ResultSoon(userProfile: userProfile)
-        let scientificResults = resultSoon.calculateScientificResults()
+        // ✅ SEGURO: Validar userProfile ANTES de crear ResultSoon
+        // Esto previene el crash al acceder a propiedades inválidas
+        guard validateUserProfile() else {
+            print("❌ SHOWINFO - userProfile inválido, usando datos de fallback")
+            createFallbackData()
+            return
+        }
+        
+        // Validar que goal es accesible antes de continuar
+        let testGoal = userProfile.goal
+        if testGoal.isEmpty || testGoal == "Not Set" {
+            print("⚠️ SHOWINFO - Goal inválido, usando datos de fallback")
+            createFallbackData()
+            return
+        }
+        
+        // Iniciar animación de carga
+        startAnalysisTimer()
+        startProgressTimer()
+        
+        // ✅ SEGURO: Crear ResultSoon con validaciones previas
+        // Usar autoreleasepool para gestionar memoria de forma segura
+        let scientificResults: ScientificResults = autoreleasepool {
+            let resultSoon = ResultSoon(userProfile: userProfile)
+            return resultSoon.calculateScientificResults()
+        }
         
         // Generar reporte nutricional
         let nutritionReport = nutritionCalculator.generateNutritionReport()
@@ -154,6 +258,12 @@ class ShowInfoViewModel: ObservableObject {
         // Actualizar UI
         self.nutritionSummary = summary
         self.scientificResults = scientificResults
+        
+        // Calcular datos para la nueva UI
+        calculateWhatWeWillDoItems()
+        calculateWaterAnalysis()
+        calculateForecastData()
+        calculateActionPlanItems()
         
         print("✅ SHOWINFO - Resultados calculados exitosamente")
     }
@@ -213,12 +323,29 @@ class ShowInfoViewModel: ObservableObject {
     private func completeAnalysis() {
         analysisTimer?.invalidate()
         analysisTimer = nil
+        progressTimer?.invalidate()
+        progressTimer = nil
+        
+        // Asegurar progreso al 100%
+        progress = 1.0
         
         // ✅ CORREGIDO: Asegurar que tenemos datos válidos antes de mostrar resultados
         if nutritionSummary == nil || scientificResults == nil {
             print("⚠️ SHOWINFO - Datos no disponibles, creando fallback...")
             createFallbackData()
         }
+        
+        // Calcular datos para la nueva UI si no se han calculado
+        if whatWeWillDoItems.isEmpty {
+            calculateWhatWeWillDoItems()
+        }
+        if waterAnalysis.breakdown.isEmpty {
+            calculateWaterAnalysis()
+        }
+        if actionPlanItems.isEmpty {
+            calculateActionPlanItems()
+        }
+        calculateForecastData()
         
         // Show results with animation
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
@@ -273,6 +400,12 @@ class ShowInfoViewModel: ObservableObject {
         self.nutritionSummary = fallbackSummary
         self.scientificResults = fallbackResults
         self.calculateSimpleTimeline()
+        
+        // Calcular datos para la nueva UI
+        calculateWhatWeWillDoItems()
+        calculateWaterAnalysis()
+        calculateForecastData()
+        calculateActionPlanItems()
         
         print("✅ SHOWINFO - Datos de fallback creados exitosamente")
     }
@@ -431,6 +564,326 @@ class ShowInfoViewModel: ObservableObject {
         analysisTimer = nil
         progressTimer?.invalidate()
         progressTimer = nil
+    }
+    
+    // MARK: - New Calculation Methods for Modern UI
+    
+    private func calculateWhatWeWillDoItems() {
+        let goal = userProfile.goal.lowercased()
+        let isWeightLoss = goal.contains("perder") || goal.contains("lose") || goal.contains("adelgazar")
+        let isWeightGain = goal.contains("ganar") || goal.contains("gain") || goal.contains("musculo")
+        
+        var items: [WhatWeDoItem] = []
+        
+        if isWeightLoss {
+            items = [
+                WhatWeDoItem(
+                    title: "Plan de Nutrición Personalizado",
+                    description: "Creamos un plan de comidas basado en tu objetivo de pérdida de peso, tipo de dieta y preferencias",
+                    icon: "fork.knife",
+                    color: .orange
+                ),
+                WhatWeDoItem(
+                    title: "Rutinas de Entrenamiento",
+                    description: "Ejercicios adaptados a tu nivel, ubicación y equipamiento disponible",
+                    icon: "dumbbell.fill",
+                    color: .appYellow
+                ),
+                WhatWeDoItem(
+                    title: "Seguimiento de Progreso",
+                    description: "Monitoreo constante de tu peso, medidas y logros para mantenerte motivado",
+                    icon: "chart.line.uptrend.xyaxis",
+                    color: .green
+                ),
+                WhatWeDoItem(
+                    title: "Análisis de Agua Personalizado",
+                    description: "Cálculo preciso de tu ingesta diaria de agua basado en tu peso, actividad y objetivos",
+                    icon: "drop.fill",
+                    color: .blue
+                )
+            ]
+        } else if isWeightGain {
+            items = [
+                WhatWeDoItem(
+                    title: "Plan de Nutrición Hipercalórico",
+                    description: "Aumento controlado de calorías para ganancia de masa muscular magra",
+                    icon: "fork.knife",
+                    color: .orange
+                ),
+                WhatWeDoItem(
+                    title: "Rutinas de Fuerza",
+                    description: "Entrenamientos enfocados en hipertrofia y desarrollo muscular",
+                    icon: "dumbbell.fill",
+                    color: .appYellow
+                ),
+                WhatWeDoItem(
+                    title: "Seguimiento de Masa Muscular",
+                    description: "Monitoreo de ganancia de músculo y reducción de grasa corporal",
+                    icon: "chart.line.uptrend.xyaxis",
+                    color: .green
+                ),
+                WhatWeDoItem(
+                    title: "Hidratación Optimizada",
+                    description: "Plan de hidratación para maximizar la recuperación y el crecimiento muscular",
+                    icon: "drop.fill",
+                    color: .blue
+                )
+            ]
+        } else {
+            items = [
+                WhatWeDoItem(
+                    title: "Plan de Nutrición Balanceado",
+                    description: "Mantenimiento de peso con nutrición equilibrada y saludable",
+                    icon: "fork.knife",
+                    color: .orange
+                ),
+                WhatWeDoItem(
+                    title: "Rutinas de Mantenimiento",
+                    description: "Ejercicios para mantener tu condición física actual",
+                    icon: "dumbbell.fill",
+                    color: .appYellow
+                ),
+                WhatWeDoItem(
+                    title: "Monitoreo Continuo",
+                    description: "Seguimiento para mantenerte en tu peso ideal",
+                    icon: "chart.line.uptrend.xyaxis",
+                    color: .green
+                ),
+                WhatWeDoItem(
+                    title: "Hidratación Saludable",
+                    description: "Recomendaciones de agua para mantener tu salud óptima",
+                    icon: "drop.fill",
+                    color: .blue
+                )
+            ]
+        }
+        
+        self.whatWeWillDoItems = items
+    }
+    
+    private func calculateWaterAnalysis() {
+        let waterString = calculateWaterIntake()
+        let waterValue = extractWaterValue(from: waterString)
+        
+        // Calcular desglose
+        let baseWater = userProfile.weightKg * 0.035 // Base: 35ml por kg
+        let age = userProfile.age ?? 30
+        let ageMultiplier = getAgeMultiplierForWater(age: age)
+        let activityMultiplier = getActivityMultiplierForWater(activity: userProfile.levelActivity)
+        let workoutBonus = getWorkoutBonusForWater(workoutLevel: userProfile.workoutLevel)
+        
+        let adjustedWater = baseWater * ageMultiplier * activityMultiplier + workoutBonus
+        
+        var breakdown: [WaterBreakdownItem] = [
+            WaterBreakdownItem(
+                label: "Base (35ml por kg)",
+                value: String(format: "%.1f L", baseWater)
+            ),
+            WaterBreakdownItem(
+                label: "Ajuste por edad",
+                value: String(format: "%.0f%%", ageMultiplier * 100)
+            ),
+            WaterBreakdownItem(
+                label: "Ajuste por actividad",
+                value: String(format: "%.0f%%", activityMultiplier * 100)
+            )
+        ]
+        
+        if workoutBonus > 0 {
+            breakdown.append(
+                WaterBreakdownItem(
+                    label: "Bonus entrenamiento",
+                    value: String(format: "+%.1f L", workoutBonus)
+                )
+            )
+        }
+        
+        // Beneficios personalizados
+        let benefits = generateWaterBenefits(for: userProfile)
+        
+        self.waterAnalysis = WaterAnalysis(
+            recommendedAmount: waterString,
+            breakdown: breakdown,
+            benefits: benefits
+        )
+    }
+    
+    private func calculateForecastData() {
+        guard let scientificResults = scientificResults,
+              let nutritionSummary = nutritionSummary else {
+            return
+        }
+        
+        self.forecastData = ForecastData(
+            targetWeight: scientificResults.targetWeight,
+            estimatedDays: scientificResults.adjustedTimeToTarget,
+            weeklyChange: scientificResults.weeklyWeightChange,
+            successRate: scientificResults.successProbability,
+            dailyCalories: nutritionSummary.dailyCalories,
+            protein: nutritionSummary.protein,
+            carbs: nutritionSummary.carbs,
+            fat: nutritionSummary.fat
+        )
+    }
+    
+    private func calculateActionPlanItems() {
+        let goal = userProfile.goal.lowercased()
+        var items: [ActionPlanItem] = []
+        
+        if goal.contains("perder") || goal.contains("lose") || goal.contains("adelgazar") {
+            items = [
+                ActionPlanItem(
+                    stepNumber: 1,
+                    title: "Seguir tu plan de calorías",
+                    description: "Mantén un déficit calórico de \(Int(forecastData.dailyCalories)) kcal diarias",
+                    color: .orange
+                ),
+                ActionPlanItem(
+                    stepNumber: 2,
+                    title: "Beber \(waterAnalysis.recommendedAmount) de agua",
+                    description: "Hidratación adecuada acelera el metabolismo y reduce el apetito",
+                    color: .blue
+                ),
+                ActionPlanItem(
+                    stepNumber: 3,
+                    title: "Entrenar regularmente",
+                    description: "Completa tus rutinas \(userProfile.workoutLevel) para maximizar la quema de grasa",
+                    color: .appYellow
+                ),
+                ActionPlanItem(
+                    stepNumber: 4,
+                    title: "Monitorear tu progreso",
+                    description: "Registra tu peso semanalmente para ajustar el plan según sea necesario",
+                    color: .green
+                )
+            ]
+        } else if goal.contains("ganar") || goal.contains("gain") || goal.contains("musculo") {
+            items = [
+                ActionPlanItem(
+                    stepNumber: 1,
+                    title: "Consumir \(Int(forecastData.dailyCalories)) kcal diarias",
+                    description: "Superávit calórico controlado para ganancia de masa muscular",
+                    color: .orange
+                ),
+                ActionPlanItem(
+                    stepNumber: 2,
+                    title: "Priorizar proteína",
+                    description: "Consume \(Int(forecastData.protein))g de proteína diarios para crecimiento muscular",
+                    color: .blue
+                ),
+                ActionPlanItem(
+                    stepNumber: 3,
+                    title: "Entrenamiento de fuerza",
+                    description: "Rutinas enfocadas en hipertrofia con progresión constante",
+                    color: .appYellow
+                ),
+                ActionPlanItem(
+                    stepNumber: 4,
+                    title: "Descanso y recuperación",
+                    description: "Duerme 7-9 horas y mantén \(waterAnalysis.recommendedAmount) de agua para recuperación óptima",
+                    color: .green
+                )
+            ]
+        } else {
+            items = [
+                ActionPlanItem(
+                    stepNumber: 1,
+                    title: "Mantener balance calórico",
+                    description: "Consume \(Int(forecastData.dailyCalories)) kcal para mantener tu peso actual",
+                    color: .orange
+                ),
+                ActionPlanItem(
+                    stepNumber: 2,
+                    title: "Ejercicio regular",
+                    description: "Mantén actividad física constante para preservar masa muscular",
+                    color: .appYellow
+                ),
+                ActionPlanItem(
+                    stepNumber: 3,
+                    title: "Hidratación adecuada",
+                    description: "Bebe \(waterAnalysis.recommendedAmount) de agua diariamente",
+                    color: .blue
+                ),
+                ActionPlanItem(
+                    stepNumber: 4,
+                    title: "Monitoreo periódico",
+                    description: "Revisa tu peso semanalmente para ajustes menores si es necesario",
+                    color: .green
+                )
+            ]
+        }
+        
+        self.actionPlanItems = items
+    }
+    
+    // MARK: - Helper Methods for Water Analysis
+    
+    private func extractWaterValue(from waterString: String) -> Double {
+        let components = waterString.components(separatedBy: " ")
+        if let firstComponent = components.first, let value = Double(firstComponent) {
+            return value
+        }
+        return 2.5 // Default
+    }
+    
+    private func getAgeMultiplierForWater(age: Int) -> Double {
+        switch age {
+        case 18..<30:
+            return 1.0
+        case 30..<45:
+            return 0.95
+        case 45..<60:
+            return 0.9
+        default:
+            return 0.85
+        }
+    }
+    
+    private func getActivityMultiplierForWater(activity: String) -> Double {
+        let activityLower = activity.lowercased()
+        if activityLower.contains("sedentario") || activityLower.contains("sedentary") {
+            return 1.0
+        } else if activityLower.contains("ligero") || activityLower.contains("lightly") {
+            return 1.1
+        } else if activityLower.contains("moderado") || activityLower.contains("moderate") {
+            return 1.2
+        } else {
+            return 1.3
+        }
+    }
+    
+    private func getWorkoutBonusForWater(workoutLevel: String) -> Double {
+        let workoutLower = workoutLevel.lowercased()
+        if workoutLower.contains("intensivo") || workoutLower.contains("intense") {
+            return 0.5
+        } else if workoutLower.contains("intermedio") || workoutLower.contains("moderate") {
+            return 0.3
+        } else {
+            return 0.2
+        }
+    }
+    
+    private func generateWaterBenefits(for profile: UserProfile) -> [String] {
+        var benefits: [String] = []
+        let goal = profile.goal.lowercased()
+        
+        if goal.contains("perder") || goal.contains("lose") {
+            benefits.append("Acelera el metabolismo hasta en un 30%")
+            benefits.append("Reduce el apetito y ayuda a controlar calorías")
+            benefits.append("Mejora la quema de grasa durante el ejercicio")
+        } else if goal.contains("ganar") || goal.contains("gain") {
+            benefits.append("Optimiza la síntesis de proteína muscular")
+            benefits.append("Mejora la recuperación post-entrenamiento")
+            benefits.append("Mantiene el volumen celular para crecimiento")
+        } else {
+            benefits.append("Mantiene funciones metabólicas óptimas")
+            benefits.append("Mejora la digestión y absorción de nutrientes")
+            benefits.append("Regula la temperatura corporal durante ejercicio")
+        }
+        
+        benefits.append("Elimina toxinas y mejora la salud general")
+        
+        return benefits
     }
     
     // MARK: - Additional Utility Methods

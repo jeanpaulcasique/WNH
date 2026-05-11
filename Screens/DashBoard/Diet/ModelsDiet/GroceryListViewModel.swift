@@ -173,6 +173,10 @@ class GroceryListViewModel: ObservableObject {
         case aceites = "Oils & Liquids"
         case condimentos = "Condiments & Spices"
         case otros = "Others"
+
+        var displayName: String {
+            LanguageManager.localizedString(rawValue)
+        }
         
         var color: Color {
             switch self {

@@ -256,7 +256,7 @@ struct FAQCard: View {
                             .foregroundColor(faq.category.color)
                             .frame(width: 20)
                         
-                        Text(faq.question)
+                        Text(LanguageManager.localizedString(faq.question))
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundColor(.appWhite)
                             .multilineTextAlignment(.leading)
@@ -280,7 +280,7 @@ struct FAQCard: View {
                     Divider()
                         .background(Color.appYellow.opacity(0.3))
                     
-                    Text(faq.answer)
+                    Text(LanguageManager.localizedString(faq.answer))
                         .font(.system(size: 15))
                         .foregroundColor(.appWhite.opacity(0.9))
                         .lineSpacing(4)
@@ -292,7 +292,7 @@ struct FAQCard: View {
                                 .foregroundColor(.appWhite.opacity(0.6))
                             
                             ForEach(faq.tags, id: \.self) { tag in
-                                Text(tag)
+                                Text(LanguageManager.localizedString(tag))
                                     .font(.system(size: 11))
                                     .foregroundColor(.appYellow)
                                     .padding(.horizontal, 8)
@@ -367,11 +367,11 @@ struct EmptyFAQView: View {
                 .foregroundColor(.appYellow.opacity(0.5))
             
             VStack(spacing: 8) {
-                Text(emptyTitle)
+                Text(LanguageManager.localizedString(emptyTitle))
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.appWhite)
                 
-                Text(emptyMessage)
+                Text(LanguageManager.localizedString(emptyMessage))
                     .font(.system(size: 14))
                     .foregroundColor(.appWhite.opacity(0.7))
                     .multilineTextAlignment(.center)

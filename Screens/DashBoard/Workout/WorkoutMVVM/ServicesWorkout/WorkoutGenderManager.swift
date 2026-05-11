@@ -18,13 +18,13 @@ class WorkoutGenderManager: ObservableObject {
     var workoutWelcomeMessage: String {
         switch userManager.userProfile.genderEnum {
         case .female:
-            return "Ready to build strength and confidence? Let's crush this workout! 💪"
+            return LanguageManager.localizedString("Ready to build strength and confidence? Let's crush this workout! 💪")
         case .male:
-            return "Ready to build power and endurance? Let's dominate this workout! 🔥"
+            return LanguageManager.localizedString("Ready to build power and endurance? Let's dominate this workout! 🔥")
         case .other:
-            return "Ready to build your best self? Let's rock this workout! ⭐"
+            return LanguageManager.localizedString("Ready to build your best self? Let's rock this workout! ⭐")
         case .notSet:
-            return "Ready to get stronger? Let's start this workout! 💪"
+            return LanguageManager.localizedString("Ready to get stronger? Let's start this workout! 💪")
         }
     }
     
@@ -32,11 +32,11 @@ class WorkoutGenderManager: ObservableObject {
     var recommendedIntensity: String {
         switch userManager.userProfile.genderEnum {
         case .female:
-            return "Focus on form and gradual progression"
+            return LanguageManager.localizedString("Focus on form and gradual progression")
         case .male:
-            return "Push your limits while maintaining form"
+            return LanguageManager.localizedString("Push your limits while maintaining form")
         case .other, .notSet:
-            return "Find your comfortable challenge level"
+            return LanguageManager.localizedString("Find your comfortable challenge level")
         }
     }
     

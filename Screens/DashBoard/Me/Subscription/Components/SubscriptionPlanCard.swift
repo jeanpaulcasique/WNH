@@ -25,11 +25,11 @@ struct SubscriptionPlan: Identifiable, Codable {
         case .free:
             return ""
         case .monthly:
-            return "per month"
+            return LanguageManager.localizedString("per month")
         case .threeMonths:
-            return "for 3 months"
+            return LanguageManager.localizedString("for 3 months")
         case .yearly:
-            return "per year"
+            return LanguageManager.localizedString("per year")
         }
     }
 }
@@ -53,7 +53,7 @@ struct SubscriptionPlanCard: View {
                 HStack {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
-                            Text(plan.name)
+                            Text(LanguageManager.localizedString(plan.name))
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.appWhite)
                             
@@ -70,7 +70,7 @@ struct SubscriptionPlanCard: View {
                             Spacer()
                         }
                         
-                        Text(plan.description)
+                        Text(LanguageManager.localizedString(plan.description))
                             .font(.system(size: 14))
                             .foregroundColor(.appWhite.opacity(0.8))
                     }
@@ -122,4 +122,3 @@ struct SubscriptionPlanCard: View {
         .buttonStyle(PlainButtonStyle())
     }
 }
-

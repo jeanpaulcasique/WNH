@@ -160,7 +160,7 @@ struct WaterInfoSheet: View {
                 .font(.system(size: 20, weight: .semibold))
                 .foregroundColor(.cyan)
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.white)
             
@@ -176,11 +176,11 @@ struct WaterInfoSheet: View {
                 .frame(width: 30, height: 30)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.white)
                 
-                Text(highlightedText(description))
+                Text(highlightedText(LanguageManager.localizedString(description)))
                     .font(.system(size: 14))
                     .foregroundColor(.gray)
             }
@@ -199,7 +199,7 @@ struct WaterInfoSheet: View {
                 .foregroundColor(.cyan)
                 .frame(height: 24)
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 13, weight: .medium))
                 .foregroundColor(.white)
                 .multilineTextAlignment(.center)
@@ -218,11 +218,11 @@ struct WaterInfoSheet: View {
                 .frame(width: 30)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.white)
                 
-                Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                     .font(.system(size: 12))
                     .foregroundColor(.gray)
             }

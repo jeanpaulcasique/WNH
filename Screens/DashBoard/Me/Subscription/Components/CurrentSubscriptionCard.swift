@@ -93,7 +93,7 @@ struct CurrentSubscriptionCard: View {
     
     private func subscriptionDetailRow(title: String, value: Any, isDate: Bool = false, isHighlighted: Bool = false) -> some View {
         HStack {
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 14))
                 .foregroundColor(.appWhite.opacity(0.7))
             
@@ -123,5 +123,4 @@ struct CurrentSubscriptionCard: View {
         }
     }
 }
-
 

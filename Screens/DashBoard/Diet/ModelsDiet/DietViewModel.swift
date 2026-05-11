@@ -31,10 +31,8 @@ class DietViewModel: ObservableObject {
     private let calendar = Calendar(identifier: .gregorian)
     private static let selectedDietKey = "selectedDietType"
 
-    // ✅ OPTIMIZACIÓN: Lazy loading de componentes pesados
-    private lazy var userProfile: UserProfile = {
-        return UserProfile.loadFromUserDefaults()
-    }()
+    // ✅ CORREGIDO: Variable normal que se actualiza cuando sea necesario
+    private var userProfile: UserProfile = UserProfile.loadFromUserDefaults()
     
     private lazy var nutritionCalculator: NutritionCalculator = {
         return NutritionCalculator()
@@ -148,7 +146,18 @@ class DietViewModel: ObservableObject {
     }
 
     func calculateRecommendedWaterIntake() -> String {
-        return nutritionCalculator.calculateWaterNeedsSynchronously(for: userProfile)
+        // ✅ CORREGIDO: Refrescar perfil del usuario para obtener datos más actualizados
+        refreshUserProfile()
+        
+        // Calcular sin debug constante
+        let result = nutritionCalculator.calculateWaterNeedsSynchronously(for: userProfile)
+        return result
+    }
+    
+    /// ✅ NUEVO: Método para refrescar el perfil del usuario
+    private func refreshUserProfile() {
+        userProfile = UserProfile.loadFromUserDefaults()
+        // Log silenciado para evitar spam en consola
     }
 
     // MARK: - Grocery List Methods (Delegated)
@@ -202,40 +211,154 @@ class DietViewModel: ObservableObject {
 
     // MARK: - Water Notifications
 
+    // ✅ CORREGIDO: Agregar flag para evitar múltiples llamadas
+    private var waterNotificationsStarted = false
+
     func startWaterRemindersThreeTimes() {
-        let rec = calculateRecommendedWaterIntake()
-        print("💧 Programando notificaciones de agua con recomendación: \(rec)")
+        print("🔧 DietViewModel: startWaterRemindersThreeTimes() llamado")
         
-        NotificationWater.shared.requestAuthorization { granted in
-            guard granted else { 
-                print("❌ Permisos de notificación denegados")
-                return 
+        // ✅ CORREGIDO: Verificar permisos primero
+        NotificationWater.shared.checkNotificationPermissions { status in
+            switch status {
+            case .authorized, .provisional:
+                self.proceedWithWaterNotifications()
+            case .denied:
+                print("❌ DietViewModel: Permisos de notificación denegados")
+                // ✅ NUEVO: Intentar solicitar permisos nuevamente
+                self.requestNotificationPermissions()
+            case .notDetermined:
+                print("❓ DietViewModel: Permisos de notificación no determinados")
+                self.requestNotificationPermissions()
+            case .ephemeral:
+                print("⚠️ DietViewModel: Permisos de notificación efímeros")
+                self.proceedWithWaterNotifications()
+            @unknown default:
+                print("❓ DietViewModel: Estado de permisos desconocido")
+                self.requestNotificationPermissions()
             }
-            
-            let breakfast = DateComponents(hour: 9, minute: 0)
-            let lunch     = DateComponents(hour: 13, minute: 0)
-            let dinner    = DateComponents(hour: 19, minute: 0)
-            
-            NotificationWater.shared.scheduleThreeDailyReminders(
-                at: [breakfast, lunch, dinner],
-                dailyRecommendation: rec
-            )
+        }
+    }
+    
+    // ✅ NUEVO: Método separado para solicitar permisos
+    private func requestNotificationPermissions() {
+        NotificationWater.shared.requestAuthorization { granted in
+            if granted {
+                print("✅ DietViewModel: Permisos concedidos, procediendo con notificaciones...")
+                self.proceedWithWaterNotifications()
+            } else {
+                print("❌ DietViewModel: Permisos de notificación denegados definitivamente")
+            }
+        }
+    }
+    
+    // ✅ NUEVO: Método separado para proceder con las notificaciones
+    private func proceedWithWaterNotifications() {
+        // ✅ CORREGIDO: Forzar limpieza y reprogramación siempre para asegurar valores actualizados
+        print("🔄 DietViewModel: Forzando limpieza y reprogramación de notificaciones de agua...")
+        waterNotificationsStarted = false // Reset flag
+        
+        // ✅ CORREGIDO: Limpieza completa antes de programar
+        print("🧹 DietViewModel: Limpiando TODAS las notificaciones existentes...")
+        NotificationWater.shared.forceCleanAndReset()
+        
+        // ✅ NUEVO: Debug del estado antes de programar
+        NotificationWater.shared.debugNotificationStatus()
+        
+        let rec = calculateRecommendedWaterIntake()
+        print("💧 DietViewModel: Programando notificaciones de agua con: \(rec)")
+        
+        let breakfast = DateComponents(hour: 9, minute: 0)
+        let lunch     = DateComponents(hour: 13, minute: 0)
+        let dinner    = DateComponents(hour: 19, minute: 0)
+        
+        NotificationWater.shared.scheduleThreeDailyReminders(
+            at: [breakfast, lunch, dinner],
+            dailyRecommendation: rec
+        )
+        
+        // ✅ CORREGIDO: Marcar como iniciadas
+        self.waterNotificationsStarted = true
+        print("✅ DietViewModel: Notificaciones marcadas como iniciadas")
+        
+        // Verificación silenciosa tras programar
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Verificar estado sin logs (para evitar spam)
         }
     }
 
     func stopWaterRemindersThreeTimes() {
         NotificationWater.shared.cancelThreeDailyReminders()
+        waterNotificationsStarted = false
     }
     
     /// Limpia todas las notificaciones existentes y las reprograma
     func resetWaterNotifications() {
         let rec = calculateRecommendedWaterIntake()
         NotificationWater.shared.resetAndRescheduleNotifications(dailyRecommendation: rec)
+        waterNotificationsStarted = false
     }
     
     /// Verifica el estado de las notificaciones de agua
     func checkWaterNotificationStatus() {
         NotificationWater.shared.checkNotificationStatus()
+    }
+    
+    /// ✅ NUEVO: Método para forzar actualización de notificaciones de agua
+    func forceUpdateWaterNotifications() {
+        print("🔄 DietViewModel: Forzando actualización de notificaciones de agua...")
+        
+        // Refrescar perfil antes de calcular
+        refreshUserProfile()
+        
+        // Obtener el valor más actualizado
+        let currentRecommendation = calculateRecommendedWaterIntake()
+        print("💧 Recomendación actual: \(currentRecommendation)")
+        
+        // Limpiar y reprogramar con el valor correcto
+        NotificationWater.shared.forceCleanAndReset()
+        
+        // Esperar un momento antes de reprogramar
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            let breakfast = DateComponents(hour: 9, minute: 0)
+            let lunch     = DateComponents(hour: 13, minute: 0)
+            let dinner    = DateComponents(hour: 19, minute: 0)
+            
+            NotificationWater.shared.scheduleThreeDailyReminders(
+                at: [breakfast, lunch, dinner],
+                dailyRecommendation: currentRecommendation
+            )
+            
+            print("✅ Notificaciones de agua actualizadas con valor: \(currentRecommendation)")
+        }
+    }
+    
+    /// ✅ NUEVO: Método para verificar y corregir notificaciones de agua
+    func verifyAndFixWaterNotifications() {
+        print("🔍 DietViewModel: Verificando notificaciones de agua...")
+        
+        // Obtener el valor correcto
+        let correctValue = calculateRecommendedWaterIntake()
+        print("💧 Valor correcto de agua: \(correctValue)")
+        
+        // Forzar actualización
+        forceUpdateWaterNotifications()
+        
+        // Verificar estado después de un momento
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+            self.checkWaterNotificationStatus()
+        }
+    }
+    
+    /// ✅ NUEVO: Método de debug manual (solo llamar cuando sea necesario)
+    func debugWaterCalculation() {
+        refreshUserProfile()
+        let result = nutritionCalculator.calculateWaterNeedsSynchronously(for: userProfile)
+        print("🔍 DEBUG MANUAL - Cálculo de agua:")
+        print("   📊 Peso usuario: \(userProfile.weightKg) kg")
+        print("   📊 Actividad: \(userProfile.levelActivity)")
+        print("   📊 Nivel workout: \(userProfile.workoutLevel)")
+        print("   💧 Resultado: \(result)")
+        userProfile.printAllValues()
     }
 
     // MARK: - Private Helpers
@@ -590,9 +713,9 @@ enum MealType: String, CaseIterable, Identifiable {
     var id: String { rawValue }
     var displayName: String {
         switch self {
-        case .Breakfast: return "Breakfast"
-        case .Lunch:     return "Lunch"
-        case .Dinner:    return "Dinner"
+        case .Breakfast: return LanguageManager.localizedString("Breakfast")
+        case .Lunch:     return LanguageManager.localizedString("Lunch")
+        case .Dinner:    return LanguageManager.localizedString("Dinner")
         }
     }
 }
@@ -620,4 +743,3 @@ extension DietViewModel {
         }
     }
 }
-

@@ -96,12 +96,12 @@ struct VideosDashBoardView: View {
                             VStack {
                                 Spacer()
                                 VStack(alignment: .leading, spacing: 16) {
-                                    Text(currentMuscle.name.capitalized + " workout")
+                                    Text("\(LanguageManager.localizedString(currentMuscle.name)) \(LanguageManager.localizedString("workout"))")
                                         .font(.title)
                                         .fontWeight(.bold)
                                         .foregroundColor(.white)
                                     
-                                    Text("A complete \(currentMuscle.name.lowercased()) workout routine designed to strengthen and tone your muscles effectively.")
+                                    Text("\(LanguageManager.localizedString("A complete")) \(LanguageManager.localizedString(currentMuscle.name).lowercased()) \(LanguageManager.localizedString("workout routine designed to strengthen and tone your muscles effectively."))")
                                         .font(.body)
                                         .foregroundColor(.white.opacity(0.8))
                                         .lineLimit(nil)

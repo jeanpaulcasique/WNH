@@ -8,6 +8,9 @@ class WeightViewModel: ObservableObject {
         didSet {
             UserDefaults.standard.set(selectedWeightKg, forKey: "selectedWeightKg")
             updateHealthBenefitMessage()
+            
+            // ✅ NUEVO: Inicializar el sistema de peso mejorado
+            initializeWeightSystem()
         }
     }
     
@@ -268,6 +271,24 @@ class WeightViewModel: ObservableObject {
             return selectedWeightKg >= kgMinWeight && selectedWeightKg <= kgMaxWeight
         } else {
             return selectedWeightLb >= lbMinWeight && selectedWeightLb <= lbMaxWeight
+        }
+    }
+    
+    // MARK: - ✅ NUEVO: Sistema de Peso Mejorado
+    
+    /// Inicializa el sistema de peso mejorado
+    private func initializeWeightSystem() {
+        // Solo inicializar si no existe ya un peso inicial
+        let currentInitialWeight = UserDefaults.standard.double(forKey: "initialWeightFromOnboarding")
+        if currentInitialWeight == 0 {
+            // Usar el servicio de progreso diario para inicializar
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                // Notificar que se debe inicializar el sistema de peso
+                NotificationCenter.default.post(
+                    name: Notification.Name("InitializeWeightSystem"), 
+                    object: self.selectedWeightKg
+                )
+            }
         }
     }
     

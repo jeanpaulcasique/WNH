@@ -22,7 +22,7 @@ struct DaySelectorView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(viewModel.days, id: \.self) { day in
-                        let label = shortFormatter.string(from: day)
+                        let label = LanguageManager.localizedString(shortFormatter.string(from: day))
                         VStack(spacing: 8) {
                             Text(label)
                                 .font(.system(size: 12, weight: .medium))

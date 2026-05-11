@@ -2,18 +2,15 @@ import SwiftUI
 
 struct ShoppingView: View {
     @StateObject private var viewModel = ShoppingViewModel()
-    @State private var searchText = ""
-    @State private var selectedOrderSection: OrderSection = .myOrders
+    @State private var selectedOrderSection: OrderSection = .shop
     @State private var showingCart = false
     @State private var showingProductDetail: ShopProduct?
-
     
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient
                 LinearGradient(
-                    colors: [Color.black, Color.gray.opacity(0.3), Color.black],
+                    colors: [Color.black, Color.gray.opacity(0.28), Color.black],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -22,7 +19,7 @@ struct ShoppingView: View {
                 VStack(spacing: 0) {
                     headerSection
                     searchAndFilterSection
-                    productsContent
+                    mainContent
                 }
             }
             .navigationBarHidden(true)
@@ -39,73 +36,83 @@ struct ShoppingView: View {
     }
 }
 
-// MARK: - View Components
 private extension ShoppingView {
     var headerSection: some View {
-        VStack(spacing: 16) {
-            HStack(spacing: 12) {
-                Image(systemName: "cart.fill")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.yellow)
-                
-                Text("Samson Shop")
-                    .font(.system(size: 32, weight: .bold))
-                    .foregroundColor(.white)
-            }
-            
-            Text("Premium products for your fitness journey")
-                .font(.system(size: 16))
-                .foregroundColor(.gray)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 20)
-        }
-        .padding(.top, 20)
-        .padding(.bottom, 16)
-    }
-    
-    var searchAndFilterSection: some View {
-        VStack(spacing: 16) {
-            // Search bar with cart button
-            HStack(spacing: 12) {
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundColor(.gray)
-                    TextField("Search products...", text: $searchText)
-                        .textFieldStyle(PlainTextFieldStyle())
+        ZStack {
+            VStack(spacing: 6) {
+                HStack(spacing: 12) {
+                    Image(systemName: "cart.fill")
+                        .font(.system(size: 30, weight: .bold))
+                        .foregroundColor(.yellow)
+                    
+                    Text("Samson Shop")
+                        .font(.system(size: 30, weight: .bold))
                         .foregroundColor(.white)
                 }
-                .padding(.vertical, 10)
-                .padding(.horizontal, 16)
-                .background(
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(Color.gray.opacity(0.2))
-                )
                 
-                // Cart button
+                Text("Gear, nutrition and recovery")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+            
+            HStack {
+                Spacer()
+                
                 Button(action: { showingCart = true }) {
-                    ZStack {
+                    ZStack(alignment: .topTrailing) {
                         Image(systemName: "bag.fill")
-                            .font(.system(size: 28))
+                            .font(.system(size: 25, weight: .semibold))
                             .foregroundColor(.yellow)
+                            .frame(width: 48, height: 48)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Circle())
                         
                         if viewModel.cartItemCount > 0 {
                             Text("\(viewModel.cartItemCount)")
                                 .font(.system(size: 10, weight: .bold))
                                 .foregroundColor(.white)
-                                .frame(width: 16, height: 16)
+                                .frame(width: 18, height: 18)
                                 .background(Color.red)
                                 .clipShape(Circle())
-                                .offset(x: 8, y: -8)
+                                .offset(x: 2, y: -2)
                         }
                     }
-                    .frame(width: 44, height: 44)
-                    .contentShape(Rectangle())
                 }
             }
+        }
+        .padding(.horizontal, 20)
+        .padding(.top, 20)
+        .padding(.bottom, 16)
+    }
+    
+    var searchAndFilterSection: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundColor(.gray)
+                
+                TextField("Search products", text: $viewModel.searchText)
+                    .textFieldStyle(PlainTextFieldStyle())
+                    .foregroundColor(.white)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                
+                if !viewModel.searchText.isEmpty {
+                    Button(action: { viewModel.searchText = "" }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .foregroundColor(.gray)
+                    }
+                }
+            }
+            .padding(.vertical, 11)
+            .padding(.horizontal, 14)
+            .background(Color.white.opacity(0.08))
+            .cornerRadius(12)
             
-            // Order sections
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     ForEach(OrderSection.allCases, id: \.self) { section in
                         OrderSectionButton(
                             section: section,
@@ -116,80 +123,183 @@ private extension ShoppingView {
                 }
                 .padding(.horizontal, 2)
             }
+            
+            if selectedOrderSection == .shop {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 10) {
+                        ForEach(ProductCategory.allCases, id: \.self) { category in
+                            CategoryFilterButton(
+                                category: category,
+                                isSelected: viewModel.selectedCategory == category,
+                                onTap: { viewModel.selectedCategory = category }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 2)
+                }
+            }
         }
         .padding(.horizontal, 20)
-        .padding(.bottom, 20)
+        .padding(.bottom, 16)
     }
     
-    var productsContent: some View {
+    var mainContent: some View {
         ScrollView(showsIndicators: false) {
             LazyVStack(spacing: 24) {
-                if viewModel.isLoading {
-                    loadingView
-                } else if viewModel.products.isEmpty {
-                    emptyStateView
-                } else {
-                    // Recommended for you
-                    if !viewModel.recommendedProducts.isEmpty {
-                        productSection(
-                            title: "Recommended for you",
-                            subtitle: "Based on your preferences",
-                            products: viewModel.recommendedProducts
-                        )
-                    }
-                    
-                    // Weight Gain Products
-                    if !viewModel.weightGainProducts.isEmpty {
-                        productSection(
-                            title: "Weight Gain",
-                            subtitle: "Supplements and nutrition",
-                            products: viewModel.weightGainProducts
-                        )
-                    }
-                    
-                    // Fitness Equipment
-                    if !viewModel.fitnessEquipment.isEmpty {
-                        productSection(
-                            title: "Fitness Equipment",
-                            subtitle: "Everything for your training",
-                            products: viewModel.fitnessEquipment
-                        )
-                    }
-                    
-                    // Nutrition Products
-                    if !viewModel.nutritionProducts.isEmpty {
-                        productSection(
-                            title: "Premium Nutrition",
-                            subtitle: "Healthy foods",
-                            products: viewModel.nutritionProducts
-                        )
-                    }
-                    
-                    // Trending Products
-                    if !viewModel.trendingProducts.isEmpty {
-                        productSection(
-                            title: "Trending",
-                            subtitle: "Popular products",
-                            products: viewModel.trendingProducts
-                        )
-                    }
+                switch selectedOrderSection {
+                case .shop:
+                    shopContent
+                case .myOrders:
+                    ordersContent
+                case .buyAgain:
+                    buyAgainContent
+                case .trackOrder:
+                    trackingContent
+                case .returns:
+                    returnsContent
                 }
             }
             .padding(.horizontal, 20)
-            .padding(.bottom, 100)
+            .padding(.bottom, 110)
+        }
+    }
+    
+    @ViewBuilder
+    var shopContent: some View {
+        if viewModel.isLoading {
+            loadingView
+        } else if viewModel.products.isEmpty {
+            ShoppingEmptyState(
+                icon: "bag",
+                title: "No products found",
+                subtitle: "Try again in a moment."
+            )
+        } else if !viewModel.searchText.isEmpty || viewModel.selectedCategory != .all {
+            productGrid(title: "Results", products: viewModel.filteredProducts)
+        } else {
+            if !viewModel.recommendedProducts.isEmpty {
+                productSection(
+                    title: "Recommended for you",
+                    subtitle: "Top rated picks",
+                    products: viewModel.recommendedProducts
+                )
+            }
+            
+            if !viewModel.weightGainProducts.isEmpty {
+                productSection(
+                    title: "Weight Gain",
+                    subtitle: "Supplements and nutrition",
+                    products: viewModel.weightGainProducts
+                )
+            }
+            
+            if !viewModel.fitnessEquipment.isEmpty {
+                productSection(
+                    title: "Fitness Equipment",
+                    subtitle: "Everything for your training",
+                    products: viewModel.fitnessEquipment
+                )
+            }
+            
+            if !viewModel.nutritionProducts.isEmpty {
+                productSection(
+                    title: "Premium Nutrition",
+                    subtitle: "Healthy foods",
+                    products: viewModel.nutritionProducts
+                )
+            }
+            
+            if !viewModel.trendingProducts.isEmpty {
+                productSection(
+                    title: "Trending",
+                    subtitle: "Popular products",
+                    products: viewModel.trendingProducts
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var ordersContent: some View {
+        if viewModel.orders.isEmpty {
+            ShoppingEmptyState(
+                icon: "shippingbox",
+                title: "No orders yet",
+                subtitle: "Your completed purchases will appear here."
+            )
+        } else {
+            ForEach(viewModel.orders) { order in
+                ShopOrderCard(
+                    order: order,
+                    onReorder: {
+                        viewModel.reorder(order)
+                        showingCart = true
+                    },
+                    onReturn: { viewModel.requestReturn(for: order) },
+                    onAdvance: { viewModel.advanceTracking(for: order) }
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var buyAgainContent: some View {
+        if viewModel.buyAgainProducts.isEmpty {
+            ShoppingEmptyState(
+                icon: "arrow.clockwise",
+                title: "Nothing to buy again",
+                subtitle: "After your first order, quick reorders will be ready here."
+            )
+        } else {
+            productGrid(title: "Buy Again", products: viewModel.buyAgainProducts)
+        }
+    }
+    
+    @ViewBuilder
+    var trackingContent: some View {
+        if viewModel.activeOrders.isEmpty {
+            ShoppingEmptyState(
+                icon: "location",
+                title: "No active deliveries",
+                subtitle: "Tracking starts as soon as an order is paid."
+            )
+        } else {
+            ForEach(viewModel.activeOrders) { order in
+                TrackingOrderCard(
+                    order: order,
+                    onAdvance: { viewModel.advanceTracking(for: order) }
+                )
+            }
+        }
+    }
+    
+    @ViewBuilder
+    var returnsContent: some View {
+        if viewModel.orders.isEmpty {
+            ShoppingEmptyState(
+                icon: "arrow.uturn.backward",
+                title: "No orders to return",
+                subtitle: "Return requests will be linked to your orders."
+            )
+        } else {
+            ForEach(viewModel.orders) { order in
+                ReturnOrderCard(
+                    order: order,
+                    onRequestReturn: { viewModel.requestReturn(for: order) }
+                )
+            }
         }
     }
     
     private func productSection(title: String, subtitle: String, products: [ShopProduct]) -> some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // Section header
+        VStack(alignment: .leading, spacing: 14) {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(title)
+                    Text(LanguageManager.localizedString(title))
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.white)
                     
-                    Text(subtitle)
+                    Text(LanguageManager.localizedString(subtitle))
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
                 }
@@ -201,21 +311,13 @@ private extension ShoppingView {
                     products: products,
                     shoppingViewModel: viewModel
                 )) {
-                    HStack(spacing: 4) {
-                        Text("See more")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(.yellow)
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(.yellow)
-                    }
+                    Label("See more", systemImage: "chevron.right")
+                        .labelStyle(.titleAndIcon)
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(.yellow)
                 }
-                .offset(y: -8)
             }
-            .padding(.horizontal, 4)
             
-            // Horizontal product scroll
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(products) { product in
@@ -226,15 +328,41 @@ private extension ShoppingView {
                         )
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 2)
+            }
+        }
+    }
+    
+    private func productGrid(title: String, products: [ShopProduct]) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text(LanguageManager.localizedString(title))
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(.white)
+            
+            if products.isEmpty {
+                ShoppingEmptyState(
+                    icon: "magnifyingglass",
+                    title: "No matches",
+                    subtitle: "Try another search or category."
+                )
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
+                    ForEach(products) { product in
+                        HorizontalProductCard(
+                            product: product,
+                            onTap: { showingProductDetail = product },
+                            onAddToCart: { viewModel.addToCart(product) }
+                        )
+                    }
+                }
             }
         }
     }
     
     var loadingView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 18) {
             ProgressView()
-                .scaleEffect(1.5)
+                .scaleEffect(1.4)
                 .progressViewStyle(CircularProgressViewStyle(tint: .yellow))
             
             Text("Loading products...")
@@ -244,26 +372,9 @@ private extension ShoppingView {
         .frame(maxWidth: .infinity)
         .padding(.top, 60)
     }
-    
-    var emptyStateView: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "bag")
-                .font(.system(size: 64))
-                .foregroundColor(.gray)
-            
-            Text("No products found")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.gray)
-            
-            Text("Try adjusting your search or filters")
-                .font(.system(size: 16))
-                .foregroundColor(.gray.opacity(0.7))
-        }
-        .padding(.top, 60)
-    }
 }
 
-// MARK: - Extensions
+// MARK: - Shared Shopping Components
 extension View {
     func cornerRadius(_ radius: CGFloat, corners: UIRectCorner) -> some View {
         clipShape(RoundedCorner(radius: radius, corners: corners))
@@ -273,14 +384,43 @@ extension View {
 struct RoundedCorner: Shape {
     var radius: CGFloat = .infinity
     var corners: UIRectCorner = .allCorners
-
+    
     func path(in rect: CGRect) -> Path {
         let path = UIBezierPath(roundedRect: rect, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
         return Path(path.cgPath)
     }
 }
 
-// MARK: - Horizontal Product Card
+struct ShoppingEmptyState: View {
+    let icon: String
+    let title: String
+    let subtitle: String
+    
+    var body: some View {
+        VStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 48, weight: .light))
+                .foregroundColor(.gray)
+            
+            VStack(spacing: 6) {
+                Text(LanguageManager.localizedString(title))
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                
+                Text(LanguageManager.localizedString(subtitle))
+                    .font(.system(size: 15))
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 44)
+        .padding(.horizontal, 20)
+        .background(Color.white.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
 struct HorizontalProductCard: View {
     let product: ShopProduct
     let onTap: () -> Void
@@ -289,7 +429,6 @@ struct HorizontalProductCard: View {
     var body: some View {
         Button(action: onTap) {
             VStack(alignment: .leading, spacing: 0) {
-                // Product image - Fixed size
                 ZStack(alignment: .topTrailing) {
                     AsyncImage(url: URL(string: product.imageURL)) { image in
                         image
@@ -304,51 +443,57 @@ struct HorizontalProductCard: View {
                                     .foregroundColor(.gray)
                             )
                     }
-                    .frame(width: 160, height: 160)
+                    .frame(width: 160, height: 150)
                     .clipped()
                     .cornerRadius(12, corners: [.topLeft, .topRight])
                     
-                    // Discount badge
-                    if product.discountPercentage > 0 {
-                        Text("-\(Int(product.discountPercentage * 100))%")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.red)
-                            .cornerRadius(6)
-                            .padding(8)
+                    VStack(alignment: .trailing, spacing: 6) {
+                        if product.discountPercentage > 0 {
+                            Text("-\(Int(product.discountPercentage * 100))%")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Color.red)
+                                .cornerRadius(6)
+                        }
+                        
+                        if product.isNew {
+                            Text("NEW")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.black)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(Color.green)
+                                .cornerRadius(6)
+                        }
                     }
+                    .padding(8)
                 }
                 
-                // Product info - Fixed height container
                 VStack(alignment: .leading, spacing: 8) {
-                    // Product name - Fixed height
-                    Text(product.name)
+                    Text(LanguageManager.localizedString(product.name))
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.white)
                         .lineLimit(2)
-                        .multilineTextAlignment(.leading)
-                        .frame(height: 36, alignment: .top) // Fixed height for 2 lines
+                        .frame(height: 36, alignment: .top)
                     
-                    // Price and rating - Fixed height
-                    HStack {
+                    HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 2) {
                             if product.discountPercentage > 0 {
-                                Text("$\(String(format: "%.2f", product.originalPrice))")
+                                Text(product.originalPrice.currencyText)
                                     .font(.system(size: 11))
                                     .foregroundColor(.gray)
                                     .strikethrough()
                             }
                             
-                            Text("$\(String(format: "%.2f", product.currentPrice))")
+                            Text(product.currentPrice.currencyText)
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.yellow)
                         }
                         
                         Spacer()
                         
-                        // Rating
                         HStack(spacing: 2) {
                             Image(systemName: "star.fill")
                                 .font(.system(size: 10))
@@ -358,51 +503,230 @@ struct HorizontalProductCard: View {
                                 .foregroundColor(.white.opacity(0.8))
                         }
                     }
-                    .frame(height: 32) // Fixed height
+                    .frame(height: 34)
                     
-                    // Add to cart button - Fixed height
                     Button(action: onAddToCart) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "bag.badge.plus")
-                                .font(.system(size: 12))
-                            Text("Add")
-                                .font(.system(size: 12, weight: .semibold))
-                        }
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 32) // Fixed height
-                        .background(Color.yellow)
-                        .cornerRadius(8)
+                        Label("Add", systemImage: "bag.badge.plus")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 34)
+                            .background(product.inStock ? Color.yellow : Color.gray)
+                            .cornerRadius(8)
                     }
+                    .disabled(!product.inStock)
                     .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 12)
-                .frame(height: 140) // Fixed total height for info section
             }
         }
         .buttonStyle(PlainButtonStyle())
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .background(Color.white.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
         .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(
-                    LinearGradient(
-                        colors: [Color.yellow.opacity(0.6), Color.yellow.opacity(0.2), .clear],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 1
-                )
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
         )
-        .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
-        .frame(width: 160, height: 300) // Fixed total card size
+        .frame(width: 160, height: 290)
     }
 }
 
+struct ShopOrderCard: View {
+    let order: ShopOrder
+    let onReorder: () -> Void
+    let onReturn: () -> Void
+    let onAdvance: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            OrderCardHeader(order: order)
+            
+            Text("\(order.itemCount) \(LanguageManager.localizedString("items")) · \(order.totals.total.currencyText)")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(.white)
+            
+            VStack(alignment: .leading, spacing: 6) {
+                ForEach(order.items.prefix(3)) { item in
+                    Text("\(item.quantity)x \(LanguageManager.localizedString(item.product.name))")
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                        .lineLimit(1)
+                }
+            }
+            
+            HStack(spacing: 10) {
+                Button(action: onReorder) {
+                    Label("Buy Again", systemImage: "arrow.clockwise")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(Color.yellow)
+                        .cornerRadius(10)
+                }
+                
+                Button(action: onReturn) {
+                    Label(order.returnRequest == nil ? LanguageManager.localizedString("Return") : LanguageManager.localizedString("Return Sent"), systemImage: "arrow.uturn.backward")
+                        .font(.system(size: 13, weight: .bold))
+                        .foregroundColor(order.returnRequest == nil ? .white : .green)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 40)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(10)
+                }
+                .disabled(order.returnRequest != nil)
+            }
+            
+            if order.status.next != nil {
+                Button(action: onAdvance) {
+                    Label("Update tracking", systemImage: "location.fill")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.yellow)
+                }
+            }
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+}
 
+struct TrackingOrderCard: View {
+    let order: ShopOrder
+    let onAdvance: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            OrderCardHeader(order: order)
+            
+            VStack(alignment: .leading, spacing: 14) {
+                ForEach(order.timeline) { event in
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: event.completedAt == nil ? "circle" : "checkmark.circle.fill")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(event.completedAt == nil ? .gray : .green)
+                        
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(LanguageManager.localizedString(event.title))
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(.white)
+                            
+                            Text(event.completedAt?.shortDateText ?? LanguageManager.localizedString("Pending"))
+                                .font(.system(size: 13))
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+            }
+            
+            if order.status.next != nil {
+                Button(action: onAdvance) {
+                    Label("\(LanguageManager.localizedString("Move to")) \(order.status.next?.displayName ?? "")", systemImage: "arrow.right")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.yellow)
+                        .cornerRadius(10)
+                }
+            }
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
 
-// MARK: - Order Section Button
+struct ReturnOrderCard: View {
+    let order: ShopOrder
+    let onRequestReturn: () -> Void
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            OrderCardHeader(order: order)
+            
+            if let request = order.returnRequest {
+                HStack {
+                    Label(request.status.displayName, systemImage: "checkmark.circle.fill")
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundColor(.green)
+                    
+                    Spacer()
+                    
+                    Text(request.createdAt.shortDateText)
+                        .font(.system(size: 13))
+                        .foregroundColor(.gray)
+                }
+            } else {
+                Text("\(LanguageManager.localizedString("Eligible items")): \(order.itemCount)")
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.gray)
+                
+                Button(action: onRequestReturn) {
+                    Label("Request Return", systemImage: "arrow.uturn.backward")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.black)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 44)
+                        .background(Color.yellow)
+                        .cornerRadius(10)
+                }
+            }
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.07))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+}
+
+struct OrderCardHeader: View {
+    let order: ShopOrder
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: order.status.icon)
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(order.status.tint)
+                .frame(width: 42, height: 42)
+                .background(order.status.tint.opacity(0.15))
+                .clipShape(Circle())
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(order.orderNumber)
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(.white)
+                
+                Text("\(LanguageManager.localizedString("Placed")) \(order.createdAt.shortDateText)")
+                    .font(.system(size: 13))
+                    .foregroundColor(.gray)
+            }
+            
+            Spacer()
+            
+            OrderStatusBadge(status: order.status)
+        }
+    }
+}
+
+struct OrderStatusBadge: View {
+    let status: ShopOrderStatus
+    
+    var body: some View {
+        Text(status.displayName)
+            .font(.system(size: 12, weight: .bold))
+            .foregroundColor(status.tint)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(status.tint.opacity(0.15))
+            .cornerRadius(8)
+    }
+}
+
 struct OrderSectionButton: View {
     let section: OrderSection
     let isSelected: Bool
@@ -412,7 +736,7 @@ struct OrderSectionButton: View {
         Button(action: onTap) {
             HStack(spacing: 6) {
                 Image(systemName: section.icon)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundColor(isSelected ? .black : .yellow)
                 Text(section.displayName)
                     .font(.system(size: 13, weight: .medium))
@@ -420,17 +744,13 @@ struct OrderSectionButton: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(
-                isSelected ? Color.yellow : Color.white.opacity(0.08)
-            )
+            .background(isSelected ? Color.yellow : Color.white.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
 }
 
-// MARK: - Category Filter Button (Legacy - keeping for reference)
 struct CategoryFilterButton: View {
     let category: ProductCategory
     let isSelected: Bool
@@ -440,7 +760,7 @@ struct CategoryFilterButton: View {
         Button(action: onTap) {
             HStack(spacing: 6) {
                 Image(systemName: category.icon)
-                    .font(.system(size: 12))
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundColor(isSelected ? .black : .yellow)
                 Text(category.displayName)
                     .font(.system(size: 13, weight: .medium))
@@ -448,11 +768,8 @@ struct CategoryFilterButton: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(
-                isSelected ? Color.yellow : Color.white.opacity(0.08)
-            )
+            .background(isSelected ? Color.yellow : Color.white.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-            .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
         }
         .animation(.easeInOut(duration: 0.2), value: isSelected)
     }
@@ -466,4 +783,3 @@ struct ShoppingView_Previews: PreviewProvider {
     }
 }
 #endif
-

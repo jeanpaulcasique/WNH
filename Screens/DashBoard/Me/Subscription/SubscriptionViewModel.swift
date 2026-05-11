@@ -228,9 +228,9 @@ final class SubscriptionViewModel: ObservableObject {
         if status.isActive && !status.isExpired {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
-            return "Active until \(formatter.string(from: status.expirationDate))"
+            return "\(LanguageManager.localizedString("Active until")) \(formatter.string(from: status.expirationDate))"
         } else {
-            return "No active subscription"
+            return LanguageManager.localizedString("No active subscription")
         }
     }
 }

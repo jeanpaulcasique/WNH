@@ -8,14 +8,6 @@ struct ShopCategoryView: View {
     @State private var showingCart = false
     @Environment(\.dismiss) private var dismiss
     
-    init(title: String, products: [ShopProduct], shoppingViewModel: ShoppingViewModel) {
-        print("🛍️ ShopCategoryView init called with title: \(title), products: \(products.count)")
-        print("📦 Products in init: \(products.map { $0.name })")
-        self.title = title
-        self.products = products
-        self._shoppingViewModel = ObservedObject(wrappedValue: shoppingViewModel)
-    }
-    
     var body: some View {
         NavigationStack {
             ZStack {
@@ -66,11 +58,11 @@ struct ShopCategoryView: View {
                     
                     // Header
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(title)
+                        Text(LanguageManager.localizedString(title))
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.white)
                         
-                        Text("\(products.count) products available")
+                        Text("\(products.count) \(LanguageManager.localizedString("products available"))")
                             .font(.system(size: 16))
                             .foregroundColor(.gray)
                     }
@@ -79,19 +71,14 @@ struct ShopCategoryView: View {
                     .padding(.top, 10)
                     .padding(.bottom, 20)
                     
-                    // Products grid
                     ScrollView(showsIndicators: false) {
-                        LazyVGrid(columns: [
-                            GridItem(.flexible(), spacing: 16),
-                            GridItem(.flexible(), spacing: 16)
-                        ], spacing: 16) {
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 16)], spacing: 16) {
                             ForEach(products) { product in
                                 HorizontalProductCard(
                                     product: product,
                                     onTap: { showingProductDetail = product },
                                     onAddToCart: { shoppingViewModel.addToCart(product) }
                                 )
-                                .frame(width: UIScreen.main.bounds.width / 2 - 28, height: 300)
                             }
                         }
                         .padding(.horizontal, 20)
@@ -107,13 +94,6 @@ struct ShopCategoryView: View {
         }
         .sheet(isPresented: $showingCart) {
             CartView(viewModel: shoppingViewModel)
-        }
-        .onAppear {
-            print("🛍️ ShopCategoryView appeared")
-            print("📦 Title: \(title)")
-            print("📦 Products count: \(products.count)")
-            print("📦 Products: \(products.map { $0.name })")
-            print("✅ View ready with \(products.count) products")
         }
     }
 }
@@ -163,7 +143,7 @@ struct ProductCard: View {
                 VStack(alignment: .leading, spacing: 12) {
                     // Title and NEW badge - Fixed height
                     HStack {
-                        Text(product.name)
+                        Text(LanguageManager.localizedString(product.name))
                             .font(.system(size: 18, weight: .semibold))
                             .foregroundColor(.white)
                             .fixedSize(horizontal: false, vertical: true)
@@ -183,7 +163,7 @@ struct ProductCard: View {
                     }
                     
                     // Description - Fixed height
-                    Text(product.description)
+                    Text(LanguageManager.localizedString(product.description))
                         .font(.system(size: 14))
                         .foregroundColor(.gray)
                         .fixedSize(horizontal: false, vertical: true)

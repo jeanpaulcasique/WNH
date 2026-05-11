@@ -123,7 +123,7 @@ private extension ProductDetailView {
         VStack(alignment: .leading, spacing: 16) {
             // Product name and category
             VStack(alignment: .leading, spacing: 8) {
-                Text(product.name)
+                Text(LanguageManager.localizedString(product.name))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(nil)
@@ -154,7 +154,7 @@ private extension ProductDetailView {
             }
             
             // Description
-            Text(product.description)
+            Text(LanguageManager.localizedString(product.description))
                 .font(.system(size: 16))
                 .foregroundColor(.gray)
                 .lineLimit(nil)
@@ -165,19 +165,19 @@ private extension ProductDetailView {
                 HStack(alignment: .bottom, spacing: 12) {
                     VStack(alignment: .leading, spacing: 4) {
                         if product.discountPercentage > 0 {
-                            Text("$\(String(format: "%.2f", product.originalPrice))")
+                            Text(product.originalPrice.currencyText)
                                 .font(.system(size: 18))
                                 .foregroundColor(.gray)
                                 .strikethrough()
                         }
                         
-                        Text("$\(String(format: "%.2f", product.currentPrice))")
+                        Text(product.currentPrice.currencyText)
                             .font(.system(size: 28, weight: .bold))
                             .foregroundColor(.yellow)
                     }
                     
                     if product.discountPercentage > 0 {
-                        Text("Save $\(String(format: "%.2f", product.originalPrice - product.currentPrice))")
+                        Text("\(LanguageManager.localizedString("Save")) \((product.originalPrice - product.currentPrice).currencyText)")
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.green)
                             .padding(.horizontal, 8)
@@ -206,13 +206,13 @@ private extension ProductDetailView {
             VStack(spacing: 12) {
                 ForEach(Array(product.specifications.keys.sorted()), id: \.self) { key in
                     HStack {
-                        Text(key)
+                        Text(LanguageManager.localizedString(key))
                             .font(.system(size: 14))
                             .foregroundColor(.gray)
                         
                         Spacer()
                         
-                        Text(product.specifications[key] ?? "")
+                        Text(LanguageManager.localizedString(product.specifications[key] ?? ""))
                             .font(.system(size: 14, weight: .medium))
                             .foregroundColor(.white)
                     }
@@ -268,7 +268,7 @@ private extension ProductDetailView {
                 HStack(spacing: 8) {
                     Image(systemName: "bag.badge.plus")
                         .font(.system(size: 20))
-                    Text("Add to Cart - $\(String(format: "%.2f", product.currentPrice * Double(quantity)))")
+                    Text("\(LanguageManager.localizedString("Add to Cart")) - \((product.currentPrice * Double(quantity)).currencyText)")
                         .font(.system(size: 18, weight: .semibold))
                 }
                 .foregroundColor(.black)
@@ -293,7 +293,7 @@ struct BadgeView: View {
     let color: Color
     
     var body: some View {
-        Text(text)
+        Text(LanguageManager.localizedString(text))
             .font(.system(size: 12, weight: .bold))
             .foregroundColor(color)
             .padding(.horizontal, 8)
@@ -306,10 +306,7 @@ struct BadgeView: View {
 // MARK: - Helper Methods
 private extension ProductDetailView {
     func addToCart() {
-        // Add multiple quantities to cart
-        for _ in 0..<quantity {
-            viewModel.addToCart(product)
-        }
+        viewModel.addToCart(product, quantity: quantity)
         
         // Haptic feedback
         let impactFeedback = UIImpactFeedbackGenerator(style: .medium)

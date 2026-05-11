@@ -372,11 +372,11 @@ struct RewardStepView: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.appWhite)
                 
-                Text(description)
+                Text(LanguageManager.localizedString(description))
                     .font(.system(size: 14))
                     .foregroundColor(.appWhite.opacity(0.7))
                     .lineLimit(2)
@@ -398,7 +398,7 @@ struct ProgressStatCard: View {
     
     var body: some View {
         VStack(spacing: 8) {
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.7))
             
@@ -406,7 +406,7 @@ struct ProgressStatCard: View {
                 .font(.system(size: 24, weight: .bold))
                 .foregroundColor(color)
             
-            Text(subtitle)
+                Text(LanguageManager.localizedString(subtitle))
                 .font(.system(size: 10))
                 .foregroundColor(.appWhite.opacity(0.6))
         }
@@ -458,7 +458,7 @@ struct ShareOptionCard: View {
                     .font(.system(size: 24))
                     .foregroundColor(color)
                 
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.appWhite)
             }
@@ -711,7 +711,7 @@ struct FilterTab: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Text(title)
+                Text(LanguageManager.localizedString(title))
                     .font(.system(size: 14, weight: .medium))
                 
                 if count > 0 {
@@ -863,12 +863,12 @@ struct EmptyStateView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.appYellow.opacity(0.5))
             
-            Text(emptyMessage)
+            Text(LanguageManager.localizedString(emptyMessage))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.appWhite)
                 .multilineTextAlignment(.center)
             
-            Text(emptySubtitle)
+            Text(LanguageManager.localizedString(emptySubtitle))
                 .font(.system(size: 14))
                 .foregroundColor(.appWhite.opacity(0.7))
                 .multilineTextAlignment(.center)

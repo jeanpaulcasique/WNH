@@ -55,8 +55,7 @@ struct GenderSelectionView: View {
                 )
                 .padding(.top, 60)
                 .padding(.horizontal, 24)
-                
-                    .padding(.bottom, 60)
+                .padding(.bottom, 40)
                 
                 // Botones de género - Estilo minimalista
                 VStack(spacing: 40) {
@@ -94,7 +93,7 @@ struct GenderSelectionView: View {
                         }
                     }
                     .scaleEffect(selectedGender == .male ? 1.05 : 1.0)
-                    .cascadingAppear(index: 2)
+                    .cascadingAppear(index: 2, baseDelay: 0.1, offsetY: 20, duration: 0.4)
                     
                     // Botón Female
                     Button(action: {
@@ -129,10 +128,12 @@ struct GenderSelectionView: View {
                         }
                     }
                     .scaleEffect(selectedGender == .female ? 1.05 : 1.0)
-                    .cascadingAppear(index: 3)
+                    .cascadingAppear(index: 3, baseDelay: 0.1, offsetY: 20, duration: 0.4)
                 }
+                .padding(.top, 20)
+                .padding(.horizontal, 24)
                 
-                Spacer()
+                Spacer(minLength: 20)
                 
                 // Botón Next - Estilo minimalista amarillo
                 if selectedGender != nil {
@@ -181,6 +182,7 @@ struct GenderSelectionView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .navigationBarTitle("", displayMode: .inline)
     }
 }
 

@@ -40,7 +40,7 @@ private extension TrainersMapsView {
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.black)
                 
-                Text("Found \(trainers.count) trainer\(trainers.count != 1 ? "s" : "") nearby")
+                Text("\(LanguageManager.localizedString("Found")) \(trainers.count) \(trainers.count == 1 ? LanguageManager.localizedString("trainer nearby") : LanguageManager.localizedString("trainers nearby"))")
                     .font(.system(size: 14))
                     .foregroundColor(.black.opacity(0.7))
             }

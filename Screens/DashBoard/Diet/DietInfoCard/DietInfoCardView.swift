@@ -44,7 +44,7 @@ struct DietInfoCardItem: View {
                             .foregroundColor(card.color)
                     }
                     
-                    Text(card.title)
+                    Text(LanguageManager.localizedString(card.title))
                         .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(.appWhite)
                         .lineLimit(1)
@@ -63,7 +63,7 @@ struct DietInfoCardItem: View {
                 }
                 
                 // Content
-                Text(card.content)
+                Text(LanguageManager.localizedString(card.content))
                     .font(.system(size: 15, weight: .medium))
                     .foregroundColor(.appWhite.opacity(0.85))
                     .multilineTextAlignment(.leading)
@@ -93,7 +93,7 @@ struct DietInfoCardItem: View {
                         }
                         
                         if let callToAction = card.callToAction {
-                            Text(callToAction)
+                            Text(LanguageManager.localizedString(callToAction))
                                 .font(.system(size: 12, weight: .semibold))
                                 .foregroundColor(card.color)
                         }
@@ -146,7 +146,7 @@ struct AnimatedTipCard: View {
                         .foregroundColor(tip.color)
                 }
                 
-                Text(tip.title)
+                Text(LanguageManager.localizedString(tip.title))
                     .font(.system(size: 14, weight: .semibold))
                     .foregroundColor(.appWhite)
                     .lineLimit(1)
@@ -155,7 +155,7 @@ struct AnimatedTipCard: View {
             }
             
             // Content
-            Text(tip.content)
+            Text(LanguageManager.localizedString(tip.content))
                 .font(.system(size: 15, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.85))
                 .multilineTextAlignment(.leading)

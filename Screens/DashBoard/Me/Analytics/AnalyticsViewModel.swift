@@ -271,7 +271,6 @@ final class AnalyticsViewModel: ObservableObject {
         let startDate = calendar.date(byAdding: .day, value: -selectedTimeRange.days, to: endDate) ?? endDate
         
         weightData = []
-        let dayInterval = TimeInterval(86400) // 1 day
         var currentDate = startDate
         let startWeight = currentWeight + Double(selectedTimeRange.days) * 0.05
         
@@ -298,12 +297,14 @@ final class AnalyticsViewModel: ObservableObject {
         let calendar = Calendar.current
         let formatter = DateFormatter()
         formatter.dateFormat = "E"
+        let languageCode = UserDefaults.standard.string(forKey: LanguageManager.storageKey) ?? AppLanguage.english.rawValue
+        formatter.locale = Locale(identifier: languageCode == AppLanguage.spanish.rawValue ? "es_ES" : "en_US")
         
         workoutData = []
         
         for i in 0..<min(selectedTimeRange.days, 30) {
             let date = calendar.date(byAdding: .day, value: -i, to: Date()) ?? Date()
-            let dayName = formatter.string(from: date)
+            let dayName = LanguageManager.localizedString(formatter.string(from: date))
             let duration = Int.random(in: 20...75)
             
             workoutData.append(WorkoutDataPoint(day: dayName, duration: duration))
@@ -315,9 +316,6 @@ final class AnalyticsViewModel: ObservableObject {
     private func updateNutritionData() {
         // Generate nutrition insights based on current data
         let proteinPercentage = Double(avgProtein) / Double(proteinGoal)
-        let carbsPercentage = Double(avgCarbs) / Double(carbsGoal)
-        let fatsPercentage = Double(avgFats) / Double(fatsGoal)
-        
         if proteinPercentage >= 0.9 {
             nutritionInsight = "Excellent protein intake! You're meeting your goals."
             nutritionInsightType = .positive
@@ -425,11 +423,11 @@ struct WorkoutMetricView: View {
                 .font(.system(size: 18, weight: .bold))
                 .foregroundColor(.appWhite)
             
-            Text(unit)
+            Text(LanguageManager.localizedString(unit))
                 .font(.system(size: 10))
                 .foregroundColor(.appWhite.opacity(0.6))
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.8))
         }
@@ -448,7 +446,7 @@ struct MacroProgressView: View {
     
     var body: some View {
         VStack(alignment: .center, spacing: 8) {
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.appWhite)
             
@@ -487,7 +485,7 @@ struct NutritionInsight: View {
                 .foregroundColor(type.color)
                 .font(.system(size: 16))
             
-            Text(message)
+            Text(LanguageManager.localizedString(message))
                 .font(.system(size: 14))
                 .foregroundColor(.appWhite.opacity(0.8))
             
@@ -521,12 +519,12 @@ struct WatchMetricCard: View {
                     .font(.system(size: 18, weight: .bold))
                     .foregroundColor(.appWhite)
                 
-                Text(unit)
+                Text(LanguageManager.localizedString(unit))
                     .font(.system(size: 10))
                     .foregroundColor(.appWhite.opacity(0.6))
             }
             
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.8))
         }
@@ -544,7 +542,7 @@ struct HealthMetricView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
+            Text(LanguageManager.localizedString(title))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.appWhite.opacity(0.8))
             
@@ -552,7 +550,7 @@ struct HealthMetricView: View {
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(.appWhite)
             
-            Text(status)
+            Text(LanguageManager.localizedString(status))
                 .font(.system(size: 12, weight: .medium))
                 .foregroundColor(color)
                 .padding(.horizontal, 8)
@@ -582,11 +580,11 @@ struct AchievementRow: View {
             }
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(achievement.title)
+                Text(LanguageManager.localizedString(achievement.title))
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(.appWhite)
                 
-                Text(achievement.description)
+                Text(LanguageManager.localizedString(achievement.description))
                     .font(.system(size: 12))
                     .foregroundColor(.appWhite.opacity(0.7))
             }

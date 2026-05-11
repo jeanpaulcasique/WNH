@@ -73,18 +73,18 @@ enum TrainerSpecialty: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .weightLoss: return "Weight Loss"
-        case .muscleBuilding: return "Muscle Building"
-        case .strength: return "Strength Training"
-        case .cardio: return "Cardio Expert"
-        case .yoga: return "Yoga Instructor"
-        case .crossfit: return "CrossFit Coach"
-        case .nutrition: return "Nutrition Expert"
-        case .rehabilitation: return "Rehabilitation"
-        case .pilates: return "Pilates"
-        case .boxing: return "Boxing"
-        case .swimming: return "Swimming"
-        case .running: return "Running Coach"
+        case .weightLoss: return LanguageManager.localizedString("Weight Loss")
+        case .muscleBuilding: return LanguageManager.localizedString("Muscle Building")
+        case .strength: return LanguageManager.localizedString("Strength Training")
+        case .cardio: return LanguageManager.localizedString("Cardio Expert")
+        case .yoga: return LanguageManager.localizedString("Yoga Instructor")
+        case .crossfit: return LanguageManager.localizedString("CrossFit Coach")
+        case .nutrition: return LanguageManager.localizedString("Nutrition Expert")
+        case .rehabilitation: return LanguageManager.localizedString("Rehabilitation")
+        case .pilates: return LanguageManager.localizedString("Pilates")
+        case .boxing: return LanguageManager.localizedString("Boxing")
+        case .swimming: return LanguageManager.localizedString("Swimming")
+        case .running: return LanguageManager.localizedString("Running Coach")
         }
     }
     
@@ -142,19 +142,19 @@ enum TrainerCategory: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .all: return "All"
-        case .weightLoss: return "Weight Loss"
-        case .muscleBuilding: return "Muscle"
-        case .strength: return "Strength"
-        case .cardio: return "Cardio"
-        case .yoga: return "Yoga"
-        case .crossfit: return "CrossFit"
-        case .nutrition: return "Nutrition"
-        case .rehabilitation: return "Rehab"
-        case .pilates: return "Pilates"
-        case .boxing: return "Boxing"
-        case .swimming: return "Swimming"
-        case .running: return "Running"
+        case .all: return LanguageManager.localizedString("All")
+        case .weightLoss: return LanguageManager.localizedString("Weight Loss")
+        case .muscleBuilding: return LanguageManager.localizedString("Muscle")
+        case .strength: return LanguageManager.localizedString("Strength")
+        case .cardio: return LanguageManager.localizedString("Cardio")
+        case .yoga: return LanguageManager.localizedString("Yoga")
+        case .crossfit: return LanguageManager.localizedString("CrossFit")
+        case .nutrition: return LanguageManager.localizedString("Nutrition")
+        case .rehabilitation: return LanguageManager.localizedString("Rehab")
+        case .pilates: return LanguageManager.localizedString("Pilates")
+        case .boxing: return LanguageManager.localizedString("Boxing")
+        case .swimming: return LanguageManager.localizedString("Swimming")
+        case .running: return LanguageManager.localizedString("Running")
         }
     }
     
